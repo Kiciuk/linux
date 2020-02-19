@@ -135,6 +135,36 @@ enum qusb2phy_reg_layout {
 	QUSB2PHY_INTR_CTRL,
 };
 
+static const unsigned int msm8953_regs_layout[] = {
+	[QUSB2PHY_PLL_STATUS]		= 0x38,
+	[QUSB2PHY_PORT_TUNE1]		= 0x80,
+	[QUSB2PHY_PORT_TUNE2]		= 0x84,
+	[QUSB2PHY_PORT_TUNE3]		= 0x88,
+	[QUSB2PHY_PORT_TUNE4]		= 0x8c,
+	[QUSB2PHY_PORT_TUNE5]		= 0x90,
+	[QUSB2PHY_PORT_TEST1]		= 0xb8,
+	[QUSB2PHY_PORT_TEST2]		= 0x9c,
+	[QUSB2PHY_PORT_POWERDOWN]	= 0xb4,
+	[QUSB2PHY_INTR_CTRL]		= 0xbc,
+};
+
+static const struct qusb2_phy_init_tbl msm8953_init_tbl[] = {
+	QUSB2_PHY_INIT_CFG_L(QUSB2PHY_PORT_TUNE1, 0xf8),
+	QUSB2_PHY_INIT_CFG_L(QUSB2PHY_PORT_TUNE2, 0xb3),
+	QUSB2_PHY_INIT_CFG_L(QUSB2PHY_PORT_TUNE3, 0x83),
+	QUSB2_PHY_INIT_CFG_L(QUSB2PHY_PORT_TUNE4, 0xc0),
+
+	QUSB2_PHY_INIT_CFG_L(QUSB2PHY_PORT_TEST2, 0x14),
+	QUSB2_PHY_INIT_CFG(QUSB2PHY_PLL_TUNE, 0x30),
+	QUSB2_PHY_INIT_CFG(QUSB2PHY_PLL_USER_CTL1, 0x79),
+	QUSB2_PHY_INIT_CFG(QUSB2PHY_PLL_USER_CTL2, 0x21),
+
+	QUSB2_PHY_INIT_CFG_L(QUSB2PHY_PORT_TUNE5, 0x00),
+
+	QUSB2_PHY_INIT_CFG(QUSB2PHY_PLL_AUTOPGM_CTL1, 0x9f),
+	QUSB2_PHY_INIT_CFG(QUSB2PHY_PLL_PWR_CTRL, 0x00),
+};
+
 static const unsigned int msm8996_regs_layout[] = {
 	[QUSB2PHY_PLL_STATUS]		= 0x38,
 	[QUSB2PHY_PORT_TUNE1]		= 0x80,
@@ -236,6 +266,7 @@ struct qusb2_phy_cfg {
 	unsigned int mask_core_ready;
 	unsigned int disable_ctrl;
 	unsigned int autoresume_en;
+	unsigned int num_vregs;
 
 	/* true if PHY has PLL_TEST register to select clk_scheme */
 	bool has_pll_test;
@@ -253,6 +284,18 @@ static const struct qusb2_phy_cfg msm8996_phy_cfg = {
 	.regs		= msm8996_regs_layout,
 
 	.has_pll_test	= true,
+	.disable_ctrl	= (CLAMP_N_EN | FREEZIO_N | POWER_DOWN),
+	.mask_core_ready = PLL_LOCKED,
+	.autoresume_en	 = BIT(3),
+};
+
+static const struct qusb2_phy_cfg msm8953_phy_cfg = {
+	.tbl		= msm8953_init_tbl,
+	.tbl_num	= ARRAY_SIZE(msm8953_init_tbl),
+	.regs		= msm8953_regs_layout,
+
+	.has_pll_test	= true,
+	.num_vregs	= 3,
 	.disable_ctrl	= (CLAMP_N_EN | FREEZIO_N | POWER_DOWN),
 	.mask_core_ready = PLL_LOCKED,
 	.autoresume_en	 = BIT(3),
@@ -284,7 +327,7 @@ static const struct qusb2_phy_cfg qusb2_v2_phy_cfg = {
 };
 
 static const char * const qusb2_phy_vreg_names[] = {
-	"vdda-pll", "vdda-phy-dpdm",
+	"vdda-pll", "vdda-phy-dpdm", "phy",
 };
 
 #define QUSB2_NUM_VREGS		ARRAY_SIZE(qusb2_phy_vreg_names)
@@ -355,6 +398,7 @@ struct qusb2_phy {
 	struct override_params overrides;
 
 	const struct qusb2_phy_cfg *cfg;
+	unsigned int num_vregs;
 	bool has_se_clk_scheme;
 	bool phy_initialized;
 	enum phy_mode mode;
@@ -643,9 +687,11 @@ static int qusb2_phy_init(struct phy *phy)
 	dev_vdbg(&phy->dev, "%s(): Initializing QUSB2 phy\n", __func__);
 
 	/* turn on regulator supplies */
-	ret = regulator_bulk_enable(ARRAY_SIZE(qphy->vregs), qphy->vregs);
+	ret = regulator_bulk_enable(qphy->num_vregs, qphy->vregs);
 	if (ret)
 		return ret;
+
+	usleep_range(1000, 1500);
 
 	ret = clk_prepare_enable(qphy->iface_clk);
 	if (ret) {
@@ -773,7 +819,7 @@ disable_ahb_clk:
 disable_iface_clk:
 	clk_disable_unprepare(qphy->iface_clk);
 poweroff_phy:
-	regulator_bulk_disable(ARRAY_SIZE(qphy->vregs), qphy->vregs);
+	regulator_bulk_disable(qphy->num_vregs, qphy->vregs);
 
 	return ret;
 }
@@ -794,7 +840,7 @@ static int qusb2_phy_exit(struct phy *phy)
 	clk_disable_unprepare(qphy->cfg_ahb_clk);
 	clk_disable_unprepare(qphy->iface_clk);
 
-	regulator_bulk_disable(ARRAY_SIZE(qphy->vregs), qphy->vregs);
+	regulator_bulk_disable(qphy->num_vregs, qphy->vregs);
 
 	qphy->phy_initialized = false;
 
@@ -815,6 +861,9 @@ static const struct of_device_id qusb2_phy_of_match_table[] = {
 	}, {
 		.compatible	= "qcom,msm8996-qusb2-phy",
 		.data		= &msm8996_phy_cfg,
+	}, {
+		.compatible	= "qcom,msm8953-qusb2-phy",
+		.data		= &msm8953_phy_cfg,
 	}, {
 		.compatible	= "qcom,msm8998-qusb2-phy",
 		.data		= &msm8998_phy_cfg,
@@ -886,7 +935,10 @@ static int qusb2_phy_probe(struct platform_device *pdev)
 		return PTR_ERR(qphy->phy_reset);
 	}
 
-	num = ARRAY_SIZE(qphy->vregs);
+	/* Get the specific init parameters of QMP phy */
+	qphy->cfg = of_device_get_match_data(dev);
+
+	num = qphy->num_vregs = qphy->cfg->num_vregs ?: 2;
 	for (i = 0; i < num; i++)
 		qphy->vregs[i].supply = qusb2_phy_vreg_names[i];
 
@@ -897,9 +949,6 @@ static int qusb2_phy_probe(struct platform_device *pdev)
 				ret);
 		return ret;
 	}
-
-	/* Get the specific init parameters of QMP phy */
-	qphy->cfg = of_device_get_match_data(dev);
 
 	qphy->tcsr = syscon_regmap_lookup_by_phandle(dev->of_node,
 							"qcom,tcsr-syscon");
