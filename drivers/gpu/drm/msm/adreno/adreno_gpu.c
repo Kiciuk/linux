@@ -209,6 +209,8 @@ int adreno_get_param(struct msm_gpu *gpu, uint32_t param, uint64_t *value)
 	switch (param) {
 	case MSM_PARAM_GPU_ID:
 		*value = adreno_gpu->info->revn;
+		if (*value == 506)
+			*value = 530;
 		return 0;
 	case MSM_PARAM_GMEM_SIZE:
 		*value = adreno_gpu->gmem;
@@ -966,7 +968,7 @@ int adreno_gpu_init(struct drm_device *drm, struct platform_device *pdev,
 
 	adreno_gpu_config.ioname = "kgsl_3d0_reg_memory";
 
-	adreno_gpu_config.nr_rings = nr_rings;
+	adreno_gpu_config.nr_rings = adreno_is_a506(adreno_gpu) ? 1 : nr_rings; // FIXME 
 
 	adreno_get_pwrlevels(dev, gpu);
 
