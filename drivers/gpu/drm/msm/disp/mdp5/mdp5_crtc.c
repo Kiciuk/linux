@@ -47,6 +47,8 @@ struct mdp5_crtc {
 
 	struct completion pp_completion;
 
+	atomic_t pp_requested;
+
 	bool lm_cursor_enabled;
 
 	struct {
@@ -81,6 +83,9 @@ static void request_pending(struct drm_crtc *crtc, uint32_t pending)
 static void request_pp_done_pending(struct drm_crtc *crtc)
 {
 	struct mdp5_crtc *mdp5_crtc = to_mdp5_crtc(crtc);
+
+	atomic_set(&mdp5_crtc->pp_requested, 1);
+
 	reinit_completion(&mdp5_crtc->pp_completion);
 }
 
@@ -1175,6 +1180,13 @@ static void mdp5_crtc_pp_done_irq(struct mdp_irq *irq, uint32_t irqstatus)
 {
 	struct mdp5_crtc *mdp5_crtc = container_of(irq, struct mdp5_crtc,
 								pp_done);
+	struct drm_crtc *crtc = &mdp5_crtc->base;
+	struct mdp5_crtc_state *mdp5_cstate = to_mdp5_crtc_state(crtc->state);
+
+	atomic_set(&mdp5_crtc->pp_requested, 0);
+
+	if (mdp5_cstate->cmd_mode)
+		mdp5_ctl_commit_finished(mdp5_cstate->ctl);
 
 	complete(&mdp5_crtc->pp_completion);
 }
@@ -1185,6 +1197,9 @@ static void mdp5_crtc_wait_for_pp_done(struct drm_crtc *crtc)
 	struct mdp5_crtc *mdp5_crtc = to_mdp5_crtc(crtc);
 	struct mdp5_crtc_state *mdp5_cstate = to_mdp5_crtc_state(crtc->state);
 	int ret;
+
+	if (!atomic_read(&mdp5_crtc->pp_requested))
+		return;
 
 	ret = wait_for_completion_timeout(&mdp5_crtc->pp_completion,
 						msecs_to_jiffies(50));
@@ -1299,6 +1314,7 @@ struct drm_crtc *mdp5_crtc_init(struct drm_device *dev,
 	spin_lock_init(&mdp5_crtc->lm_lock);
 	spin_lock_init(&mdp5_crtc->cursor.lock);
 	init_completion(&mdp5_crtc->pp_completion);
+	atomic_set(&mdp5_crtc->pp_requested, 1);
 
 	mdp5_crtc->vblank.irq = mdp5_crtc_vblank_irq;
 	mdp5_crtc->err.irq = mdp5_crtc_err_irq;

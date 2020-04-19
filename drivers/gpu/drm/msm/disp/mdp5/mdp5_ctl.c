@@ -24,6 +24,12 @@
 #define CTL_STAT_BUSY		0x1
 #define CTL_STAT_BOOKED	0x2
 
+enum pipeline_status {
+	PIPELINE_READY,
+	PIPELINE_BUSY,
+	PIPELINE_OUTDATED,
+};
+
 struct mdp5_ctl {
 	struct mdp5_ctl_manager *ctlm;
 
@@ -48,6 +54,8 @@ struct mdp5_ctl {
 
 	/* True if the current CTL has FLUSH bits pending for single FLUSH. */
 	bool flush_pending;
+
+	enum pipeline_status pipeline_status;
 
 	struct mdp5_ctl *pair; /* Paired CTL to be flushed together */
 };
@@ -209,7 +217,17 @@ static void send_start_signal(struct mdp5_ctl *ctl)
 	unsigned long flags;
 
 	spin_lock_irqsave(&ctl->hw_lock, flags);
+	switch (ctl->pipeline_status) {
+		case PIPELINE_READY:
+			ctl->pipeline_status = PIPELINE_BUSY;
+			break;
+		case PIPELINE_BUSY:
+			ctl->pipeline_status = PIPELINE_OUTDATED;
+		default:
+			goto unlock;
+	}
 	ctl_write(ctl, REG_MDP5_CTL_START(ctl->id), 1);
+unlock:
 	spin_unlock_irqrestore(&ctl->hw_lock, flags);
 }
 
@@ -238,6 +256,27 @@ int mdp5_ctl_set_encoder_state(struct mdp5_ctl *ctl,
 	}
 
 	return 0;
+}
+
+void mdp5_ctl_commit_finished(struct mdp5_ctl *ctl)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&ctl->hw_lock, flags);
+	switch (ctl->pipeline_status) {
+		case PIPELINE_OUTDATED:
+			ctl->pipeline_status = PIPELINE_BUSY;
+			break;
+		case PIPELINE_BUSY:
+			ctl->pipeline_status = PIPELINE_READY;
+		default:
+			goto unlock;
+	}
+
+	ctl_write(ctl, REG_MDP5_CTL_START(ctl->id), 1);
+
+unlock:
+	spin_unlock_irqrestore(&ctl->hw_lock, flags);
 }
 
 /*
