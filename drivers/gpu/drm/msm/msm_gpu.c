@@ -13,6 +13,8 @@
 
 #include <generated/utsrelease.h>
 #include <linux/string_helpers.h>
+#include <linux/pm_opp.h>
+#include <linux/pm_domain.h>
 #include <linux/devfreq.h>
 #include <linux/devcoredump.h>
 #include <linux/sched/task.h>
@@ -34,8 +36,17 @@ static int msm_devfreq_target(struct device *dev, unsigned long *freq,
 
 	if (gpu->funcs->gpu_set_freq)
 		gpu->funcs->gpu_set_freq(gpu, opp);
-	else
-		clk_set_rate(gpu->core_clk, *freq);
+	else {
+		unsigned long cur = clk_get_rate(gpu->core_clk);
+		unsigned int level = dev_pm_opp_get_level(opp);
+		if (*freq > cur) {
+			dev_pm_genpd_set_performance_state(dev, level);
+			clk_set_rate(gpu->core_clk, *freq);
+		} else {
+			clk_set_rate(gpu->core_clk, *freq);
+			dev_pm_genpd_set_performance_state(dev, level);
+		}
+	}
 
 	dev_pm_opp_put(opp);
 
