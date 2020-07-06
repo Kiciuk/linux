@@ -2,3 +2,9 @@
 source "drivers/power/avs/Kconfig"
 source "drivers/power/reset/Kconfig"
 source "drivers/power/supply/Kconfig"
+
+config PD_PROXY
+	tristate "Power domain proxy driver"
+	depends on OF
+	help
+        Power domain helper driver which can proxy/aggregate power-domains.
