@@ -41,34 +41,35 @@ static const u8 apcs_pll_regs[PLL_OFF_MAX_REGS] = {
 static struct clk_alpha_pll apcs_c0_hfpll = {
 	.offset = 0x105000,
 	.regs = apcs_pll_regs,
-	.clkr.hw.init = CLK_HW_INIT("apcs-hfpll-c0", "xo",
-			&hfpll_ops, 0)
+	.clkr.hw.init = CLK_HW_INIT("apcs-hfpll-c0", "xo", &hfpll_ops, 0)
 };
 
-#if 0 // TODO sdm632 support
 static struct clk_alpha_pll apcs_c1_hfpll = {
 	.offset = 0x005000,
 	.regs = apcs_pll_regs,
-	.clkr.hw.init = CLK_HW_INIT("apcs-hfpll-c1", "xo",
-			&clk_alpha_pll_ops, 0)
+	.clkr.hw.init = CLK_HW_INIT("apcs-hfpll-c1", "xo", &hfpll_ops, 0)
 };
 
 static struct clk_alpha_pll apcs_cci_hfpll = {
 	.offset = 0x1bf000,
 	.regs = apcs_pll_regs,
-	.clkr.hw.init = CLK_HW_INIT("apcs-hfpll", "xo",
-			&clk_alpha_pll_ops, 0)
+	.clkr.hw.init = CLK_HW_INIT("apcs-hfpll-cci", "xo", &hfpll_ops, 0)
 };
 
 static const struct clk_parent_data c1_parent_data[] = {
-	{ .fw_name = "gpll", .name = "gpll0_early", },
-	{ .fw_name = "pll1", .name = "apcs-hfpll-c1", },
+	{ .fw_name = "gpll", .name = "gpll0_early" },
+	{ .fw_name = "pll1", .name = "apcs-hfpll-c1" },
 };
-#endif
+
+static const struct clk_parent_data cci_parent_data[] = {
+	{ .fw_name = "gpll", .name = "gpll0_early" },
+	// { .fw_name = "ccipll", .name = "apcs-hfpll-cci" },
+	// FIXME Dyna PLL is not supported
+};
 
 static const struct clk_parent_data c0_c1_cci_parent_data[] = {
-	{ .fw_name = "gpll0", .name = "gpll0_early", },
-	{ .fw_name = "pll0", .name = "apcs-hfpll-c0", },
+	{ .fw_name = "gpll", .name = "gpll0_early" },
+	{ .fw_name = "pll0", .name = "apcs-hfpll-c0" },
 };
 
 static const u32 apcs_mux_parent_map[] = { 4, 5 };
@@ -117,17 +118,31 @@ static struct clk_regmap_mux_div apcs_cci_clk = {
 	},
 };
 
-static struct alpha_pll_config pll_config = {
+static struct alpha_pll_config msm8953_pll_config = {
 	.config_ctl_val		= 0x200d4828,
 	.config_ctl_hi_val	= 0x6,
-	.user_ctl_val		= 0x100,
 	.test_ctl_val		= 0x1c000000,
 	.test_ctl_hi_val	= 0x4000,
 	.main_output_mask	= BIT(0),
 	.early_output_mask	= BIT(3),
+	.pre_div_val		= 0,
 	.pre_div_mask		= BIT(12),
 	.post_div_val		= BIT(8),
 	.post_div_mask		= GENMASK(9, 8),
+};
+
+static struct alpha_pll_config sdm632_pll_config = {
+	.config_ctl_val		= 0x200d4828,
+	.config_ctl_hi_val	= 0x6,
+	.test_ctl_val		= 0x1c000000,
+	.test_ctl_hi_val	= 0x4000,
+	.main_output_mask	= BIT(0),
+	.early_output_mask	= BIT(3),
+};
+
+static struct alpha_pll_config sdm632_cci_pll_config = {
+	.config_ctl_val		= 0x4001055b,
+	.early_output_mask	= BIT(3),
 };
 
 static int cci_mux_notifier(struct notifier_block *nb,
@@ -139,7 +154,6 @@ static int cci_mux_notifier(struct notifier_block *nb,
 	long long cci_rate;
 
 	if (event == PRE_RATE_CHANGE) {
-		//clk_set_rate(apcs_cci_clk.clkr.hw.clk, 320000000);
 		cci_rate = min(c0, c1);
 	} else if (event == POST_RATE_CHANGE) {
 		cci_rate = max(c0, c1);
@@ -206,7 +220,7 @@ static int apcs_msm8953_probe(struct platform_device *pdev)
 	hfpll_ops.round_rate = hfpll_round_rate;
 	clk_apcs_mux_div_ops = clk_regmap_mux_div_ops;
 	clk_apcs_mux_div_ops.determine_rate = apcs_mux_determine_rate;
-	clk_alpha_pll_configure(&apcs_c0_hfpll, regmap, &pll_config);
+	clk_alpha_pll_configure(&apcs_c0_hfpll, regmap, &msm8953_pll_config);
 
 	for (ret = 0; *rclk && !ret; rclk++)
 		ret = devm_clk_register_regmap(dev, *rclk);
@@ -220,8 +234,77 @@ static int apcs_msm8953_probe(struct platform_device *pdev)
 	clk_notifier_register(apcs_c1_clk.clkr.hw.clk, &apcs_cci_clk.clk_nb);
 	clk_notifier_register(apcs_c0_clk.clkr.hw.clk, &apcs_cci_clk.clk_nb);
 
-	clk_set_rate(apcs_c0_hfpll.clkr.hw.clk, 768000000);
+	clk_set_rate(apcs_c0_hfpll.clkr.hw.clk, 883200000);
 	clk_prepare_enable(apcs_c0_hfpll.clkr.hw.clk);
+
+	ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clk_data);
+	if (ret)
+		dev_err(dev, "failed to add clock provider: %d\n", ret);
+
+	return ret;
+}
+
+static int apcs_sdm632_probe(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	struct regmap *regmap;
+	struct clk_hw_onecell_data *clk_data;
+	struct clk_regmap **rclk = (struct clk_regmap *[]) {
+		&apcs_c0_hfpll.clkr,
+		&apcs_c1_hfpll.clkr,
+		// &apcs_cci_hfpll.clkr,
+		&apcs_c0_clk.clkr,
+		&apcs_c1_clk.clkr,
+		&apcs_cci_clk.clkr,
+		NULL,
+	};
+	int ret;
+
+	clk_data = (struct clk_hw_onecell_data*) devm_kzalloc(dev,
+			struct_size (clk_data, hws, 2), GFP_KERNEL);
+
+	if (IS_ERR(clk_data))
+		return -ENOMEM;
+
+	clk_data->num = 2;
+	clk_data->hws[0] = &apcs_c0_clk.clkr.hw;
+	clk_data->hws[1] = &apcs_c1_clk.clkr.hw;
+
+	apcs_c1_clk.clkr.hw.init = CLK_HW_INIT_PARENTS_DATA("apcs-c1-clk", c1_parent_data,
+			&clk_apcs_mux_div_ops, CLK_IGNORE_UNUSED | CLK_SET_RATE_PARENT);
+	apcs_cci_clk.clkr.hw.init = CLK_HW_INIT_PARENTS_DATA("apcs-cci-clk", cci_parent_data,
+			&clk_apcs_mux_div_ops, CLK_IGNORE_UNUSED | CLK_IS_CRITICAL);
+
+	regmap = dev_get_regmap(dev->parent, NULL);
+	if (IS_ERR(regmap)) {
+		dev_err(dev, "failed to get regmap: %ld\n", PTR_ERR(regmap));
+		return PTR_ERR(regmap);
+	}
+
+	hfpll_ops = clk_alpha_pll_huayra_ops;
+	hfpll_ops.round_rate = hfpll_round_rate;
+	clk_apcs_mux_div_ops = clk_regmap_mux_div_ops;
+	clk_alpha_pll_configure(&apcs_c0_hfpll, regmap, &sdm632_pll_config);
+	clk_alpha_pll_configure(&apcs_c1_hfpll, regmap, &sdm632_pll_config);
+	//clk_alpha_pll_configure(&apcs_cci_hfpll, regmap, &sdm632_cci_pll_config); FIXME
+
+	for (ret = 0; *rclk && !ret; rclk++)
+		ret = devm_clk_register_regmap(dev, *rclk);
+
+	if (ret) {
+		dev_err(dev, "failed to register regmap clock: %d\n", ret);
+		return ret;
+	}
+
+	apcs_cci_clk.clk_nb.notifier_call = cci_mux_notifier;
+	clk_notifier_register(apcs_c1_clk.clkr.hw.clk, &apcs_cci_clk.clk_nb);
+	clk_notifier_register(apcs_c0_clk.clkr.hw.clk, &apcs_cci_clk.clk_nb);
+
+	clk_set_rate(apcs_c0_hfpll.clkr.hw.clk, 883200000);
+	clk_prepare_enable(apcs_c0_hfpll.clkr.hw.clk);
+
+	clk_set_rate(apcs_c1_hfpll.clkr.hw.clk, 883200000);
+	clk_prepare_enable(apcs_c1_hfpll.clkr.hw.clk);
 
 	ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clk_data);
 	if (ret)
@@ -237,10 +320,32 @@ static struct platform_driver qcom_apcs_msm8953_clk_driver = {
 		.owner = THIS_MODULE,
 	},
 };
-module_platform_driver(qcom_apcs_msm8953_clk_driver);
+
+static struct platform_driver qcom_apcs_sdm632_clk_driver = {
+	.probe = apcs_sdm632_probe,
+	.driver = {
+		.name = "qcom-apcs-sdm632-clk",
+		.owner = THIS_MODULE,
+	},
+};
+
+static int __init qcom_apcs_init(void)
+{
+	int ret;
+
+	ret = platform_driver_register(&qcom_apcs_msm8953_clk_driver);
+	if (ret)
+		return ret;
+
+	ret = platform_driver_register(&qcom_apcs_sdm632_clk_driver);
+
+	return ret;
+}
+arch_initcall(qcom_apcs_init);
 
 static void __init early_muxdiv_configure(unsigned int base_addr, u8 src, u8 div)
 {
+	int timeout;
 	void __iomem *base = ioremap(base_addr, SZ_8);;
 
 	writel_relaxed(((src & 7) << 8) | (div & 0x1f), base + 4);
@@ -249,6 +354,11 @@ static void __init early_muxdiv_configure(unsigned int base_addr, u8 src, u8 div
 	/* Set update bit */
 	writel_relaxed(readl_relaxed(base) | BIT(0), base);
 	mb();
+
+	for (timeout = 500;
+	     timeout && readl_relaxed(base) & BIT(0);
+	     timeout--)
+		udelay(1);
 
 	/* Enable the branch */
 	writel_relaxed(readl_relaxed(base + 8) | BIT(0), base + 8);
@@ -259,8 +369,10 @@ static void __init early_muxdiv_configure(unsigned int base_addr, u8 src, u8 div
 
 static int __init cpu_clock_pwr_init(void)
 {
-	struct device_node *ofnode = of_find_compatible_node(NULL, NULL,
-						"qcom,msm8953-apcs-kpss-global");
+	struct device_node *ofnode =
+		of_find_compatible_node(NULL, NULL, "qcom,msm8953-apcs-kpss-global") ?:
+		of_find_compatible_node(NULL, NULL, "qcom,sdm632-apcs-kpss-global");
+
 	if (!ofnode)
 		return 0;
 
