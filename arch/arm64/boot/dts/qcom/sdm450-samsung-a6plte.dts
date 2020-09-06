@@ -72,7 +72,7 @@
 		compatible = "gpio-keys";
 
 		pinctrl-names = "default";
-		pinctrl-0 = <&key_default>;
+		pinctrl-0 = <&gpio_key_default>;
 
 		label = "GPIO Button";
 
@@ -671,13 +671,6 @@
 		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-down;
-	};
-
-	key_default: key-default {
-		pins = "gpio85";
-		function = "gpio";
-		drive-strength = <2>;
-		bias-pull-up;
 	};
 };
 
