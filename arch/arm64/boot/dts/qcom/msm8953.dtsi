@@ -19,7 +19,8 @@
 		enable-method = "psci";			\
 		next-level-cache = <&L2_##cluster>;	\
 		#cooling-cells = <2>;			\
-		cpu-supply = <&pm8953_s5>;		\
+		power-domains = <&cpr 0>;		\
+		power-domain-names = "cpr";		\
 		clocks = <&apcs cluster>;		\
 		clock-names = "cpu";			\
 		operating-points-v2 = <&cpu##cluster##_opp>;\
@@ -51,44 +52,24 @@
 		};					\
 	}
 
-#define CPU_THERMAL(c, s, d1, d2, d3, d4)		\
+#define CPU_THERMAL(c, s)		    		\
 	cpu##c##-thermal {				\
 		COMMON_THERMAL(cpu##c, s);		\
 		cooling-maps {				\
 			map0 {				\
 				trip = <&cpu##c##_alert>; \
-				cooling-device = <&CPU##d1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,  \
-						 <&CPU##d2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,  \
-						 <&CPU##d3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,  \
-						 <&CPU##d4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;	\
+				cooling-device = <&CPU##c THERMAL_NO_LIMIT THERMAL_NO_LIMIT>; \
 			};				\
 		};					\
 	}
 
-#define OPP(freqKhz, mV, mVmax, HW, extra)		    \
+#define OPP(freqKhz, req, HW, extra)			    \
 	opp-freqKhz##000 {				    \
 		opp-hz = /bits/ 64 <freqKhz##000>;	    \
-		opp-microvolt = <mV##000 mV##000 mVmax##000>; \
 		opp-supported-hw = <HW>;		    \
+		required-opps = <&req>;			    \
 		extra; \
 	}
-
-/*
- * Speed bin	    SoC
- * 2		    SDM625
- * 6		    SDM450
- * opp-supported-hw is bitmask of 1 << speed_bin
- * compatible of / node has to be "qcom,msm8953"
- */
-
-#define OPPS()				\
-	OPP( 320000, 550, 900, 0xFF, none);	\
-	OPP( 533334, 620, 900, 0xFF, none);	\
-	OPP( 800000, 680, 900, 0xFF, opp-suspend);	\
-	OPP(1203200, 750, 900, 0x40, none);	\
-	OPP(1804800, 820, 900, 0x40, none);	\
-	OPP(1344000, 780, 900, 0x04, none);	\
-	OPP(2016000, 850, 900, 0x04, none)
 
 / {
 	interrupt-parent = <&intc>;
@@ -263,7 +244,7 @@
 		compatible = "arm,psci-1.0";
 		method = "smc";
 	};
-	
+
 	pmu {
 		compatible = "arm,cortex-a53-pmu";
 		interrupts = <GIC_PPI 7 (GIC_CPU_MASK_SIMPLE(8)| IRQ_TYPE_LEVEL_HIGH)>;
@@ -274,14 +255,63 @@
 		nvmem-cells = <&cpu_speed_bin>;
 		opp-shared;
 
-		OPPS();
+		/*
+		 * Speed bin	    SoC
+		 * 2		    SDM625
+		 * 6		    SDM450
+		 * opp-supported-hw is bitmask of 1 << speed_bin
+		 * compatible of / node has to be "qcom,msm8953"
+		 */
+		OPP( 320000, cpr_opp1, 0x44, none);
+		OPP( 533334, cpr_opp2, 0x44, none);
+		OPP( 800000, cpr_opp3, 0x44, opp-suspend);
+		OPP(1203200, cpr_opp4, 0x40, none);
+		OPP(1344000, cpr_opp5, 0x04, none);
+		OPP(1804800, cpr_opp6, 0x40, none);
+		OPP(2016000, cpr_opp7, 0x04, none);
+
 	};
 
 	cpu1_opp: cpu1-opp-table {
 		compatible = "operating-points-v2-qcom-cpu", "operating-points-v2-kryo-cpu";
 		opp-shared;
 
-		OPPS();
+		OPP( 320000, cpr_opp1, 0x44, none);
+		OPP( 533334, cpr_opp2, 0x44, none);
+		OPP( 800000, cpr_opp3, 0x44, opp-suspend);
+		OPP(1203200, cpr_opp4, 0x40, none);
+		OPP(1344000, cpr_opp5, 0x04, none);
+		OPP(1804800, cpr_opp6, 0x40, none);
+		OPP(2016000, cpr_opp7, 0x04, none);
+	};
+
+	cpr_opp_table: cpr-opp-table {
+		compatible = "operating-points-v2-qcom-level";
+
+		cpr_opp1: opp1 {
+			opp-level = <1>;
+		};
+		cpr_opp2: opp2 {
+			opp-level = <2>;
+		};
+		cpr_opp3: opp3 {
+			opp-level = <3>;
+		};
+		cpr_opp4: opp4 {
+			opp-level = <4>;
+		};
+		cpr_opp5: opp5 {
+			opp-level = <5>;
+		};
+		cpr_opp6: opp6 {
+			opp-level = <6>;
+		};
+		cpr_opp7: opp7 {
+			opp-level = <7>;
+		};
+		cpr_opp8: opp8 {
+			opp-level = <8>;
+		};
 	};
 
 	timer {
@@ -509,19 +539,14 @@
 			};
 		};
 
-		apc_mem_acc_l1: syscon@19461d4 {
+		apc_mem_acc: syscon@19461d4 {
 			compatible = "syscon";
-			reg = <0x019461d4 0x4>;
-		};
-
-		apc_mem_acc_l2: syscon@19461d8 {
-			compatible = "syscon";
-			reg = <0x019461d8 0x4>;
+			reg = <0x19461d4 0x8>;
 		};
 
 		gfx_mem_acc_l1: regulator@194415c {
 			compatible = "syscon";
-			reg = <0x0194415c 0x4>;
+			reg = <0x194415c 0x4>;
 		};
 
 		apps_iommu: iommu@1e00000 {
@@ -609,12 +634,124 @@
 
 		qfprom@a4124 {
 			compatible = "qcom,qfprom";
-			reg = <0xa4124 0x4>;
+			reg = <0xa4000 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
-			cpu_speed_bin: cpu_speed_bin@1 {
-				reg = <1 1>;
+			cpu_speed_bin: cpu_speed_bin@124 {
+				reg = <0x125 1>;
 				bits = <0 3>;
+			};
+			cpr_efuse_revision: fusing_rev@23c {
+				reg = <0x23e 1>;
+				bits = <5 3>;
+			};
+			cpr_efuse_ring1: ring1@248 {
+				reg = <0x248 1>;
+				bits = <0 4>;
+			};
+			cpr_efuse_ring2: ring2@248 {
+				reg = <0x248 1>;
+				bits = <4 4>;
+			};
+			cpr_efuse_ring3: ring3@249 {
+				reg = <0x249 1>;
+				bits = <0 4>;
+			};
+			cpr_efuse_ring4: ring4@249 {
+				reg = <0x249 1>;
+				bits = <4 4>;
+			};
+			cpr_efuse_ring5: ring5@24a {
+				reg = <0x24a 1>;
+				bits = <0 4>;
+			};
+			cpr_efuse_ring6: ring6@24a {
+				reg = <0x24a 1>;
+				bits = <4 4>;
+			};
+			cpr_efuse_ring7: ring7@24b {
+				reg = <0x24b 1>;
+				bits = <4 4>;
+			};
+			cpr_efuse_init_voltage1: ivoltage1@238 {
+				reg = <0x238 2>;
+				bits = <6 6>;
+			};
+			cpr_efuse_init_voltage2: ivoltage2@239 {
+				reg = <0x239 2>;
+				bits = <4 6>;
+			};
+			cpr_efuse_init_voltage3: ivoltage3@23a {
+				reg = <0x23a 1>;
+				bits = <2 6>;
+			};
+			cpr_efuse_init_voltage4: ivoltage4@23b {
+				reg = <0x23b 1>;
+				bits = <0 6>;
+			};
+			cpr_efuse_init_voltage5: ivoltage5@250 {
+				reg = <0x250 1>;
+				bits = <0 6>;
+			};
+			cpr_efuse_init_voltage6: ivoltage6@250 {
+				reg = <0x250 2>;
+				bits = <6 6>;
+			};
+			cpr_efuse_init_voltage7: ivoltage7@252 {
+				reg = <0x252 1>;
+				bits = <2 6>;
+			};
+			cpr_efuse_quot1: quot1@241 {
+				reg = <0x241 2>;
+				bits = <0 12>;
+			};
+			cpr_efuse_quot2: quot2@242 {
+				reg = <0x242 2>;
+				bits = <4 12>;
+			};
+			cpr_efuse_quot3: quot3@244 {
+				reg = <0x244 2>;
+				bits = <0 12>;
+			};
+			cpr_efuse_quot4: quot4@245 {
+				reg = <0x245 2>;
+				bits = <4 12>;
+			};
+			cpr_efuse_quot5: quot5@259 {
+				reg = <0x259 4>;
+				bits = <0 12>;
+			};
+			cpr_efuse_quot6: quot6@25a {
+				reg = <0x25a 2>;
+				bits = <4 12>;
+			};
+			cpr_efuse_quot7: quot7@25d {
+				reg = <0x25d 2>;
+				bits = <4 12>;
+			};
+			cpr_efuse_quot_offset1: qoffset1@23c {
+				reg = <0x23c 1>;
+				bits = <0 7>;
+			};
+			cpr_efuse_quot_offset2: qoffset2@23c {
+				reg = <0x23c 2>;
+				bits = <7 7>;
+			};
+			cpr_efuse_quot_offset3: qoffset3@23d {
+				reg = <0x23d 2>;
+				bits = <4 7>;
+			};
+			cpr_efuse_quot_offset4: qoffset4@253 {
+				reg = <0x253 1>;
+				bits = <0 7>;
+			};
+			cpr_efuse_quot_offset5: qoffset5@254 {
+				reg = <0x254 1>;
+				bits = <0 7>;
+			};
+			cpr_efuse_quot_offset6: qoffset6@255 {
+				reg = <0x255 1>;
+				bits = <0 7>;
 			};
 		};
 
@@ -903,6 +1040,61 @@
 				memory-region = <&zap_shader_region>;
 				firmware-name = "a506_zap.mdt";
 			};
+		};
+
+		cpr: power-controller@b018000 {
+			compatible = "qcom,msm8953-cpr4";
+
+			nvmem-cells = <&cpr_efuse_quot_offset3>,
+				      <&cpr_efuse_quot_offset2>,
+				      <&cpr_efuse_quot_offset1>,
+				      <&cpr_efuse_init_voltage4>,
+				      <&cpr_efuse_init_voltage3>,
+				      <&cpr_efuse_init_voltage2>,
+				      <&cpr_efuse_init_voltage1>,
+				      <&cpr_efuse_quot4>,
+				      <&cpr_efuse_quot3>,
+				      <&cpr_efuse_quot2>,
+				      <&cpr_efuse_quot1>,
+				      <&cpr_efuse_ring4>,
+				      <&cpr_efuse_ring3>,
+				      <&cpr_efuse_ring2>,
+				      <&cpr_efuse_ring1>,
+				      <&cpr_efuse_revision>,
+				      <&cpu_speed_bin>;
+			nvmem-cell-names = "cpr_thread0_quotient_offset2",
+					   "cpr_thread0_quotient_offset3",
+					   "cpr_thread0_quotient_offset4",
+					   "cpr_thread0_init_voltage1",
+					   "cpr_thread0_init_voltage2",
+					   "cpr_thread0_init_voltage3",
+					   "cpr_thread0_init_voltage4",
+					   "cpr_thread0_quotient1",
+					   "cpr_thread0_quotient2",
+					   "cpr_thread0_quotient3",
+					   "cpr_thread0_quotient4",
+					   "cpr_thread0_ring_osc1",
+					   "cpr_thread0_ring_osc2",
+					   "cpr_thread0_ring_osc3",
+					   "cpr_thread0_ring_osc4",
+					   "cpr_fuse_revision",
+					   "cpr_speed_bin";
+
+			reg = <0x0b018000 0x4000>, <0xb111000 0x1000>;
+			reg-names = "cpr-iomem", "pm-apcc-glb";
+
+			interrupts = <GIC_SPI 15 IRQ_TYPE_EDGE_RISING>;
+
+			clocks = <&xo_board>;
+			clock-names = "ref";
+
+			vdd-apc-supply = <&spmi_pm8953_s5>;
+			vdd-apc-step-uv = <5000>;
+
+			acc-syscon = <&apc_mem_acc>;
+
+			#power-domain-cells = <1>;
+			operating-points-v2 = <&cpr_opp_table>;
 		};
 
 		tsens0: thermal-sensor@4a8000 {
@@ -1678,14 +1870,14 @@
 	};
 
 	thermal-zones {
-		CPU_THERMAL(0,  9, 0, 1, 2, 3);
-		CPU_THERMAL(1, 10, 0, 1, 2, 3);
-		CPU_THERMAL(2, 11, 0, 1, 2, 3);
-		CPU_THERMAL(3, 12, 0, 1, 2, 3);
-		CPU_THERMAL(4,  4, 4, 5, 6, 7);
-		CPU_THERMAL(5,  5, 4, 5, 6, 7);
-		CPU_THERMAL(6,  6, 4, 5, 6, 7);
-		CPU_THERMAL(7,  7, 4, 5, 6, 7);
+		CPU_THERMAL(0,  9);
+		CPU_THERMAL(1, 10);
+		CPU_THERMAL(2, 11);
+		CPU_THERMAL(3, 12);
+		CPU_THERMAL(4,  4);
+		CPU_THERMAL(5,  5);
+		CPU_THERMAL(6,  6);
+		CPU_THERMAL(7,  7);
 		gpu_thermal {
 			COMMON_THERMAL(gpu, 15);
 		};
