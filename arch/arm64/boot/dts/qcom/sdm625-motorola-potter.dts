@@ -53,11 +53,9 @@
 
 	gpio-keys {
 		compatible = "gpio-keys";
-		input-name = "gpio-keys";
 
-		pinctrl-names = "msmgpio_gpio_key_active","msmgpio_gpio_key_suspend";
+		pinctrl-names = "default";
 		pinctrl-0 = <&gpio_key_default>;
-		pinctrl-1 = <&gpio_key_default>;
 
 		label = "GPIO Button";
 
@@ -65,8 +63,6 @@
 			label = "Volume Up";
 			gpios = <&msmgpio 85 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_VOLUMEUP>;
-			gpio-key,wakeup;
-			debounce-interval = <15>;
 		};
 	};
 
@@ -276,19 +272,6 @@
 
 &msmgpio {
 	gpio-reserved-ranges = <1 2>, <96 4>, <111 1>, <126 1>; //NOTE: Add Fingerprint
-
-	gpio_key_default: gpio_key_default {
-		mux {
-			pins = "gpio85";
-			function = "gpio";
-		};
-
-		config {
-			pins = "gpio85";
-			drive-strength = <2>;
-			bias-pull-up;
-		};
-	};
 
 	ctp_pwr_en_default: ctp_pwr_en_default {
 		pinmux {
