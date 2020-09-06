@@ -293,6 +293,7 @@ static const struct qcom_cpufreq_match_data match_data_qcs404 = {
 
 static const struct qcom_cpufreq_match_data match_data_generic = {
 	.get_version = qcom_cpufreq_generic_name_version,
+	.genpd_names = qcs404_genpd_names,
 };
 
 static int qcom_cpufreq_probe(struct platform_device *pdev)
