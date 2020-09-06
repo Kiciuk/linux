@@ -260,6 +260,12 @@ config BACKLIGHT_DSI_DCS
 	  If you have a DSI DCS-controlled backlight, say Y to enable this
 	  driver.
 
+config BACKLIGHT_DSI_DCS_S6E3FA7
+	depends on DRM_PANEL_MIPI_DSI_GENERIC
+	tristate "Samsung S6E3FA7 AMOLED Backlight Driver"
+	help
+	  If you have a S6E3FA7-compatible panel, say Y to enable this driver.
+
 config BACKLIGHT_MAX8925
 	tristate "Backlight driver for MAX8925"
 	depends on MFD_MAX8925
