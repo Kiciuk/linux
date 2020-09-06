@@ -123,11 +123,12 @@
 			status = "disabled";
 			compatible = "qcom,pm8953-regulators";
 			qcom,spm-saw-reg = <&saw4>;
-			pm8953_s5: s5 {
+
+			spmi_pm8953_s5: s5 {
 				qcom,saw-leader;
 				regulator-always-on;
 				regulator-min-microvolt = <400000>;
-				regulator-max-microvolt = <1140000>;
+				regulator-max-microvolt = <1065000>;
 				regulator-initial-mode = <1>;
 				regulator-allowed-modes = <1>, <2>, <3>;
 			};
