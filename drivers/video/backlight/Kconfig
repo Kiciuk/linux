@@ -253,6 +253,13 @@ config BACKLIGHT_DA9052
 	help
 	  Enable the Backlight Driver for DA9052-BC and DA9053-AA/Bx PMICs.
 
+config BACKLIGHT_DSI_DCS
+	depends on DRM_PANEL_MIPI_DSI_GENERIC
+	tristate "DSI DCS-controlled Backlight Driver"
+	help
+	  If you have a DSI DCS-controlled backlight, say Y to enable this
+	  driver.
+
 config BACKLIGHT_MAX8925
 	tristate "Backlight driver for MAX8925"
 	depends on MFD_MAX8925
@@ -415,6 +422,7 @@ config BACKLIGHT_GPIO
 	help
 	  If you have a LCD backlight adjustable by GPIO, say Y to enable
 	  this driver.
+
 
 config BACKLIGHT_LV5207LP
 	tristate "Sanyo LV5207LP Backlight"
