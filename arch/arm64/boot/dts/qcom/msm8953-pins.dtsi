@@ -147,6 +147,13 @@
 		bias-disable;
 	};
 
+	gpio_key_default: gpio-key-default {
+		pins = "gpio85";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-up;
+	};
+
 	i2c_2 {
 		i2c_2_default: i2c_2_default {
 			pins = "gpio6", "gpio7";
