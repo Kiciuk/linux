@@ -45,6 +45,10 @@ static const struct qcom_apcs_ipc_data msm8953_apcs_data = {
 	.offset = 8, .clk_name = "qcom-apcs-msm8953-clk"
 };
 
+static const struct qcom_apcs_ipc_data sdm632_apcs_data = {
+	.offset = 8, .clk_name = "qcom-apcs-sdm632-clk"
+};
+
 static const struct qcom_apcs_ipc_data msm8996_apcs_data = {
 	.offset = 16, .clk_name = NULL
 };
@@ -151,6 +155,7 @@ static const struct of_device_id qcom_apcs_ipc_of_match[] = {
 	{ .compatible = "qcom,ipq8074-apcs-apps-global", .data = &ipq8074_apcs_data },
 	{ .compatible = "qcom,msm8916-apcs-kpss-global", .data = &msm8916_apcs_data },
 	{ .compatible = "qcom,msm8953-apcs-kpss-global", .data = &msm8953_apcs_data },
+	{ .compatible = "qcom,sdm632-apcs-kpss-global", .data = &sdm632_apcs_data },
 	{ .compatible = "qcom,msm8996-apcs-hmss-global", .data = &msm8996_apcs_data },
 	{ .compatible = "qcom,msm8998-apcs-hmss-global", .data = &msm8998_apcs_data },
 	{ .compatible = "qcom,qcs404-apcs-apps-global", .data = &msm8916_apcs_data },
