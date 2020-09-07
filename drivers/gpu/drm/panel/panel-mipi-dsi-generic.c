@@ -203,7 +203,7 @@ static int mipi_dsi_generic_prepare(struct drm_panel *panel)
 	ret = regulator_bulk_enable(ctx->num_supplies, ctx->supplies);
 	if (ret < 0) {
 		dev_err(dev, "Failed to enable regulators: %d\n", ret);
-		goto unlock;
+		return ret;
 	}
 
 	mipi_dsi_generic_reset(ctx);
@@ -216,10 +216,10 @@ static int mipi_dsi_generic_prepare(struct drm_panel *panel)
 		dev_err(dev, "Failed to initialize panel: %d\n", ret);
 		gpiod_set_value_cansleep(ctx->reset_gpio, 1);
 		regulator_bulk_disable(ctx->num_supplies, ctx->supplies);
-		goto unlock;
+		return ret;
 	}
-unlock:
-	return ret < 0 ? ret : 0;
+
+	return 0;
 }
 
 static int mipi_dsi_generic_unprepare(struct drm_panel *panel)
@@ -360,7 +360,6 @@ static int mipi_dsi_generic_probe(struct mipi_dsi_device *dsi)
 	struct device *dev = &dsi->dev;
 	struct mipi_dsi_generic *ctx;
 	int ret, i;
-	int num_supplies;
 
 	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
@@ -368,7 +367,6 @@ static int mipi_dsi_generic_probe(struct mipi_dsi_device *dsi)
 
 	ctx->pdata.dsi = ctx->dsi = dsi;
 	ctx->pdata.prepared = false;
-	//spin_lock_init(&ctx->pdata.lock);
 
 	/* For DCS backlight */
 	dev_set_drvdata(dev, &ctx->pdata);
@@ -376,11 +374,12 @@ static int mipi_dsi_generic_probe(struct mipi_dsi_device *dsi)
 	if (ret < 0)
 		return ret;
 
-	num_supplies = of_property_count_strings(dev->of_node, "supply-names");
+	ctx->num_supplies = of_property_count_strings(dev->of_node, "supply-names");
+
 	if (ctx->num_supplies < 0)
 		ctx->num_supplies = 0;
 
-	if (num_supplies) {
+	if (ctx->num_supplies) {
 		ctx->supplies = devm_kzalloc(dev, sizeof(ctx->supplies[0]) * ctx->num_supplies,
 					     GFP_KERNEL);
 		if (IS_ERR_OR_NULL(ctx->supplies))
