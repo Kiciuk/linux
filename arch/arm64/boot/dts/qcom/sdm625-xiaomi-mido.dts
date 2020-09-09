@@ -1,0 +1,469 @@
+/* Copyright (c) 2017,2020 The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+/dts-v1/;
+
+#include "msm8953.dtsi"
+#include "pm8953.dtsi"
+#include "pmi8950.dtsi"
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/display/mipi-dsi-generic.h>
+
+/ {
+	model = "Xiaomi Redmi Note 4X";
+	compatible = "qcom,msm8953-mido", "qcom,msm8953-xiaomi", "qcom,msm8953";
+
+	qcom,msm-id = <293 0>;
+	qcom,board-id= <11 0>;
+
+	reserved-memory {
+		/delete-node/other_ext_region@85b00000;
+
+		other_ext_region@84A00000 {
+			no-map;
+			reg = <0x0 0x84A00000 0x0 0x1900000>;
+		};
+
+		ramoops@9ff00000 {
+			compatible = "ramoops";
+			reg = <0x0 0x9ff00000 0x0 0x00100000>;
+			console-size = <0x100000>;
+		};
+	};
+
+	speaker_amp: audio-amplifier {
+		compatible = "awinic,aw8738";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&spk_ext_pa_default>;
+
+		enable-gpios = <&msmgpio 96 GPIO_ACTIVE_HIGH>;
+		aw8738,mode = <5>;
+		sound-name-prefix = "Speaker Amp";
+	};
+
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_key_default>;
+
+		label = "GPIO Button";
+
+		volume-up {
+			label = "Volume Up";
+			gpios = <&msmgpio 85 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+	};
+
+	qcom,battery-data {
+		qcom,batt-id-range-pct = <5>;
+		qcom,max-voltage-uv = <4400000>;
+		qcom,batt-id-kohm = <40>;
+		qcom,battery-beta = <3435>;
+		qcom,battery-type = "qrd_msm8953_sunwoda_atl_4100mah";
+		qcom,chg-rslow-comp-c1 = <3159320>;
+		qcom,chg-rslow-comp-c2 = <4074348>;
+		qcom,chg-rs-to-rslow = <921524>;
+		qcom,chg-rslow-comp-thr = <0x9C>;
+		qcom,checksum = <0xDC57>;
+		qcom,thermal-coefficients = [c8 86 c1 50 d3 37];
+		qcom,fg-profile-data = [ DC 83 9E 7C
+					 CD 80 80 76
+					 60 83 FD 6E
+					 04 89 50 94
+					 38 82 24 99
+					 C7 B7 F4 C3
+					 56 0F 06 88
+					 F9 7D BA 81
+					 0F 7C 54 83
+					 B3 69 2B 7A
+					 FE 87 4B 82
+					 DA 99 33 BD
+					 45 CA 58 0D
+					 13 10 39 58
+					 14 70 DA FC
+					 3A 36 CF 46
+					 1E 42 00 00
+					 5D 46 C4 3B
+					 0A 44 00 00
+					 00 00 00 00
+					 00 00 00 00
+					 AD 72 EE 70
+					 73 58 12 88
+					 E9 75 4D 68
+					 47 61 B0 7A
+					 24 74 10 53
+					 19 74 5B AA
+					 23 44 69 3E
+					 67 A0 71 0C
+					 28 00 FF 36
+					 F0 11 30 03
+					 00 00 00 0C ];
+	};
+
+};
+
+&framebuffer {
+	//status= "okay";
+
+	width = <1080>;
+	height = <1920>;
+	stride = <(1080 * 3)>;
+};
+
+&pmi8950_wled {
+	status = "okay";
+
+	/* Don't copy-paste! See pmi8950.dtsi */
+
+	qcom,current-limit-microamp = <20000>;
+	qcom,enabled-strings = <0 1>;
+	qcom,num-strings = <2>;
+	qcom,ovp-millivolt = <29600>;
+};
+
+&i2c_2 {
+	status = "okay";
+	led-controller@45 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		compatible = "awinic,aw2013";
+
+		reg = <0x45>;
+
+		vcc-supply = <&pm8953_l10>;
+
+		led@0 {
+			reg = <0>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_RED>;
+		};
+		led@1 {
+			reg = <1>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_GREEN>;
+		};
+		led@2 {
+			reg = <2>;
+			led-max-microamp = <5000>;
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_BLUE>;
+		};
+	};
+};
+
+&i2c_3 {
+	status = "okay";
+
+	touchscreen@38 {
+		compatible = "edt,edt-ft5406", "edt,edt-ft5x06";
+		reg = <0x38>;
+		vcc-supply = <&pm8953_l10>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <65 IRQ_TYPE_EDGE_FALLING>;
+		reset-gpios = <&msmgpio 64 GPIO_ACTIVE_LOW>;
+		touchscreen-size-x = <1080>;
+		touchscreen-size-y = <1920>;
+	};
+};
+
+&dsi0 {
+	panel@0 {
+		compatible = "qcom,mdss_dsi_nt35596_tianma_fhd_video", "panel-mipi-dsi-generic";
+		reg = <0>;
+
+		backlight = <&pmi8950_wled>;
+
+		supply-names = "ibb", "lab";
+		lab-supply = <&lab_vreg>;
+		ibb-supply = <&ibb_vreg>;
+
+		reset-gpios = <&msmgpio 61 GPIO_ACTIVE_LOW>;
+		reset-sequence = <0 5>, <1 5>, <0 5>, <1 5>, <0 20>;
+
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&pmx_mdss_default &mdss_te_default>;
+		pinctrl-1 = <&pmx_mdss_sleep &mdss_te_default>;
+
+		dsi-on-commands = MIPI_CMD_GENERIC_WRITE(2, 0xff 0x04),
+		                  MIPI_CMD_DELAY_MS(1),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xfb 0x01),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x08 0x05),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xff 0x00),
+		                  MIPI_CMD_DELAY_MS(1),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xfb 0x01),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x35 0x00),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x36 0x00),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x51 0xff),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x53 0x2c),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x55 0x00),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xd3 0x06),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xd4 0x0e),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xff 0x01),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xfb 0x01),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x72 0x21),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x6d 0x33),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xff 0x05),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xfb 0x01),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xe7 0x80),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0xff 0x00),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x11 0x00),
+		                  MIPI_CMD_DELAY_MS(120),
+		                  MIPI_CMD_GENERIC_WRITE(2, 0x29 0x00),
+		                  MIPI_CMD_DELAY_MS(20);
+		dsi-off-commands = MIPI_CMD_GENERIC_WRITE(2, 0xff 0x00),
+		                   MIPI_CMD_DCS_WRITE(1, MIPI_CMD_DCS_SET_DISPLAY_OFF),
+		                   MIPI_CMD_DELAY_MS(20),
+		                   MIPI_CMD_DCS_WRITE(1, MIPI_CMD_DCS_ENTER_SLEEP_MODE),
+		                   MIPI_CMD_DELAY_MS(60);
+		dsi-on-lp-mode;
+		dsi-format = <MIPI_GENERIC_DSI_FMT_RGB888>;
+		dsi-lanes = <4>;
+		dsi-mode = <(MIPI_GENERIC_DSI_MODE_VIDEO|MIPI_GENERIC_DSI_MODE_VIDEO_BURST|MIPI_GENERIC_DSI_MODE_VIDEO_HSE|MIPI_GENERIC_DSI_CLOCK_NON_CONTINUOUS)>;
+
+		panel-width-mm = <69>;
+		panel-height-mm = <122>;
+
+		panel-timing {
+			clock-frequency = <((1080 + 96 + 16 + 64) * (1920 + 14 + 2 + 4) * 60)>;
+
+			hactive = <1080>;
+			hfront-porch = <96>;
+			hback-porch = <64>;
+			hsync-len = <16>;
+
+			vactive = <1920>;
+			vfront-porch = <14>;
+			vback-porch = <4>;
+			vsync-len = <2>;
+		};
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&sdhc_1 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on  &sdc1_rclk_on>;
+	pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off &sdc1_rclk_off>;
+};
+
+&sdhc_2 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+
+	cd-gpios = <&msmgpio 133 GPIO_ACTIVE_LOW>;
+};
+
+&wcd_codec {
+	qcom,micbias1-ext-cap;
+	qcom,hphl-jack-type-normally-open;
+	qcom,mbhc-vthreshold-low = <75 150 237 450 500>;
+	qcom,mbhc-vthreshold-high = <75 150 237 450 500>;
+};
+
+&sound_card {
+	status = "okay";
+
+	model = "xiaomi-mido";
+
+	aux-devs = <&speaker_amp>;
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act &cdc_pdm_comp_lines_act>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus &cdc_pdm_comp_lines_act>;
+
+	/delete-property/ audio-routing;
+	audio-routing =
+		"Speaker Amp IN", "LINEOUT_OUT",
+		"AMIC1", "MIC BIAS External1",
+		"AMIC2", "MIC BIAS Internal2",
+		"AMIC3", "MIC BIAS External1",
+		"MM_DL1", "MultiMedia1 Playback",
+		"MM_DL3", "MultiMedia3 Playback",
+		"MM_DL4", "MultiMedia4 Playback",
+		"MultiMedia2 Capture", "MM_UL2";
+};
+
+&usb3 {
+	status = "okay";
+};
+
+&msmgpio {
+
+	gpio-reserved-ranges = <0 4>, <135 4>;
+
+	spk_ext_pa_default: spk_ext_pa_default {
+		pins = "gpio96";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+
+	ts_reset_active: ts_reset_active {
+		pins = "gpio64";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-pull-up;
+	};
+
+	ts_reset_suspend: ts_reset_suspend {
+		pins = "gpio64";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-up;
+	};
+	ts_int_active: ts_int_active {
+		pins = "gpio65";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-pull-up;
+	};
+
+	ts_int_suspend: ts_int_suspend {
+		pins = "gpio65";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	pmx_mdss_default: pmx-mdss-default {
+		pins = "gpio61";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	pmx_mdss_sleep: pmx-mdss-sleep {
+		pins = "gpio61";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+};
+
+&spmi_regulators {
+	status = "okay";
+};
+
+&smd_rpm_regulators {
+	compatible = "qcom,rpm-pm8953-regulators";
+
+	s1 { // Modem
+		regulator-min-microvolt = <863000>;
+		regulator-max-microvolt = <1152000>;
+	};
+	s3 { // CSI
+		regulator-min-microvolt = <1224000>;
+		regulator-max-microvolt = <1224000>;
+	};
+	s4 { // Audio codec
+		regulator-min-microvolt = <1896000>;
+		regulator-max-microvolt = <2048000>;
+	};
+	l1 { // unused
+		regulator-min-microvolt = <1000000>;
+		regulator-max-microvolt = <1100000>;
+	};
+	l2 { // Always-on
+		regulator-min-microvolt = <1000000>;
+		regulator-max-microvolt = <1000000>;
+	};
+	l3 { // Usb, mdss phy
+		regulator-min-microvolt = <925000>;
+		regulator-max-microvolt = <925000>;
+		regulator-allow-set-load;
+	};
+	l5 { // wcnss, sdhci, codec
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+	l6 { // DSI
+		regulator-always-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+	l8 { // sdhci
+		regulator-min-microvolt = <2900000>;
+		regulator-max-microvolt = <2900000>;
+	};
+	l9 { // wcnss
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3300000>;
+	};
+	l10 { // mido:touch+led
+		regulator-always-on;
+		regulator-min-microvolt = <2850000>;
+		regulator-max-microvolt = <2850000>;
+	};
+	l11 { // sdhci
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <3000000>;
+	};
+	l12 { // sdhci,
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3000000>;
+	};
+	l13 { // audio codec, usb phy
+		regulator-min-microvolt = <3075000>;
+		regulator-max-microvolt = <3125000>;
+	};
+	l15 { // unused
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+	l16 { // unused
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+	l17 { // dsi
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <3000000>;
+	};
+	l19 { // wcnss
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1350000>;
+	};
+	l22 { // unused
+		regulator-always-on;
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <2850000>;
+	};
+	l23 { // camera
+		regulator-min-microvolt = <975000>;
+		regulator-max-microvolt = <1225000>;
+	};
+};
