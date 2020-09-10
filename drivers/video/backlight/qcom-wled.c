@@ -341,6 +341,8 @@ static int wled3_sync_toggle(struct wled *wled)
 	if (rc < 0)
 		return rc;
 
+	usleep_range(1000, 2000);
+
 	rc = regmap_update_bits(wled->regmap,
 				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
 				mask, WLED3_SINK_REG_SYNC_CLEAR);
@@ -936,7 +938,7 @@ static const struct wled_config wled3_config_defaults = {
 	.boost_i_limit = 3,
 	.string_i_limit = 20,
 	.ovp = 2,
-	.num_strings = 3,
+	.num_strings = 3 - 1,
 	.switch_freq = 5,
 	.cs_out_en = false,
 	.ext_gen = false,
@@ -1067,7 +1069,7 @@ static const struct wled_config wled4_config_defaults = {
 	.boost_i_limit = 4,
 	.string_i_limit = 10,
 	.ovp = 1,
-	.num_strings = 4,
+	.num_strings = 4 - 1,
 	.switch_freq = 11,
 	.cabc = false,
 	.external_pfet = false,
@@ -1178,7 +1180,7 @@ static const struct wled_config wled5_config_defaults = {
 	.boost_i_limit = 5,
 	.string_i_limit = 10,
 	.ovp = 4,
-	.num_strings = 4,
+	.num_strings = 4 - 1,
 	.switch_freq = 11,
 	.mod_sel = 0,
 	.cabc_sel = 0,
@@ -1532,7 +1534,7 @@ static int wled_configure(struct wled *wled)
 		of_property_read_u32_array(dev->of_node,
 						"qcom,enabled-strings",
 						wled->cfg.enabled_strings,
-						sizeof(u32));
+						string_len);
 
 	return 0;
 }
