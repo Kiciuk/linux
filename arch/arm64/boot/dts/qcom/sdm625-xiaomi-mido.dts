@@ -135,6 +135,16 @@
 	stride = <(1080 * 3)>;
 };
 
+&pmi8950_wled {
+	status = "okay";
+
+	/* Don't copy-paste! See pmi8950.dtsi */
+
+	qcom,current-limit-microamp = <20000>;
+	qcom,enabled-strings = <0 1>;
+	qcom,num-strings = <2>;
+};
+
 &i2c_2 {
 	status = "okay";
 	led-controller@45 {
@@ -174,7 +184,7 @@
 		compatible = "qcom,mdss_dsi_nt35596_tianma_fhd_video", "panel-mipi-dsi-generic";
 		reg = <0>;
 
-		backlight = <&backlight>;
+		backlight = <&pmi8950_wled>;
 
 		supply-names = "ibb", "lab";
 		lab-supply = <&lab_vreg>;
@@ -226,11 +236,6 @@
 		panel-refresh-rate = <60>;
 		panel-width-mm = <69>;
 		panel-height-mm = <122>;
-
-		dcs_backlight: dcs-backlight {
-			compatible = "mipi-dcs-backlight";
-			max-level = <204>;
-		};
 
 		panel-timing {
 			clock-frequency = <((1080 + 96 + 16 + 64) * (1920 + 14 + 2 + 4) * 60)>;
