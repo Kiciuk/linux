@@ -150,6 +150,19 @@
 	};
 };
 
+&pmi8950_wled {
+	status = "okay";
+
+	/* Don't copy-paste! See pmi8950.dtsi */
+
+	qcom,current-limit-microamp = <25000>;
+	qcom,enabled-strings = <0 1 3>;
+	qcom,num-strings = <3>;
+
+	qcom,cabc;
+	qcom,eternal-pfet;
+};
+
 &wcd_codec {
 	qcom,micbias1-ext-cap;
 	qcom,micbias2-ext-cap;
@@ -216,8 +229,7 @@
 		compatible = "qcom,mdss_dsi_mot_boe_520_1080p_vid_v0", "panel-mipi-dsi-generic";
 		reg = <0>;
 
-		// FIXME: should be wled
-		backlight = <&dcs_backlight>;
+		backlight = <&pmi8950_wled>;
 
 		supply-names = "ibb", "lab";
 		lab-supply = <&lab_vreg>;
@@ -266,7 +278,7 @@
 		                  MIPI_CMD_DCS_WRITE(2, 0xb5 0x20),
 		                  MIPI_CMD_DCS_WRITE(2, 0xff 0x00),
 		                  MIPI_CMD_DCS_WRITE(2, 0xfb 0x01),
-		                  MIPI_CMD_BACKLIGHT_INIT,
+		                  MIPI_CMD_DCS_WRITE(2, MIPI_CMD_DCS_SET_DISPLAY_BRIGHTNESS 0xcc),
 		                  MIPI_CMD_DCS_WRITE(2, MIPI_CMD_DCS_SET_CABC_MIN_BRIGHTNESS 0x00),
 		                  MIPI_CMD_DCS_WRITE(2, MIPI_CMD_DCS_WRITE_CONTROL_DISPLAY 0x2c),
 		                  MIPI_CMD_DCS_WRITE(2, MIPI_CMD_DCS_WRITE_POWER_SAVE 0x01),
@@ -297,11 +309,6 @@
 		panel-refresh-rate = <60>;
 		panel-width-mm = <68>;
 		panel-height-mm = <121>;
-
-		dcs_backlight: dcs-backlight {
-			compatible = "mipi-dcs-backlight";
-			max-level = <204>;
-		};
 
 		panel-timing {
 			clock-frequency = <((1080 + 72 + 4 + 16) * (1920 + 4 + 2 + 4) * 60)>;
