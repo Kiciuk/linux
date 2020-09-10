@@ -230,23 +230,34 @@
 			};
 		};
 
-		backlight: wled@d800 {
+		pmi8950_wled: wled@d800 {
 			#address-cells = <1>;
 			#size-cells = <0>;
-			status = "disabled"; // FIXME Is this wled stuff even needed?
+
 			compatible = "qcom,pmi8998-wled";
-			reg = <0xd800 0xd900>;
+
+			reg = <0xd800>, <0xd900>;
 
 			interrupts = <3 0xd8 0x02 IRQ_TYPE_EDGE_RISING>;
 			interrupt-names = "short";
 
-			qcom,num-strings = <3>;
-			qcom,enabled-strings = <0 1 2 3>;
-			/*The fourth string doesn't exist
-			Its put there because otherwise the
-			driver gets all 0s in its array*/
-			qcom,cabc;
-			qcom,eternal-pfet;
+			/*
+			 * See Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
+			 * Corresponding CAF properties in comments.
+			 * Recheck if matches and override.
+			 */
+
+			qcom,current-boost-limit = <970>;	// qcom,ilim-ma
+			qcom,current-limit-microamp = <20000>;	// qcom,fs-curr-ua
+			qcom,ovp-millivolt = <29500>;		// qcom,ovp-mv
+			qcom,switching-freq = <800>;		// qcom,switch-freq-khz
+			qcom,enabled-strings = <0 1 2 3>;	// qcom,led-strings-list
+			qcom,num-strings = <4>;			// length of qcom,enabled-strings
+			// qcom,cabc;				// qcom,en-cabc
+			// qcom,eternal-pfet;			// qcom,en-ext-pfet-sc-pro;
+
+			status = "disabled";
+
 		};
 
 		flash_leds@d300 {
