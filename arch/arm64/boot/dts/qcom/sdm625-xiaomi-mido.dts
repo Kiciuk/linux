@@ -371,20 +371,6 @@
 	};
 };
 
-&spmi_bus {
-	pmi8950@3 {
-		backlight: wled@d800 {
-			status = "okay";
-			/delete-property/ qcom,num-strings;
-			qcom,num-strings = <2>;
-			/delete-property/ qcom,enabled-strings;
-			qcom,enabled-strings = <0 1>;
-			qcom,cabc;
-		};
-	};
-};
-
-
 &spmi_regulators {
 	status = "okay";
 };
