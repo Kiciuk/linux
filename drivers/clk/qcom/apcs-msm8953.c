@@ -189,8 +189,10 @@ static int msm8953_apcs_mux_determine_rate(struct clk_hw *hw,
 static int sdm632_apcs_mux_determine_rate(struct clk_hw *hw,
 				  struct clk_rate_request *req)
 {
-	req->best_parent_hw = NULL;
-	req->best_parent_rate = req->rate;
+	if (hw != &apcs_cci_clk.clkr.hw) {
+		req->best_parent_hw = NULL;
+		req->best_parent_rate = req->rate;
+	}
 	return clk_regmap_mux_div_ops.determine_rate(hw, req);
 }
 
