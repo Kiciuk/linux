@@ -56,14 +56,6 @@ static int mipi_dsi_generic_get_brightness(struct backlight_device *bl)
 	return ret;
 }
 
-static int dsi_dcs_init_backlight(struct dsi_backlight_platform_data *pdata)
-{
-	if (pdata->backlight)
-		mipi_dsi_generic_set_brightness(pdata->backlight);
-
-	return 0;
-}
-
 static const struct backlight_ops dsi_dcs_backlight_ops = {
 	.update_status = mipi_dsi_generic_set_brightness,
 	.get_brightness = mipi_dsi_generic_get_brightness,
@@ -80,8 +72,6 @@ static int dsi_dcs_backlight_probe(struct platform_device *pdev)
 		return -ENODEV;
 
 	of_property_read_u32(dev->of_node, "max-level", &max_level);
-
-	pdata->backlight_init = dsi_dcs_init_backlight;
 
 	props.max_brightness = min(max_level, 200U);
 	props.brightness = props.max_brightness;
