@@ -40,6 +40,7 @@ struct mipi_dsi_generic {
 	struct regulator_bulk_data *supplies;
 	int num_supplies;
 	struct gpio_desc *reset_gpio;
+	struct delayed_work bl_init_work;
 	struct mipi_dsi_cmds *on_cmds;
 	struct mipi_dsi_cmds *off_cmds;
 	unsigned long on_mode_mask;
@@ -128,8 +129,8 @@ static int mipi_dsi_generic_write_cmds(struct mipi_dsi_device *dsi,
 				return ret;
 			break;
 		case MIPI_CMD_BACKLIGHT_INIT:
-			if (ctx->pdata.backlight_init) {
-				ctx->pdata.backlight_init(&ctx->pdata);
+			if (ctx->panel.backlight) {
+				backlight_enable(ctx->panel.backlight);
 				if (ret < 0)
 					return ret;
 			}
@@ -355,11 +356,28 @@ static const struct drm_panel_funcs mipi_dsi_generic_panel_funcs = {
 	.get_modes = mipi_dsi_generic_get_modes,
 };
 
+static void backlight_init_worker(struct work_struct *work)
+{
+	struct mipi_dsi_generic *ctx = container_of(work,
+			struct mipi_dsi_generic, bl_init_work.work);
+	static int retries = 100;
+	int ret;
+
+	ret = drm_panel_of_backlight(&ctx->panel);
+	if (ret == -EPROBE_DEFER && retries-- > 0)
+		schedule_delayed_work(&ctx->bl_init_work, 100);
+	else if (ret) {
+		dev_err(&ctx->dsi->dev, "Failed to get backlight: %d\n", ret);
+		return;
+	}
+}
+
 static int mipi_dsi_generic_probe(struct mipi_dsi_device *dsi)
 {
 	struct device *dev = &dsi->dev;
 	struct mipi_dsi_generic *ctx;
 	int ret, i;
+	bool bl_deferred = false;
 
 	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
@@ -431,7 +449,10 @@ static int mipi_dsi_generic_probe(struct mipi_dsi_device *dsi)
 		       DRM_MODE_CONNECTOR_DSI);
 
 	ret = drm_panel_of_backlight(&ctx->panel);
-	if (ret) {
+	if (ret == -EPROBE_DEFER) {
+		INIT_DELAYED_WORK(&ctx->bl_init_work, backlight_init_worker);
+		bl_deferred = true;
+	} else if (ret) {
 		dev_err(dev, "Failed to get backlight: %d\n", ret);
 		return ret;
 	}
@@ -448,6 +469,8 @@ static int mipi_dsi_generic_probe(struct mipi_dsi_device *dsi)
 		return ret;
 	}
 
+	if (bl_deferred)
+		schedule_delayed_work(&ctx->bl_init_work, 100);
 
 	return 0;
 }

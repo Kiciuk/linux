@@ -15,7 +15,6 @@ typedef int (*mipi_dsi_backlight_init_cb)(struct dsi_backlight_platform_data *da
 struct dsi_backlight_platform_data {
 	struct mipi_dsi_device *dsi;
 	struct backlight_device *backlight;
-	mipi_dsi_backlight_init_cb backlight_init;
 	bool prepared;
 	void *userdata;
 };

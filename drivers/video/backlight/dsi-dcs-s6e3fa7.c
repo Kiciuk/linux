@@ -1028,8 +1028,51 @@ static int mipi_dcs_s6e3fa7_set_brightness(struct backlight_device *bl)
 	u8 *gamma_cmd;
 	int ret, i;
 
-	if (!pdata->prepared || !ctx->inited)
+	if (!pdata->prepared)
 		return 0;
+
+	if (!ctx->inited) {
+		ret = mipi_dsi_generic_write(dsi, LEVEL1_ON, ARRAY_SIZE(LEVEL1_ON));
+		if (ret < 0)
+			return ret;
+
+		/* Read ELVSS DATA (B5[22:23]) */
+		ret = samsung_read_panel_data(dsi, 0xb5, 0x16,
+				ctx->elvss_params, ARRAY_SIZE(ctx->elvss_params));
+		if (ret < 0)
+			return ret;
+
+		/* Read IRC DATA (B8[0:1]) */
+		ret = samsung_read_panel_data(dsi, 0xb8, 0,
+				ctx->irc_params, ARRAY_SIZE(ctx->irc_params));
+		if (ret < 0)
+			return ret;
+
+		/* Read MTP OFFSET (C8[0:31]) */
+		ret = samsung_read_panel_data(dsi, 0xc8, 0,
+				ctx->mtp_data, ARRAY_SIZE(ctx->mtp_data));
+		if (ret < 0)
+			return ret;
+
+		ret = mipi_dsi_generic_write(dsi, LEVEL1_OFF, ARRAY_SIZE(LEVEL1_OFF));
+		if (ret < 0)
+			return ret;
+
+		print_hex_dump(KERN_DEBUG, "MTP ", DUMP_PREFIX_OFFSET, 16, 1,
+				ctx->mtp_data, 32, false);
+
+		printk(KERN_DEBUG"ELVSS params: 0x%02x 0x%02x\n",
+				ctx->elvss_params[0], ctx->elvss_params[1]);
+
+		printk(KERN_DEBUG"IRC params: 0x%02x 0x%02x\n",
+				ctx->irc_params[0], ctx->irc_params[1]);
+
+		ret = s6e3fa7_gamma_init(ctx);
+		if (ret < 0)
+			return ret;
+
+		ctx->inited = true;
+	}
 
 	if (bl->props.power != FB_BLANK_UNBLANK ||
 	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
@@ -1113,61 +1156,6 @@ static int mipi_dcs_s6e3fa7_get_brightness(struct backlight_device *bl)
 	return 0;
 }
 
-static int s6e3fa7_init_backlight(struct dsi_backlight_platform_data *pdata)
-{
-	struct s6e3fa7_backlight_ctx *ctx = pdata->userdata;
-	struct mipi_dsi_device *dsi = pdata->dsi;
-	int ret = 0;
-
-	if (!ctx->inited) {
-		ret = mipi_dsi_generic_write(dsi, LEVEL1_ON, ARRAY_SIZE(LEVEL1_ON));
-		if (ret < 0)
-			return ret;
-
-		/* Read ELVSS DATA (B5[22:23]) */
-		ret = samsung_read_panel_data(dsi, 0xb5, 0x16,
-				ctx->elvss_params, ARRAY_SIZE(ctx->elvss_params));
-		if (ret < 0)
-			return ret;
-
-		/* Read IRC DATA (B8[0:1]) */
-		ret = samsung_read_panel_data(dsi, 0xb8, 0,
-				ctx->irc_params, ARRAY_SIZE(ctx->irc_params));
-		if (ret < 0)
-			return ret;
-
-		/* Read MTP OFFSET (C8[0:31]) */
-		ret = samsung_read_panel_data(dsi, 0xc8, 0,
-				ctx->mtp_data, ARRAY_SIZE(ctx->mtp_data));
-		if (ret < 0)
-			return ret;
-
-		ret = mipi_dsi_generic_write(dsi, LEVEL1_OFF, ARRAY_SIZE(LEVEL1_OFF));
-		if (ret < 0)
-			return ret;
-
-		print_hex_dump(KERN_DEBUG, "MTP ", DUMP_PREFIX_OFFSET, 16, 1,
-				ctx->mtp_data, 32, false);
-
-		printk(KERN_DEBUG"ELVSS params: 0x%02x 0x%02x\n",
-				ctx->elvss_params[0], ctx->elvss_params[1]);
-
-		printk(KERN_DEBUG"IRC params: 0x%02x 0x%02x\n",
-				ctx->irc_params[0], ctx->irc_params[1]);
-
-		ret = s6e3fa7_gamma_init(ctx);
-		if (ret < 0)
-			return ret;
-
-		ctx->inited = true;
-	}
-
-	mipi_dcs_s6e3fa7_set_brightness(pdata->backlight);
-
-	return 0;
-}
-
-
 static const struct backlight_ops dsi_dcs_s6e3fa7_ops = {
 	.update_status = mipi_dcs_s6e3fa7_set_brightness,
 	.get_brightness = mipi_dcs_s6e3fa7_get_brightness,
@@ -1186,8 +1174,6 @@ static int dsi_dcs_s6e3fa7_probe(struct platform_device *pdev)
 	pdata->userdata = ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
-
-	pdata->backlight_init = s6e3fa7_init_backlight;
 
 	props.max_brightness = ARRAY_SIZE(brightness_settings),
 	props.brightness = 100;
