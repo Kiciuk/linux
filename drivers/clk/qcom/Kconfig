@@ -491,4 +491,11 @@ config KRAITCC
 	  Support for the Krait CPU clocks on Qualcomm devices.
 	  Say Y if you want to support CPU frequency scaling.
 
+config MSM_GCC_8953_DEBUG
+	tristate "MSM8953 GCC Debug"
+	depends on DEBUG_FS
+	depends on MSM_GCC_8953
+	help
+	  Support for the measuring clock rates on MSM8953 GCC.
+
 endif
