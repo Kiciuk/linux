@@ -566,6 +566,11 @@
 			reg = <0x19461d4 0x8>;
 		};
 
+		apm: syscon@b111000 {
+			compatible = "syscon";
+			reg = <0xb111000 0x1000>;
+		};
+
 		gfx_mem_acc_l1: regulator@194415c {
 			compatible = "syscon";
 			reg = <0x194415c 0x4>;
@@ -1078,8 +1083,8 @@
 					   "cpr_fuse_revision",
 					   "cpr_speed_bin";
 
-			reg = <0x0b018000 0x4000>, <0xb111000 0x1000>;
-			reg-names = "cpr-iomem", "pm-apcc-glb";
+			reg = <0x0b018000 0x4000>;
+			reg-names = "cpr-iomem";
 
 			interrupts = <GIC_SPI 15 IRQ_TYPE_EDGE_RISING>;
 
@@ -1090,6 +1095,7 @@
 			vdd-apc-step-uv = <5000>;
 
 			acc-syscon = <&apc_mem_acc>;
+			apm-syscon = <&apm>;
 
 			#power-domain-cells = <1>;
 			operating-points-v2 = <&cpr_opp_table>;
