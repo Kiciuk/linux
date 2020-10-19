@@ -1269,6 +1269,9 @@
 				 <&xo_board>;
 			clock-names = "core", "iface", "xo";
 
+			power-domains = <&rpmpd MSM8953_VDDCX>;
+			operating-points-v2 = <&sdhc1_opp_table>;
+
 			vmmc-supply = <&pm8953_l8>;
 			vqmmc-supply = <&pm8953_l5>;
 
@@ -1279,6 +1282,35 @@
 			non-removable;
 
 			status = "disabled";
+
+			sdhc1_opp_table: sdhc1-opp-table {
+				compatible = "operating-points-v2";
+
+				opp-25000000 {
+					opp-hz = /bits/ 64 <25000000>;
+					required-opps = <&rpmpd_opp_low_svs>;
+				};
+
+				opp-50000000 {
+					opp-hz = /bits/ 64 <50000000>;
+					required-opps = <&rpmpd_opp_svs>;
+				};
+
+				opp-100000000 {
+					opp-hz = /bits/ 64 <100000000>;
+					required-opps = <&rpmpd_opp_svs>;
+				};
+
+				opp-200000000 {
+					opp-hz = /bits/ 64 <192000000>;
+					required-opps = <&rpmpd_opp_nom>;
+				};
+
+				opp-400000000 {
+					opp-hz = /bits/ 64 <384000000>;
+					required-opps = <&rpmpd_opp_nom>;
+				};
+			};
 		};
 
 		sdhc_2: sdhci@7864000 {
@@ -1295,12 +1327,44 @@
 				 <&xo_board>;
 			clock-names = "core", "iface", "xo";
 
+			power-domains = <&rpmpd MSM8953_VDDCX>;
+			operating-points-v2 = <&sdhc2_opp_table>;
+
 			vmmc-supply = <&pm8953_l11>;
 			vqmmc-supply = <&pm8953_l12>;
 
 			bus-width = <4>;
 
 			status = "disabled";
+
+			sdhc2_opp_table: sdhc2-opp-table {
+				compatible = "operating-points-v2";
+
+				opp-25000000 {
+					opp-hz = /bits/ 64 <25000000>;
+					required-opps = <&rpmpd_opp_low_svs>;
+				};
+
+				opp-50000000 {
+					opp-hz = /bits/ 64 <50000000>;
+					required-opps = <&rpmpd_opp_svs>;
+				};
+
+				opp-100000000 {
+					opp-hz = /bits/ 64 <100000000>;
+					required-opps = <&rpmpd_opp_svs>;
+				};
+
+				opp-177770000 {
+					opp-hz = /bits/ 64 <177770000>;
+					required-opps = <&rpmpd_opp_nom>;
+				};
+
+				opp-200000000 {
+					opp-hz = /bits/ 64 <200000000>;
+					required-opps = <&rpmpd_opp_nom>;
+				};
+			};
 		};
 
 		bimc: interconnect@400000 {
