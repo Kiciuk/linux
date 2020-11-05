@@ -157,7 +157,8 @@ static u32 vfe_src_pad_code(struct vfe_line *line, u32 sink_code,
 {
 	struct vfe_device *vfe = to_vfe(line);
 
-	if (vfe->camss->version == CAMSS_8x16)
+	if (vfe->camss->version == CAMSS_8x16 ||
+	    vfe->camss->version == CAMSS_8x53)
 		switch (sink_code) {
 		case MEDIA_BUS_FMT_YUYV8_2X8:
 		{
@@ -1994,6 +1995,7 @@ int msm_vfe_subdev_init(struct camss *camss, struct vfe_device *vfe,
 
 	switch (camss->version) {
 	case CAMSS_8x16:
+	case CAMSS_8x53:
 		vfe->ops = &vfe_ops_4_1;
 		break;
 	case CAMSS_8x96:
@@ -2095,7 +2097,8 @@ int msm_vfe_subdev_init(struct camss *camss, struct vfe_device *vfe,
 		init_completion(&l->output.sof);
 		init_completion(&l->output.reg_update);
 
-		if (camss->version == CAMSS_8x16) {
+		if (camss->version == CAMSS_8x16 ||
+		    camss->version == CAMSS_8x53) {
 			if (i == VFE_LINE_PIX) {
 				l->formats = formats_pix_8x16;
 				l->nformats = ARRAY_SIZE(formats_pix_8x16);
