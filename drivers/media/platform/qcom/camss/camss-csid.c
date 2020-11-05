@@ -482,7 +482,7 @@ static int csid_set_clock_rates(struct csid_device *csid)
 				csid->nformats,
 				csid->fmt[MSM_CSIPHY_PAD_SINK].code);
 			u8 num_lanes = csid->phy.lane_cnt;
-			u64 min_rate = pixel_clock * f->bpp /
+			u64 min_rate = ((u64)pixel_clock) * f->bpp /
 							(2 * num_lanes * 4);
 			long rate;
 

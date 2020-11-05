@@ -1143,7 +1143,7 @@ static int vfe_set_clock_rates(struct vfe_device *vfe)
 					bpp = vfe_get_bpp(l->formats,
 						l->nformats,
 						l->fmt[MSM_VFE_PAD_SINK].code);
-					tmp = pixel_clock[j] * bpp / 64;
+					tmp = ((u64) pixel_clock[j]) * bpp / 64;
 				}
 
 				if (min_rate < tmp)
@@ -1225,7 +1225,7 @@ static int vfe_check_clock_rates(struct vfe_device *vfe)
 					bpp = vfe_get_bpp(l->formats,
 						l->nformats,
 						l->fmt[MSM_VFE_PAD_SINK].code);
-					tmp = pixel_clock[j] * bpp / 64;
+					tmp = ((u64) pixel_clock[j]) * bpp / 64;
 				}
 
 				if (min_rate < tmp)

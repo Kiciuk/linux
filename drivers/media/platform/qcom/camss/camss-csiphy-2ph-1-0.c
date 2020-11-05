@@ -68,7 +68,7 @@ static u8 csiphy_settle_cnt_calc(u32 pixel_clock, u8 bpp, u8 num_lanes,
 	u32 t_hs_settle; /* ps */
 	u8 settle_cnt;
 
-	mipi_clock = pixel_clock * bpp / (2 * num_lanes);
+	mipi_clock = ((u64)pixel_clock) * bpp / (2 * num_lanes);
 	ui = div_u64(1000000000000LL, mipi_clock);
 	ui /= 2;
 	t_hs_prepare_max = 85000 + 6 * ui;
