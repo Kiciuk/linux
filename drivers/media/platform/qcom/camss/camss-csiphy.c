@@ -118,7 +118,7 @@ static int csiphy_set_clock_rates(struct csiphy_device *csiphy)
 					csiphy->nformats,
 					csiphy->fmt[MSM_CSIPHY_PAD_SINK].code);
 			u8 num_lanes = csiphy->cfg.csi2->lane_cfg.num_data;
-			u64 min_rate = pixel_clock * bpp / (2 * num_lanes * 4);
+			u64 min_rate = ((u64) pixel_clock) * bpp / (2 * num_lanes * 4);
 			long round_rate;
 
 			camss_add_clock_margin(&min_rate);
