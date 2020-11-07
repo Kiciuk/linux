@@ -284,7 +284,7 @@ static const struct qusb2_phy_cfg qusb2_v2_phy_cfg = {
 };
 
 static const char * const qusb2_phy_vreg_names[] = {
-	"vdda-pll", "vdda-phy-dpdm",
+	"vdda-pll", "vdda-phy-dpdm", "phy",
 };
 
 #define QUSB2_NUM_VREGS		ARRAY_SIZE(qusb2_phy_vreg_names)
@@ -811,6 +811,9 @@ static const struct phy_ops qusb2_phy_gen_ops = {
 static const struct of_device_id qusb2_phy_of_match_table[] = {
 	{
 		.compatible	= "qcom,ipq8074-qusb2-phy",
+		.data		= &msm8996_phy_cfg,
+	}, {
+		.compatible	= "qcom,msm8953-qusb2-phy",
 		.data		= &msm8996_phy_cfg,
 	}, {
 		.compatible	= "qcom,msm8996-qusb2-phy",
