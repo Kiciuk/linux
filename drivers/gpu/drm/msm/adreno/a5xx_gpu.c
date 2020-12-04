@@ -547,6 +547,9 @@ static void a5xx_ucode_check_version(struct a5xx_gpu *a5xx_gpu,
 	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
 		a5xx_gpu->has_whereami = true;
 
+	if (adreno_is_a506(&a5xx_gpu->base))
+		a5xx_gpu->has_whereami = false;
+
 	msm_gem_put_vaddr(obj);
 }
 
