@@ -441,20 +441,8 @@ static int sm5708_parse_dt(struct sm5708_charger *charger)
 
 		charger->extcon_nb.notifier_call = sm5708_extcon_notifier;
 
-		ret = devm_extcon_register_notifier(charger->dev, charger->extcon,
-				EXTCON_USB, &charger->extcon_nb);
-
-		if (ret < 0)
-			return ret;
-
-		ret = devm_extcon_register_notifier(charger->dev, charger->extcon,
-				EXTCON_USB_HOST, &charger->extcon_nb);
-
-		if (ret < 0)
-			return ret;
-
-		ret = devm_extcon_register_notifier(charger->dev, charger->extcon,
-				EXTCON_CHG_USB_DCP, &charger->extcon_nb);
+		ret = devm_extcon_register_notifier_all(charger->dev, charger->extcon,
+							&charger->extcon_nb);
 
 		if (ret < 0)
 			return ret;
