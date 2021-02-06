@@ -24,6 +24,12 @@
 #define CTL_STAT_BUSY		0x1
 #define CTL_STAT_BOOKED	0x2
 
+enum pipeline_status {
+	PIPELINE_READY,
+	PIPELINE_BUSY,
+	PIPELINE_OUTDATED,
+};
+
 struct mdp5_ctl {
 	struct mdp5_ctl_manager *ctlm;
 
@@ -48,6 +54,8 @@ struct mdp5_ctl {
 
 	/* True if the current CTL has FLUSH bits pending for single FLUSH. */
 	bool flush_pending;
+
+	enum pipeline_status pipeline_status;
 
 	struct mdp5_ctl *pair; /* Paired CTL to be flushed together */
 };
@@ -209,14 +217,26 @@ static void send_start_signal(struct mdp5_ctl *ctl)
 	unsigned long flags;
 
 	spin_lock_irqsave(&ctl->hw_lock, flags);
+	switch (ctl->pipeline_status) {
+		case PIPELINE_READY:
+			ctl->pipeline_status = PIPELINE_BUSY;
+			break;
+		case PIPELINE_BUSY:
+			ctl->pipeline_status = PIPELINE_OUTDATED;
+		default:
+			goto unlock;
+	}
 	ctl_write(ctl, REG_MDP5_CTL_START(ctl->id), 1);
+unlock:
 	spin_unlock_irqrestore(&ctl->hw_lock, flags);
 }
 
 /**
  * mdp5_ctl_set_encoder_state() - set the encoder state
  *
- * @enable: true, when encoder is ready for data streaming; false, otherwise.
+ * @ctl:      the CTL instance
+ * @pipeline: the encoder's INTF + MIXER configuration
+ * @enabled:  true, when encoder is ready for data streaming; false, otherwise.
  *
  * Note:
  * This encoder state is needed to trigger START signal (data path kickoff).
@@ -238,6 +258,27 @@ int mdp5_ctl_set_encoder_state(struct mdp5_ctl *ctl,
 	}
 
 	return 0;
+}
+
+void mdp5_ctl_commit_finished(struct mdp5_ctl *ctl)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&ctl->hw_lock, flags);
+	switch (ctl->pipeline_status) {
+		case PIPELINE_OUTDATED:
+			ctl->pipeline_status = PIPELINE_BUSY;
+			break;
+		case PIPELINE_BUSY:
+			ctl->pipeline_status = PIPELINE_READY;
+		default:
+			goto unlock;
+	}
+
+	ctl_write(ctl, REG_MDP5_CTL_START(ctl->id), 1);
+
+unlock:
+	spin_unlock_irqrestore(&ctl->hw_lock, flags);
 }
 
 /*
@@ -509,6 +550,13 @@ static void fix_for_single_flush(struct mdp5_ctl *ctl, u32 *flush_mask,
 
 /**
  * mdp5_ctl_commit() - Register Flush
+ *
+ * @ctl:        the CTL instance
+ * @pipeline:   the encoder's INTF + MIXER configuration
+ * @flush_mask: bitmask of display controller hw blocks to flush
+ * @start:      if true, immediately update flush registers and set START
+ *              bit, otherwise accumulate flush_mask bits until we are
+ *              ready to START
  *
  * The flush register is used to indicate several registers are all
  * programmed, and are safe to update to the back copy of the double

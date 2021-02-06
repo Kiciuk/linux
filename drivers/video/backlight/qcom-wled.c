@@ -336,13 +336,13 @@ static int wled3_sync_toggle(struct wled *wled)
 	unsigned int mask = GENMASK(wled->max_string_count - 1, 0);
 
 	rc = regmap_update_bits(wled->regmap,
-				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
+				wled->sink_addr + WLED3_SINK_REG_SYNC,
 				mask, mask);
 	if (rc < 0)
 		return rc;
 
 	rc = regmap_update_bits(wled->regmap,
-				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
+				wled->sink_addr + WLED3_SINK_REG_SYNC,
 				mask, WLED3_SINK_REG_SYNC_CLEAR);
 
 	return rc;
@@ -433,13 +433,8 @@ static int wled5_ovp_delay(struct wled *wled)
 static int wled_update_status(struct backlight_device *bl)
 {
 	struct wled *wled = bl_get_data(bl);
-	u16 brightness = bl->props.brightness;
+	u16 brightness = backlight_get_brightness(bl);
 	int rc = 0;
-
-	if (bl->props.power != FB_BLANK_UNBLANK ||
-	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
-	    bl->props.state & BL_CORE_FBBLANK)
-		brightness = 0;
 
 	mutex_lock(&wled->lock);
 	if (brightness) {
@@ -936,7 +931,7 @@ static const struct wled_config wled3_config_defaults = {
 	.boost_i_limit = 3,
 	.string_i_limit = 20,
 	.ovp = 2,
-	.num_strings = 3,
+	.num_strings = 3 - 1,
 	.switch_freq = 5,
 	.cs_out_en = false,
 	.ext_gen = false,
@@ -1067,7 +1062,7 @@ static const struct wled_config wled4_config_defaults = {
 	.boost_i_limit = 4,
 	.string_i_limit = 10,
 	.ovp = 1,
-	.num_strings = 4,
+	.num_strings = 4 - 1,
 	.switch_freq = 11,
 	.cabc = false,
 	.external_pfet = false,
@@ -1178,7 +1173,7 @@ static const struct wled_config wled5_config_defaults = {
 	.boost_i_limit = 5,
 	.string_i_limit = 10,
 	.ovp = 4,
-	.num_strings = 4,
+	.num_strings = 4 - 1,
 	.switch_freq = 11,
 	.mod_sel = 0,
 	.cabc_sel = 0,
@@ -1285,14 +1280,6 @@ static const u32 wled4_string_i_limit_values[] = {
 static const struct wled_var_cfg wled4_string_i_limit_cfg = {
 	.values = wled4_string_i_limit_values,
 	.size = ARRAY_SIZE(wled4_string_i_limit_values),
-};
-
-static const struct wled_var_cfg wled3_string_cfg = {
-	.size = 8,
-};
-
-static const struct wled_var_cfg wled4_string_cfg = {
-	.size = 16,
 };
 
 static const struct wled_var_cfg wled5_mod_sel_cfg = {
@@ -1532,7 +1519,7 @@ static int wled_configure(struct wled *wled)
 		of_property_read_u32_array(dev->of_node,
 						"qcom,enabled-strings",
 						wled->cfg.enabled_strings,
-						sizeof(u32));
+						string_len);
 
 	return 0;
 }

@@ -251,6 +251,8 @@ struct hda_device_id {
 struct sdw_device_id {
 	__u16 mfg_id;
 	__u16 part_id;
+	__u8  sdw_version;
+	__u8  class_id;
 	kernel_ulong_t driver_data;
 };
 
@@ -833,6 +835,14 @@ struct wmi_device_id {
  */
 struct mhi_device_id {
 	const char chan[MHI_NAME_SIZE];
+	kernel_ulong_t driver_data;
+};
+
+#define AUXILIARY_NAME_SIZE 32
+#define AUXILIARY_MODULE_PREFIX "auxiliary:"
+
+struct auxiliary_device_id {
+	char name[AUXILIARY_NAME_SIZE];
 	kernel_ulong_t driver_data;
 };
 

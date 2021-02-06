@@ -312,7 +312,7 @@ int hfi1_setup_wqe(struct rvt_qp *qp, struct rvt_swqe *wqe, bool *call_send)
 	switch (qp->ibqp.qp_type) {
 	case IB_QPT_RC:
 		hfi1_setup_tid_rdma_wqe(qp, wqe);
-		/* fall through */
+		fallthrough;
 	case IB_QPT_UC:
 		if (wqe->length > 0x80000000U)
 			return -EINVAL;
@@ -339,6 +339,7 @@ int hfi1_setup_wqe(struct rvt_qp *qp, struct rvt_swqe *wqe, bool *call_send)
 			return -EINVAL;
 		if (ibp->sl_to_sc[rdma_ah_get_sl(&ah->attr)] == 0xf)
 			return -EINVAL;
+		break;
 	default:
 		break;
 	}

@@ -226,6 +226,7 @@ struct wcd_iir_filter_ctl {
 
 struct msm8916_wcd_digital_priv {
 	struct clk *ahbclk, *mclk;
+	unsigned long mclk_rate;
 };
 
 static const unsigned long rx_gain_reg[] = {
@@ -366,7 +367,7 @@ static int msm8x16_wcd_codec_set_iir_gain(struct snd_soc_dapm_widget *w,
 			reg = LPASS_CDC_IIR1_GAIN_B1_CTL;
 		else if (w->shift == 1)
 			reg = LPASS_CDC_IIR2_GAIN_B1_CTL;
-		value = snd_soc_component_read32(component, reg);
+		value = snd_soc_component_read(component, reg);
 		snd_soc_component_write(component, reg, value);
 		break;
 	default:
@@ -387,7 +388,7 @@ static uint32_t get_iir_band_coeff(struct snd_soc_component *component,
 		((band_idx * BAND_MAX + coeff_idx)
 		* sizeof(uint32_t)) & 0x7F);
 
-	value |= snd_soc_component_read32(component,
+	value |= snd_soc_component_read(component,
 		(LPASS_CDC_IIR1_COEF_B2_CTL + 64 * iir_idx));
 
 	snd_soc_component_write(component,
@@ -395,7 +396,7 @@ static uint32_t get_iir_band_coeff(struct snd_soc_component *component,
 		((band_idx * BAND_MAX + coeff_idx)
 		* sizeof(uint32_t) + 1) & 0x7F);
 
-	value |= (snd_soc_component_read32(component,
+	value |= (snd_soc_component_read(component,
 		(LPASS_CDC_IIR1_COEF_B2_CTL + 64 * iir_idx)) << 8);
 
 	snd_soc_component_write(component,
@@ -403,7 +404,7 @@ static uint32_t get_iir_band_coeff(struct snd_soc_component *component,
 		((band_idx * BAND_MAX + coeff_idx)
 		* sizeof(uint32_t) + 2) & 0x7F);
 
-	value |= (snd_soc_component_read32(component,
+	value |= (snd_soc_component_read(component,
 		(LPASS_CDC_IIR1_COEF_B2_CTL + 64 * iir_idx)) << 16);
 
 	snd_soc_component_write(component,
@@ -412,7 +413,7 @@ static uint32_t get_iir_band_coeff(struct snd_soc_component *component,
 		* sizeof(uint32_t) + 3) & 0x7F);
 
 	/* Mask bits top 2 bits since they are reserved */
-	value |= ((snd_soc_component_read32(component,
+	value |= ((snd_soc_component_read(component,
 		 (LPASS_CDC_IIR1_COEF_B2_CTL + 64 * iir_idx)) & 0x3f) << 24);
 	return value;
 
@@ -584,7 +585,7 @@ static int msm8916_wcd_digital_enable_interpolator(
 		/* apply the digital gain after the interpolator is enabled */
 		usleep_range(10000, 10100);
 		snd_soc_component_write(component, rx_gain_reg[w->shift],
-			      snd_soc_component_read32(component, rx_gain_reg[w->shift]));
+			      snd_soc_component_read(component, rx_gain_reg[w->shift]));
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_component_update_bits(component, LPASS_CDC_CLK_RX_RESET_CTL,
@@ -615,7 +616,7 @@ static int msm8916_wcd_digital_enable_dec(struct snd_soc_dapm_widget *w,
 		snd_soc_component_update_bits(component, tx_vol_ctl_reg,
 				    TX_VOL_CTL_CFG_MUTE_EN_MASK,
 				    TX_VOL_CTL_CFG_MUTE_EN_ENABLE);
-		dec_hpf_cut_of_freq = snd_soc_component_read32(component, tx_mux_ctl_reg) &
+		dec_hpf_cut_of_freq = snd_soc_component_read(component, tx_mux_ctl_reg) &
 					TX_MUX_CTL_CUT_OFF_FREQ_MASK;
 		dec_hpf_cut_of_freq >>= TX_MUX_CTL_CUT_OFF_FREQ_SHIFT;
 		if (dec_hpf_cut_of_freq != TX_MUX_CTL_CF_NEG_3DB_150HZ) {
@@ -632,7 +633,7 @@ static int msm8916_wcd_digital_enable_dec(struct snd_soc_dapm_widget *w,
 				    TX_MUX_CTL_HPF_BP_SEL_NO_BYPASS);
 		/* apply the digital gain after the decimator is enabled */
 		snd_soc_component_write(component, tx_gain_reg[w->shift],
-			      snd_soc_component_read32(component, tx_gain_reg[w->shift]));
+			      snd_soc_component_read(component, tx_gain_reg[w->shift]));
 		snd_soc_component_update_bits(component, tx_vol_ctl_reg,
 				    TX_VOL_CTL_CFG_MUTE_EN_MASK, 0);
 		break;
@@ -826,13 +827,13 @@ static int msm8916_wcd_digital_get_clks(struct platform_device *pdev,
 {
 	struct device *dev = &pdev->dev;
 
-	priv->ahbclk = devm_clk_get(dev, "ahbix-clk");
+	priv->ahbclk = devm_clk_get_optional(dev, "ahbix-clk");
 	if (IS_ERR(priv->ahbclk)) {
 		dev_err(dev, "failed to get ahbix clk\n");
 		return PTR_ERR(priv->ahbclk);
 	}
 
-	priv->mclk = devm_clk_get(dev, "mclk");
+	priv->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(priv->mclk)) {
 		dev_err(dev, "failed to get mclk\n");
 		return PTR_ERR(priv->mclk);
@@ -856,7 +857,7 @@ static int msm8916_wcd_digital_component_set_sysclk(struct snd_soc_component *co
 {
 	struct msm8916_wcd_digital_priv *p = dev_get_drvdata(component->dev);
 
-	return clk_set_rate(p->mclk, freq);
+	return clk_set_rate(p->mclk, p->mclk_rate = freq);
 }
 
 static int msm8916_wcd_digital_hw_params(struct snd_pcm_substream *substream,
@@ -1084,7 +1085,7 @@ static int msm8916_wcd_digital_startup(struct snd_pcm_substream *substream,
 			    LPASS_CDC_CLK_PDM_CTL_PDM_CLK_SEL_MASK,
 			    LPASS_CDC_CLK_PDM_CTL_PDM_CLK_SEL_FB);
 
-	mclk_rate = clk_get_rate(msm8916_wcd->mclk);
+	mclk_rate = clk_get_rate(msm8916_wcd->mclk) ?: msm8916_wcd->mclk_rate;
 	switch (mclk_rate) {
 	case 12288000:
 		snd_soc_component_update_bits(component, LPASS_CDC_TOP_CTL,

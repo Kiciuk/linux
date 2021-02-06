@@ -35,6 +35,7 @@
 #ifdef CONFIG_CIFS_DFS_UPCALL
 #include "dns_resolve.h"
 #endif
+#include "fs_context.h"
 
 extern mempool_t *cifs_sm_req_poolp;
 extern mempool_t *cifs_req_poolp;
@@ -103,12 +104,12 @@ sesInfoFree(struct cifs_ses *buf_to_free)
 	kfree(buf_to_free->serverOS);
 	kfree(buf_to_free->serverDomain);
 	kfree(buf_to_free->serverNOS);
-	kzfree(buf_to_free->password);
+	kfree_sensitive(buf_to_free->password);
 	kfree(buf_to_free->user_name);
 	kfree(buf_to_free->domainName);
-	kzfree(buf_to_free->auth_key.response);
+	kfree_sensitive(buf_to_free->auth_key.response);
 	kfree(buf_to_free->iface_list);
-	kzfree(buf_to_free);
+	kfree_sensitive(buf_to_free);
 }
 
 struct cifs_tcon *
@@ -148,7 +149,7 @@ tconInfoFree(struct cifs_tcon *buf_to_free)
 	}
 	atomic_dec(&tconInfoAllocCount);
 	kfree(buf_to_free->nativeFileSystem);
-	kzfree(buf_to_free->password);
+	kfree_sensitive(buf_to_free->password);
 	kfree(buf_to_free->crfid.fid);
 #ifdef CONFIG_CIFS_DFS_UPCALL
 	kfree(buf_to_free->dfs_path);
@@ -632,11 +633,11 @@ bool
 backup_cred(struct cifs_sb_info *cifs_sb)
 {
 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_CIFS_BACKUPUID) {
-		if (uid_eq(cifs_sb->mnt_backupuid, current_fsuid()))
+		if (uid_eq(cifs_sb->ctx->backupuid, current_fsuid()))
 			return true;
 	}
 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_CIFS_BACKUPGID) {
-		if (in_group_p(cifs_sb->mnt_backupgid))
+		if (in_group_p(cifs_sb->ctx->backupgid))
 			return true;
 	}
 
@@ -1164,8 +1165,7 @@ static inline void cifs_put_tcon_super(struct super_block *sb)
 }
 #endif
 
-int update_super_prepath(struct cifs_tcon *tcon, const char *prefix,
-			 size_t prefix_len)
+int update_super_prepath(struct cifs_tcon *tcon, char *prefix)
 {
 	struct super_block *sb;
 	struct cifs_sb_info *cifs_sb;
@@ -1179,8 +1179,8 @@ int update_super_prepath(struct cifs_tcon *tcon, const char *prefix,
 
 	kfree(cifs_sb->prepath);
 
-	if (*prefix && prefix_len) {
-		cifs_sb->prepath = kstrndup(prefix, prefix_len, GFP_ATOMIC);
+	if (prefix && *prefix) {
+		cifs_sb->prepath = kstrndup(prefix, strlen(prefix), GFP_ATOMIC);
 		if (!cifs_sb->prepath) {
 			rc = -ENOMEM;
 			goto out;

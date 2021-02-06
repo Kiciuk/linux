@@ -8,6 +8,7 @@
  * Copyright (C) 2016-2018 Linaro Ltd.
  */
 
+#include "camss.h"
 #include "camss-csiphy.h"
 
 #include <linux/delay.h>
@@ -21,6 +22,7 @@
 #define CSIPHY_3PH_LNn_CFG3(n)			(0x008 + 0x100 * (n))
 #define CSIPHY_3PH_LNn_CFG4(n)			(0x00c + 0x100 * (n))
 #define CSIPHY_3PH_LNn_CFG4_T_HS_CLK_MISS	0xa4
+#define CSIPHY_3PH_LNn_CFG4_T_HS_CLK_MISS_660	0xa5
 #define CSIPHY_3PH_LNn_CFG5(n)			(0x010 + 0x100 * (n))
 #define CSIPHY_3PH_LNn_CFG5_T_HS_DTERM		0x02
 #define CSIPHY_3PH_LNn_CFG5_HS_REC_EQ_FQ_INT	0x50
@@ -121,7 +123,7 @@ static u8 csiphy_settle_cnt_calc(u32 pixel_clock, u8 bpp, u8 num_lanes,
 	u32 t_hs_settle; /* ps */
 	u8 settle_cnt;
 
-	mipi_clock = pixel_clock * bpp / (2 * num_lanes);
+	mipi_clock = ((u64)pixel_clock) * bpp / (2 * num_lanes);
 	ui = div_u64(1000000000000LL, mipi_clock);
 	ui /= 2;
 	t_hs_prepare_max = 85000 + 6 * ui;
@@ -198,7 +200,10 @@ static void csiphy_lanes_enable(struct csiphy_device *csiphy,
 	val = CSIPHY_3PH_LNn_CFG1_SWI_REC_DLY_PRG;
 	writel_relaxed(val, csiphy->base + CSIPHY_3PH_LNn_CFG1(l));
 
-	val = CSIPHY_3PH_LNn_CFG4_T_HS_CLK_MISS;
+	if (csiphy->camss->version == CAMSS_660)
+		val = CSIPHY_3PH_LNn_CFG4_T_HS_CLK_MISS_660;
+	else
+		val = CSIPHY_3PH_LNn_CFG4_T_HS_CLK_MISS;
 	writel_relaxed(val, csiphy->base + CSIPHY_3PH_LNn_CFG4(l));
 
 	val = CSIPHY_3PH_LNn_MISC1_IS_CLKLANE;

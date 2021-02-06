@@ -653,7 +653,7 @@ swnode_register(const struct software_node *node, struct swnode *parent,
 	swnode->parent = parent;
 	swnode->allocated = allocated;
 	swnode->kobj.kset = swnode_kset;
-	swnode->fwnode.ops = &software_node_ops;
+	fwnode_init(&swnode->fwnode, &software_node_ops);
 
 	ida_init(&swnode->child_ids);
 	INIT_LIST_HEAD(&swnode->entry);
@@ -761,17 +761,13 @@ EXPORT_SYMBOL_GPL(software_node_register_node_group);
  */
 void software_node_unregister_node_group(const struct software_node **node_group)
 {
-	struct swnode *swnode;
 	unsigned int i;
 
 	if (!node_group)
 		return;
 
-	for (i = 0; node_group[i]; i++) {
-		swnode = software_node_to_swnode(node_group[i]);
-		if (swnode)
-			fwnode_remove_software_node(&swnode->fwnode);
-	}
+	for (i = 0; node_group[i]; i++)
+		software_node_unregister(node_group[i]);
 }
 EXPORT_SYMBOL_GPL(software_node_unregister_node_group);
 

@@ -49,7 +49,7 @@ struct qcom_cpufreq_drv;
 struct qcom_cpufreq_match_data {
 	int (*get_version)(struct device *cpu_dev,
 			   struct nvmem_cell *speedbin_nvmem,
-			   char **pvs_name,
+			   char *pvs_name,
 			   struct qcom_cpufreq_drv *drv);
 	const char **genpd_names;
 };
@@ -173,13 +173,12 @@ static enum _msm8996_version qcom_cpufreq_get_msm_id(void)
 
 static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
 					  struct nvmem_cell *speedbin_nvmem,
-					  char **pvs_name,
+					  char *pvs_name,
 					  struct qcom_cpufreq_drv *drv)
 {
 	size_t len;
 	u8 *speedbin;
 	enum _msm8996_version msm8996_version;
-	*pvs_name = NULL;
 
 	msm8996_version = qcom_cpufreq_get_msm_id();
 	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
@@ -209,7 +208,7 @@ static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
 
 static int qcom_cpufreq_krait_name_version(struct device *cpu_dev,
 					   struct nvmem_cell *speedbin_nvmem,
-					   char **pvs_name,
+					   char *pvs_name,
 					   struct qcom_cpufreq_drv *drv)
 {
 	int speed = 0, pvs = 0, pvs_ver = 0;
@@ -235,7 +234,40 @@ static int qcom_cpufreq_krait_name_version(struct device *cpu_dev,
 		return -ENODEV;
 	}
 
-	snprintf(*pvs_name, sizeof("speedXX-pvsXX-vXX"), "speed%d-pvs%d-v%d",
+	snprintf(pvs_name, sizeof("speedXX-pvsXX-vXX"), "speed%d-pvs%d-v%d",
+		 speed, pvs, pvs_ver);
+
+	drv->versions = (1 << speed);
+
+	kfree(speedbin);
+	return 0;
+}
+
+static int qcom_cpufreq_generic_name_version(struct device *cpu_dev,
+					   struct nvmem_cell *speedbin_nvmem,
+					   char *pvs_name,
+					   struct qcom_cpufreq_drv *drv)
+{
+	int speed = 0, pvs = 0, pvs_ver = 0;
+	u8 *speedbin;
+	size_t len;
+
+	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
+
+	if (IS_ERR(speedbin))
+		return PTR_ERR(speedbin);
+
+	switch (len) {
+	case 1:
+		speed = (*speedbin) & 0x1f;
+		dev_dbg(cpu_dev, "Speed bin: %d\n", speed);
+		break;
+	default:
+		dev_err(cpu_dev, "Unable to read nvmem data. Defaulting to 0!\n");
+		return -ENODEV;
+	}
+
+	snprintf(pvs_name, sizeof("speedXX-pvsXX-vXX"), "speed%d-pvs%d-v%d",
 		 speed, pvs, pvs_ver);
 
 	drv->versions = (1 << speed);
@@ -258,13 +290,18 @@ static const struct qcom_cpufreq_match_data match_data_qcs404 = {
 	.genpd_names = qcs404_genpd_names,
 };
 
+static const struct qcom_cpufreq_match_data match_data_generic = {
+	.get_version = qcom_cpufreq_generic_name_version,
+	.genpd_names = qcs404_genpd_names,
+};
+
 static int qcom_cpufreq_probe(struct platform_device *pdev)
 {
 	struct qcom_cpufreq_drv *drv;
 	struct nvmem_cell *speedbin_nvmem;
 	struct device_node *np;
 	struct device *cpu_dev;
-	char *pvs_name = "speedXX-pvsXX-vXX";
+	char pvs_name[sizeof("speedXX-pvsXX-vXX")] = { 0 };
 	unsigned cpu;
 	const struct of_device_id *match;
 	int ret;
@@ -306,7 +343,7 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
 		}
 
 		ret = drv->data->get_version(cpu_dev,
-							speedbin_nvmem, &pvs_name, drv);
+							speedbin_nvmem, pvs_name, drv);
 		if (ret) {
 			nvmem_cell_put(speedbin_nvmem);
 			goto free_drv;
@@ -347,7 +384,7 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
 
 		if (drv->data->get_version) {
 
-			if (pvs_name) {
+			if (pvs_name[0]) {
 				drv->names_opp_tables[cpu] = dev_pm_opp_set_prop_name(
 								     cpu_dev,
 								     pvs_name);
@@ -397,19 +434,19 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
 
 free_genpd_opp:
 	for_each_possible_cpu(cpu) {
-		if (IS_ERR_OR_NULL(drv->genpd_opp_tables[cpu]))
+		if (IS_ERR(drv->genpd_opp_tables[cpu]))
 			break;
 		dev_pm_opp_detach_genpd(drv->genpd_opp_tables[cpu]);
 	}
 	kfree(drv->genpd_opp_tables);
 free_opp:
 	for_each_possible_cpu(cpu) {
-		if (IS_ERR_OR_NULL(drv->names_opp_tables[cpu]))
+		if (IS_ERR(drv->names_opp_tables[cpu]))
 			break;
 		dev_pm_opp_put_prop_name(drv->names_opp_tables[cpu]);
 	}
 	for_each_possible_cpu(cpu) {
-		if (IS_ERR_OR_NULL(drv->hw_opp_tables[cpu]))
+		if (IS_ERR(drv->hw_opp_tables[cpu]))
 			break;
 		dev_pm_opp_put_supported_hw(drv->hw_opp_tables[cpu]);
 	}
@@ -430,12 +467,9 @@ static int qcom_cpufreq_remove(struct platform_device *pdev)
 	platform_device_unregister(cpufreq_dt_pdev);
 
 	for_each_possible_cpu(cpu) {
-		if (drv->names_opp_tables[cpu])
-			dev_pm_opp_put_supported_hw(drv->names_opp_tables[cpu]);
-		if (drv->hw_opp_tables[cpu])
-			dev_pm_opp_put_supported_hw(drv->hw_opp_tables[cpu]);
-		if (drv->genpd_opp_tables[cpu])
-			dev_pm_opp_detach_genpd(drv->genpd_opp_tables[cpu]);
+		dev_pm_opp_put_supported_hw(drv->names_opp_tables[cpu]);
+		dev_pm_opp_put_supported_hw(drv->hw_opp_tables[cpu]);
+		dev_pm_opp_detach_genpd(drv->genpd_opp_tables[cpu]);
 	}
 
 	kfree(drv->names_opp_tables);
@@ -462,8 +496,10 @@ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
 	{ .compatible = "qcom,apq8064", .data = &match_data_krait },
 	{ .compatible = "qcom,msm8974", .data = &match_data_krait },
 	{ .compatible = "qcom,msm8960", .data = &match_data_krait },
+	{ .compatible = "qcom,msm8953", .data = &match_data_generic },
 	{},
 };
+MODULE_DEVICE_TABLE(of, qcom_cpufreq_match_list);
 
 /*
  * Since the driver depends on smem and nvmem drivers, which may

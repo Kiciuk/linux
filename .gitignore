@@ -44,6 +44,7 @@
 *.tab.[ch]
 *.tar
 *.xz
+*.zst
 Module.symvers
 modules.builtin
 modules.order
@@ -63,6 +64,9 @@ modules.order
 /Module.markers
 /modules.builtin.modinfo
 /modules.nsdeps
+/make.sh
+
+/firmware/
 
 #
 # RPM spec file (make rpm-pkg)
@@ -151,3 +155,6 @@ x509.genkey
 
 # Clang's compilation database file
 /compile_commands.json
+
+# Documentation toolchain
+sphinx_*/

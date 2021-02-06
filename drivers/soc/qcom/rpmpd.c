@@ -35,7 +35,7 @@
 #define KEY_FLOOR_LEVEL		0x6c6676   /* vfl */
 #define KEY_LEVEL		0x6c766c76 /* vlvl */
 
-#define MAX_8996_RPMPD_STATE	6
+#define MAX_CORNER_RPMPD_STATE	6
 
 #define DEFINE_RPMPD_PAIR(_platform, _name, _active, r_type, r_key,	\
 			  r_id)						\
@@ -116,6 +116,75 @@ struct rpmpd_desc {
 
 static DEFINE_MUTEX(rpmpd_lock);
 
+/* msm8939 RPM Power Domains */
+DEFINE_RPMPD_PAIR(msm8939, vddmd, vddmd_ao, SMPA, CORNER, 1);
+DEFINE_RPMPD_VFC(msm8939, vddmd_vfc, SMPA, 1);
+
+DEFINE_RPMPD_PAIR(msm8939, vddcx, vddcx_ao, SMPA, CORNER, 2);
+DEFINE_RPMPD_VFC(msm8939, vddcx_vfc, SMPA, 2);
+
+DEFINE_RPMPD_PAIR(msm8939, vddmx, vddmx_ao, LDOA, CORNER, 3);
+
+static struct rpmpd *msm8939_rpmpds[] = {
+	[MSM8939_VDDMDCX] =	&msm8939_vddmd,
+	[MSM8939_VDDMDCX_AO] =	&msm8939_vddmd_ao,
+	[MSM8939_VDDMDCX_VFC] =	&msm8939_vddmd_vfc,
+	[MSM8939_VDDCX] =	&msm8939_vddcx,
+	[MSM8939_VDDCX_AO] =	&msm8939_vddcx_ao,
+	[MSM8939_VDDCX_VFC] =	&msm8939_vddcx_vfc,
+	[MSM8939_VDDMX] =	&msm8939_vddmx,
+	[MSM8939_VDDMX_AO] =	&msm8939_vddmx_ao,
+};
+
+static const struct rpmpd_desc msm8939_desc = {
+	.rpmpds = msm8939_rpmpds,
+	.num_pds = ARRAY_SIZE(msm8939_rpmpds),
+	.max_state = MAX_CORNER_RPMPD_STATE,
+};
+
+/* msm8916 RPM Power Domains */
+DEFINE_RPMPD_PAIR(msm8916, vddcx, vddcx_ao, SMPA, CORNER, 1);
+DEFINE_RPMPD_PAIR(msm8916, vddmx, vddmx_ao, LDOA, CORNER, 3);
+
+DEFINE_RPMPD_VFC(msm8916, vddcx_vfc, SMPA, 1);
+
+static struct rpmpd *msm8916_rpmpds[] = {
+	[MSM8916_VDDCX] =	&msm8916_vddcx,
+	[MSM8916_VDDCX_AO] =	&msm8916_vddcx_ao,
+	[MSM8916_VDDCX_VFC] =	&msm8916_vddcx_vfc,
+	[MSM8916_VDDMX] =	&msm8916_vddmx,
+	[MSM8916_VDDMX_AO] =	&msm8916_vddmx_ao,
+};
+
+static const struct rpmpd_desc msm8916_desc = {
+	.rpmpds = msm8916_rpmpds,
+	.num_pds = ARRAY_SIZE(msm8916_rpmpds),
+	.max_state = MAX_CORNER_RPMPD_STATE,
+};
+
+/* msm8953 RPM Power Domains */
+DEFINE_RPMPD_PAIR(msm8953, vddmss, vddmss_ao, SMPA, LEVEL, 1);
+DEFINE_RPMPD_PAIR(msm8953, vddcx, vddcx_ao, SMPA, LEVEL, 2);
+DEFINE_RPMPD_PAIR(msm8953, vddmx, vddmx_ao, SMPA, LEVEL, 7);
+
+DEFINE_RPMPD_VFL(msm8953, vddcx_vfl, SMPA, 2);
+
+static struct rpmpd *msm8953_rpmpds[] = {
+	[MSM8953_VDDMSS] =	&msm8953_vddmss,
+	[MSM8953_VDDMSS_AO] =	&msm8953_vddmss_ao,
+	[MSM8953_VDDCX] =	&msm8953_vddcx,
+	[MSM8953_VDDCX_AO] =	&msm8953_vddcx_ao,
+	[MSM8953_VDDCX_VFL] =	&msm8953_vddcx_vfl,
+	[MSM8953_VDDMX] =	&msm8953_vddmx,
+	[MSM8953_VDDMX_AO] =	&msm8953_vddmx_ao,
+};
+
+static const struct rpmpd_desc msm8953_desc = {
+	.rpmpds = msm8953_rpmpds,
+	.num_pds = ARRAY_SIZE(msm8953_rpmpds),
+	.max_state = RPM_SMD_LEVEL_TURBO,
+};
+
 /* msm8976 RPM Power Domains */
 DEFINE_RPMPD_PAIR(msm8976, vddcx, vddcx_ao, SMPA, LEVEL, 2);
 DEFINE_RPMPD_PAIR(msm8976, vddmx, vddmx_ao, SMPA, LEVEL, 6);
@@ -159,7 +228,7 @@ static struct rpmpd *msm8996_rpmpds[] = {
 static const struct rpmpd_desc msm8996_desc = {
 	.rpmpds = msm8996_rpmpds,
 	.num_pds = ARRAY_SIZE(msm8996_rpmpds),
-	.max_state = MAX_8996_RPMPD_STATE,
+	.max_state = MAX_CORNER_RPMPD_STATE,
 };
 
 /* msm8998 RPM Power domains */
@@ -220,11 +289,47 @@ static const struct rpmpd_desc qcs404_desc = {
 	.max_state = RPM_SMD_LEVEL_BINNING,
 };
 
+/* sdm660 RPM Power domains */
+DEFINE_RPMPD_PAIR(sdm660, vddcx, vddcx_ao, RWCX, LEVEL, 0);
+DEFINE_RPMPD_VFL(sdm660, vddcx_vfl, RWCX, 0);
+
+DEFINE_RPMPD_PAIR(sdm660, vddmx, vddmx_ao, RWMX, LEVEL, 0);
+DEFINE_RPMPD_VFL(sdm660, vddmx_vfl, RWMX, 0);
+
+DEFINE_RPMPD_LEVEL(sdm660, vdd_ssccx, RWLC, 0);
+DEFINE_RPMPD_VFL(sdm660, vdd_ssccx_vfl, RWLC, 0);
+
+DEFINE_RPMPD_LEVEL(sdm660, vdd_sscmx, RWLM, 0);
+DEFINE_RPMPD_VFL(sdm660, vdd_sscmx_vfl, RWLM, 0);
+
+static struct rpmpd *sdm660_rpmpds[] = {
+	[SDM660_VDDCX] =		&sdm660_vddcx,
+	[SDM660_VDDCX_AO] =		&sdm660_vddcx_ao,
+	[SDM660_VDDCX_VFL] =		&sdm660_vddcx_vfl,
+	[SDM660_VDDMX] =		&sdm660_vddmx,
+	[SDM660_VDDMX_AO] =		&sdm660_vddmx_ao,
+	[SDM660_VDDMX_VFL] =		&sdm660_vddmx_vfl,
+	[SDM660_SSCCX] =		&sdm660_vdd_ssccx,
+	[SDM660_SSCCX_VFL] =		&sdm660_vdd_ssccx_vfl,
+	[SDM660_SSCMX] =		&sdm660_vdd_sscmx,
+	[SDM660_SSCMX_VFL] =		&sdm660_vdd_sscmx_vfl,
+};
+
+static const struct rpmpd_desc sdm660_desc = {
+	.rpmpds = sdm660_rpmpds,
+	.num_pds = ARRAY_SIZE(sdm660_rpmpds),
+	.max_state = RPM_SMD_LEVEL_TURBO,
+};
+
 static const struct of_device_id rpmpd_match_table[] = {
+	{ .compatible = "qcom,msm8916-rpmpd", .data = &msm8916_desc },
+	{ .compatible = "qcom,msm8939-rpmpd", .data = &msm8939_desc },
+	{ .compatible = "qcom,msm8953-rpmpd", .data = &msm8953_desc },
 	{ .compatible = "qcom,msm8976-rpmpd", .data = &msm8976_desc },
 	{ .compatible = "qcom,msm8996-rpmpd", .data = &msm8996_desc },
 	{ .compatible = "qcom,msm8998-rpmpd", .data = &msm8998_desc },
 	{ .compatible = "qcom,qcs404-rpmpd", .data = &qcs404_desc },
+	{ .compatible = "qcom,sdm660-rpmpd", .data = &sdm660_desc },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, rpmpd_match_table);
@@ -403,6 +508,10 @@ static int rpmpd_probe(struct platform_device *pdev)
 		rpmpds[i]->pd.set_performance_state = rpmpd_set_performance;
 		rpmpds[i]->pd.opp_to_performance_state = rpmpd_get_performance;
 		pm_genpd_init(&rpmpds[i]->pd, NULL, true);
+		rpmpds[i]->pd.domain.ops.resume_early =	rpmpds[i]->pd.domain.ops.resume_noirq;
+		rpmpds[i]->pd.domain.ops.suspend_late =	rpmpds[i]->pd.domain.ops.suspend_noirq;;
+		rpmpds[i]->pd.domain.ops.resume_noirq = NULL;
+		rpmpds[i]->pd.domain.ops.suspend_noirq = NULL;
 
 		data->domains[i] = &rpmpds[i]->pd;
 	}

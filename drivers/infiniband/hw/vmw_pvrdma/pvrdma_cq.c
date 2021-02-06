@@ -119,6 +119,9 @@ int pvrdma_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
 
 	BUILD_BUG_ON(sizeof(struct pvrdma_cqe) != 64);
 
+	if (attr->flags)
+		return -EOPNOTSUPP;
+
 	entries = roundup_pow_of_two(entries);
 	if (entries < 1 || entries > dev->dsr->caps.max_cqe)
 		return -EINVAL;
@@ -142,7 +145,7 @@ int pvrdma_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
 			goto err_cq;
 		}
 
-		npages = ib_umem_page_count(cq->umem);
+		npages = ib_umem_num_dma_blocks(cq->umem, PAGE_SIZE);
 	} else {
 		/* One extra page for shared ring state */
 		npages = 1 + (entries * sizeof(struct pvrdma_cqe) +
@@ -235,7 +238,7 @@ static void pvrdma_free_cq(struct pvrdma_dev *dev, struct pvrdma_cq *cq)
  * @cq: the completion queue to destroy.
  * @udata: user data or null for kernel object
  */
-void pvrdma_destroy_cq(struct ib_cq *cq, struct ib_udata *udata)
+int pvrdma_destroy_cq(struct ib_cq *cq, struct ib_udata *udata)
 {
 	struct pvrdma_cq *vcq = to_vcq(cq);
 	union pvrdma_cmd_req req;
@@ -261,6 +264,7 @@ void pvrdma_destroy_cq(struct ib_cq *cq, struct ib_udata *udata)
 
 	pvrdma_free_cq(dev, vcq);
 	atomic_dec(&dev->num_cqs);
+	return 0;
 }
 
 static inline struct pvrdma_cqe *get_cqe(struct pvrdma_cq *cq, int i)
@@ -375,7 +379,7 @@ retry:
  * pvrdma_poll_cq - poll for work completion queue entries
  * @ibcq: completion queue
  * @num_entries: the maximum number of entries
- * @entry: pointer to work completion array
+ * @wc: pointer to work completion array
  *
  * @return: number of polled completion entries
  */

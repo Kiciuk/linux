@@ -383,7 +383,9 @@ static u32 csid_src_pad_code(struct csid_device *csid, u32 sink_code,
 			return 0;
 
 		return sink_code;
-	} else if (csid->camss->version == CAMSS_8x96) {
+	} else if (csid->camss->version == CAMSS_8x96 ||
+		   csid->camss->version == CAMSS_660 ||
+		   csid->camss->version == CAMSS_8x53) {
 		switch (sink_code) {
 		case MEDIA_BUS_FMT_SBGGR10_1X10:
 		{
@@ -481,7 +483,7 @@ static int csid_set_clock_rates(struct csid_device *csid)
 				csid->nformats,
 				csid->fmt[MSM_CSIPHY_PAD_SINK].code);
 			u8 num_lanes = csid->phy.lane_cnt;
-			u64 min_rate = pixel_clock * f->bpp /
+			u64 min_rate = ((u64)pixel_clock) * f->bpp /
 							(2 * num_lanes * 4);
 			long rate;
 
@@ -562,8 +564,10 @@ static int csid_set_power(struct v4l2_subdev *sd, int on)
 		u32 hw_version;
 
 		ret = pm_runtime_get_sync(dev);
-		if (ret < 0)
+		if (ret < 0) {
+			pm_runtime_put_sync(dev);
 			return ret;
+		}
 
 		ret = regulator_enable(csid->vdda);
 		if (ret < 0) {
@@ -716,7 +720,9 @@ static int csid_set_stream(struct v4l2_subdev *sd, int enable)
 		val |= df << CAMSS_CSID_CID_n_CFG_DECODE_FORMAT_SHIFT;
 		val |= CAMSS_CSID_CID_n_CFG_RDI_MODE_RAW_DUMP;
 
-		if (csid->camss->version == CAMSS_8x96) {
+		if (csid->camss->version == CAMSS_8x96 ||
+		    csid->camss->version == CAMSS_660 ||
+		    csid->camss->version == CAMSS_8x53) {
 			u32 sink_code = csid->fmt[MSM_CSID_PAD_SINK].code;
 			u32 src_code = csid->fmt[MSM_CSID_PAD_SRC].code;
 
@@ -1096,7 +1102,9 @@ int msm_csid_subdev_init(struct camss *camss, struct csid_device *csid,
 		csid->formats = csid_formats_8x16;
 		csid->nformats =
 				ARRAY_SIZE(csid_formats_8x16);
-	} else if (camss->version == CAMSS_8x96) {
+	} else if (camss->version == CAMSS_8x96 ||
+		   camss->version == CAMSS_660 ||
+		   camss->version == CAMSS_8x53) {
 		csid->formats = csid_formats_8x96;
 		csid->nformats =
 				ARRAY_SIZE(csid_formats_8x96);
@@ -1356,7 +1364,7 @@ int msm_csid_register_entity(struct csid_device *csid,
 	pads[MSM_CSID_PAD_SINK].flags = MEDIA_PAD_FL_SINK;
 	pads[MSM_CSID_PAD_SRC].flags = MEDIA_PAD_FL_SOURCE;
 
-	sd->entity.function = MEDIA_ENT_F_IO_V4L;
+	sd->entity.function = MEDIA_ENT_F_PROC_VIDEO_PIXEL_FORMATTER;
 	sd->entity.ops = &csid_media_ops;
 	ret = media_entity_pads_init(&sd->entity, MSM_CSID_PADS_NUM, pads);
 	if (ret < 0) {

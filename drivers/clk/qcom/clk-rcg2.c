@@ -597,6 +597,10 @@ static int clk_byte2_set_rate(struct clk_hw *hw, unsigned long rate,
 	u32 mask = BIT(rcg->hid_width) - 1;
 	u32 cfg;
 
+	if (clk_rcg2_is_enabled(hw) &&
+	    rate == clk_rcg2_recalc_rate(hw, parent_rate))
+		return 0;
+
 	div = DIV_ROUND_UP((2 * parent_rate), rate) - 1;
 	div = min_t(u32, div, mask);
 
@@ -676,6 +680,11 @@ static int clk_pixel_set_rate(struct clk_hw *hw, unsigned long rate,
 	u32 mask = BIT(rcg->hid_width) - 1;
 	u32 hid_div, cfg;
 	int i, num_parents = clk_hw_get_num_parents(hw);
+
+
+	if (clk_rcg2_is_enabled(hw) &&
+	    rate == clk_rcg2_recalc_rate(hw, parent_rate))
+		return 0;
 
 	regmap_read(rcg->clkr.regmap, rcg->cmd_rcgr + CFG_REG, &cfg);
 	cfg &= CFG_SRC_SEL_MASK;
@@ -1182,14 +1191,21 @@ static int clk_rcg2_dp_set_rate_and_parent(struct clk_hw *hw,
 static int clk_rcg2_dp_determine_rate(struct clk_hw *hw,
 				struct clk_rate_request *req)
 {
-	struct clk_rate_request parent_req = *req;
-	int ret;
+	struct clk_rcg2 *rcg = to_clk_rcg2(hw);
+	unsigned long num, den;
+	u64 tmp;
 
-	ret = __clk_determine_rate(clk_hw_get_parent(hw), &parent_req);
-	if (ret)
-		return ret;
+	/* Parent rate is a fixed phy link rate */
+	rational_best_approximation(req->best_parent_rate, req->rate,
+			GENMASK(rcg->mnd_width - 1, 0),
+			GENMASK(rcg->mnd_width - 1, 0), &den, &num);
 
-	req->best_parent_rate = parent_req.rate;
+	if (!num || !den)
+		return -EINVAL;
+
+	tmp = req->best_parent_rate * num;
+	do_div(tmp, den);
+	req->rate = tmp;
 
 	return 0;
 }

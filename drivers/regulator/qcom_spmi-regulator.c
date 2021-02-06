@@ -37,6 +37,10 @@
 #define SPMI_REGULATOR_PIN_CTRL_HPM_SLEEP_B		0x10
 #define SPMI_REGULATOR_PIN_CTRL_HPM_HW_DEFAULT		0x20
 
+#define SAW_REG_VERSION					0xfd0
+#define SAW_VERSION(major, minor)			((major & 0xf) << 28 | \
+							((minor & 0xfff) << 16))
+
 /*
  * Used with enable parameters to specify that hardware default register values
  * should be left unaltered.
@@ -135,6 +139,18 @@ enum spmi_regulator_subtype {
 	SPMI_REGULATOR_SUBTYPE_LV_P600		= 0x2b,
 	SPMI_REGULATOR_SUBTYPE_LV_P1200		= 0x2c,
 	SPMI_REGULATOR_SUBTYPE_LV_P450		= 0x2d,
+	SPMI_REGULATOR_SUBTYPE_HT_N300_ST	= 0x30,
+	SPMI_REGULATOR_SUBTYPE_HT_N600_ST	= 0x31,
+	SPMI_REGULATOR_SUBTYPE_HT_N1200_ST	= 0x32,
+	SPMI_REGULATOR_SUBTYPE_HT_LVP150	= 0x3b,
+	SPMI_REGULATOR_SUBTYPE_HT_LVP300	= 0x3c,
+	SPMI_REGULATOR_SUBTYPE_L660_N300_ST	= 0x42,
+	SPMI_REGULATOR_SUBTYPE_L660_N600_ST	= 0x43,
+	SPMI_REGULATOR_SUBTYPE_L660_P50		= 0x46,
+	SPMI_REGULATOR_SUBTYPE_L660_P150	= 0x47,
+	SPMI_REGULATOR_SUBTYPE_L660_P600	= 0x49,
+	SPMI_REGULATOR_SUBTYPE_L660_LVP150	= 0x4d,
+	SPMI_REGULATOR_SUBTYPE_L660_LVP600	= 0x4f,
 	SPMI_REGULATOR_SUBTYPE_LV100		= 0x01,
 	SPMI_REGULATOR_SUBTYPE_LV300		= 0x02,
 	SPMI_REGULATOR_SUBTYPE_MV300		= 0x08,
@@ -192,20 +208,70 @@ enum spmi_boost_byp_registers {
 };
 
 enum spmi_saw3_registers {
-	SAW3_SECURE				= 0x00,
-	SAW3_ID					= 0x04,
-	SAW3_SPM_STS				= 0x0C,
-	SAW3_AVS_STS				= 0x10,
-	SAW3_PMIC_STS				= 0x14,
-	SAW3_RST				= 0x18,
-	SAW3_VCTL				= 0x1C,
-	SAW3_AVS_CTL				= 0x20,
-	SAW3_AVS_LIMIT				= 0x24,
-	SAW3_AVS_DLY				= 0x28,
-	SAW3_AVS_HYSTERESIS			= 0x2C,
-	SAW3_SPM_STS2				= 0x38,
-	SAW3_SPM_PMIC_DATA_3			= 0x4C,
-	SAW3_VERSION				= 0xFD0,
+	SAW_SECURE,
+	SAW_ID,
+	SAW_SPM_STS,
+	SAW_AVS_STS,
+	SAW_PMIC_STS,
+	SAW_RST,
+	SAW_VCTL,
+	SAW_AVS_CTL,
+	SAW_AVS_LIMIT,
+	SAW_AVS_DLY,
+	SAW_AVS_HYSTERESIS,
+	SAW_STS2,
+	SAW_PMIC_DATA_3,
+	SAW_VERSION,
+	SAW_REG_MAX
+};
+
+const static uint32_t msm_spm_reg_offsets_saw21[SAW_REG_MAX] = {
+	[SAW_SECURE]		= 0x00,
+	[SAW_ID]		= 0x04,
+	[SAW_SPM_STS]		= 0x0C,
+	[SAW_AVS_STS]		= 0x10,
+	[SAW_PMIC_STS]		= 0x14,
+	[SAW_RST]		= 0x18,
+	[SAW_VCTL]		= 0x1C,
+	[SAW_AVS_CTL]		= 0x20,
+	[SAW_AVS_LIMIT]		= 0x24,
+	[SAW_AVS_DLY]		= 0x28,
+	[SAW_AVS_HYSTERESIS]	= 0x2C,
+	[SAW_PMIC_DATA_3]	= 0x4C,
+	[SAW_VERSION]		= SAW_REG_VERSION,
+};
+
+const static uint32_t msm_spm_reg_offsets_saw30[SAW_REG_MAX] = {
+	[SAW_SECURE]		= 0x00,
+	[SAW_ID]		= 0x04,
+	[SAW_SPM_STS]		= 0x0C,
+	[SAW_AVS_STS]		= 0x10,
+	[SAW_PMIC_STS]		= 0x14,
+	[SAW_RST]		= 0x18,
+	[SAW_VCTL]		= 0x1C,
+	[SAW_AVS_CTL]		= 0x20,
+	[SAW_AVS_LIMIT]		= 0x24,
+	[SAW_AVS_DLY]		= 0x28,
+	[SAW_AVS_HYSTERESIS]	= 0x2C,
+	[SAW_STS2]		= 0x38,
+	[SAW_PMIC_DATA_3]	= 0x4C,
+	[SAW_VERSION]		= SAW_REG_VERSION,
+};
+
+const static uint32_t msm_spm_reg_offsets_saw41[SAW_REG_MAX] = {
+	[SAW_SECURE]		= 0xC00,
+	[SAW_ID]		= 0xC04,
+	[SAW_STS2]		= 0xC10,
+	[SAW_SPM_STS]		= 0xC0C,
+	[SAW_AVS_STS]		= 0xC14,
+	[SAW_PMIC_STS]		= 0xC18,
+	[SAW_RST]		= 0xC1C,
+	[SAW_VCTL]		= 0x900,
+	[SAW_AVS_CTL]		= 0x904,
+	[SAW_AVS_LIMIT]		= 0x908,
+	[SAW_AVS_DLY]		= 0x90C,
+	[SAW_PMIC_DATA_3]	= 0x4C,
+	[SAW_VERSION]		= SAW_REG_VERSION,
 };
 
 /* Used for indexing into ctrl_reg.  These are offets from 0x40 */
@@ -380,7 +446,7 @@ struct spmi_regulator_mapping {
 	enum spmi_regulator_logical_type	logical_type;
 	u32					revision_min;
 	u32					revision_max;
-	struct regulator_ops			*ops;
+	const struct regulator_ops		*ops;
 	struct spmi_voltage_set_points		*set_points;
 	int					hpm_min_load;
 };
@@ -511,6 +577,22 @@ static struct spmi_voltage_range ult_pldo_ranges[] = {
 	SPMI_VOLTAGE_RANGE(0, 1750000, 1750000, 3337500, 3337500, 12500),
 };
 
+static struct spmi_voltage_range pldo660_ranges[] = {
+	SPMI_VOLTAGE_RANGE(0, 1504000, 1504000, 3544000, 3544000, 8000),
+};
+
+static struct spmi_voltage_range nldo660_ranges[] = {
+	SPMI_VOLTAGE_RANGE(0,  320000,  320000, 1304000, 1304000, 8000),
+};
+
+static struct spmi_voltage_range ht_lvpldo_ranges[] = {
+	SPMI_VOLTAGE_RANGE(0, 1504000, 1504000, 2000000, 2000000, 8000),
+};
+
+static struct spmi_voltage_range ht_nldo_ranges[] = {
+	SPMI_VOLTAGE_RANGE(0,  312000,  312000, 1304000, 1304000, 8000),
+};
+
 static struct spmi_voltage_range hfs430_ranges[] = {
 	SPMI_VOLTAGE_RANGE(0, 320000, 320000, 2040000, 2040000, 8000),
 };
@@ -530,6 +612,10 @@ static DEFINE_SPMI_SET_POINTS(ult_lo_smps);
 static DEFINE_SPMI_SET_POINTS(ult_ho_smps);
 static DEFINE_SPMI_SET_POINTS(ult_nldo);
 static DEFINE_SPMI_SET_POINTS(ult_pldo);
+static DEFINE_SPMI_SET_POINTS(pldo660);
+static DEFINE_SPMI_SET_POINTS(nldo660);
+static DEFINE_SPMI_SET_POINTS(ht_lvpldo);
+static DEFINE_SPMI_SET_POINTS(ht_nldo);
 static DEFINE_SPMI_SET_POINTS(hfs430);
 
 static inline int spmi_vreg_read(struct spmi_regulator *vreg, u16 addr, u8 *buf,
@@ -1185,6 +1271,7 @@ static irqreturn_t spmi_regulator_vs_ocp_isr(int irq, void *data)
 #define SAW3_AVS_CTL_CLEAR_MASK	0x7efc00
 
 static struct regmap *saw_regmap;
+const static uint32_t *saw_regs;
 
 static void spmi_saw_set_vdd(void *data)
 {
@@ -1193,9 +1280,9 @@ static void spmi_saw_set_vdd(void *data)
 	unsigned long timeout;
 	u8 voltage_sel = *(u8 *)data;
 
-	regmap_read(saw_regmap, SAW3_AVS_CTL, &avs_ctl);
-	regmap_read(saw_regmap, SAW3_VCTL, &vctl);
-	regmap_read(saw_regmap, SAW3_SPM_PMIC_DATA_3, &data3);
+	regmap_read(saw_regmap, saw_regs[SAW_AVS_CTL], &avs_ctl);
+	regmap_read(saw_regmap, saw_regs[SAW_VCTL], &vctl);
+	regmap_read(saw_regmap, saw_regs[SAW_PMIC_DATA_3], &data3);
 
 	/* select the band */
 	vctl &= ~SAW3_VCTL_CLEAR_MASK;
@@ -1208,16 +1295,16 @@ static void spmi_saw_set_vdd(void *data)
 	avs_enabled = SAW3_AVS_CTL_EN_MASK & avs_ctl;
 	if (avs_enabled) {
 		avs_ctl &= ~SAW3_AVS_CTL_TGGL_MASK;
-		regmap_write(saw_regmap, SAW3_AVS_CTL, avs_ctl);
+		regmap_write(saw_regmap, saw_regs[SAW_AVS_CTL], avs_ctl);
 	}
 
-	regmap_write(saw_regmap, SAW3_RST, 1);
-	regmap_write(saw_regmap, SAW3_VCTL, vctl);
-	regmap_write(saw_regmap, SAW3_SPM_PMIC_DATA_3, data3);
+	regmap_write(saw_regmap, saw_regs[SAW_RST], 1);
+	regmap_write(saw_regmap, saw_regs[SAW_VCTL], vctl);
+	regmap_write(saw_regmap, saw_regs[SAW_PMIC_DATA_3], data3);
 
 	timeout = jiffies + usecs_to_jiffies(100);
 	do {
-		regmap_read(saw_regmap, SAW3_PMIC_STS, &pmic_sts);
+		regmap_read(saw_regmap, saw_regs[SAW_PMIC_STS], &pmic_sts);
 		pmic_sts &= SAW3_VCTL_DATA_MASK;
 		if (pmic_sts == (u32)voltage_sel)
 			break;
@@ -1233,7 +1320,7 @@ static void spmi_saw_set_vdd(void *data)
 		avs_ctl |= ((pmic_sts - 4) << 10);
 		avs_ctl |= (pmic_sts << 17);
 		avs_ctl |= SAW3_AVS_CTL_TGGL_MASK;
-		regmap_write(saw_regmap, SAW3_AVS_CTL, avs_ctl);
+		regmap_write(saw_regmap, saw_regs[SAW_AVS_CTL], avs_ctl);
 	}
 }
 
@@ -1261,7 +1348,7 @@ spmi_regulator_saw_set_voltage(struct regulator_dev *rdev, unsigned selector)
 
 static struct regulator_ops spmi_saw_ops = {};
 
-static struct regulator_ops spmi_smps_ops = {
+static const struct regulator_ops spmi_smps_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1276,7 +1363,7 @@ static struct regulator_ops spmi_smps_ops = {
 	.set_pull_down		= spmi_regulator_common_set_pull_down,
 };
 
-static struct regulator_ops spmi_ldo_ops = {
+static const struct regulator_ops spmi_ldo_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1293,7 +1380,7 @@ static struct regulator_ops spmi_ldo_ops = {
 	.set_soft_start		= spmi_regulator_common_set_soft_start,
 };
 
-static struct regulator_ops spmi_ln_ldo_ops = {
+static const struct regulator_ops spmi_ln_ldo_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1305,7 +1392,7 @@ static struct regulator_ops spmi_ln_ldo_ops = {
 	.get_bypass		= spmi_regulator_common_get_bypass,
 };
 
-static struct regulator_ops spmi_vs_ops = {
+static const struct regulator_ops spmi_vs_ops = {
 	.enable			= spmi_regulator_vs_enable,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1316,7 +1403,7 @@ static struct regulator_ops spmi_vs_ops = {
 	.get_mode		= spmi_regulator_common_get_mode,
 };
 
-static struct regulator_ops spmi_boost_ops = {
+static const struct regulator_ops spmi_boost_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1327,7 +1414,7 @@ static struct regulator_ops spmi_boost_ops = {
 	.set_input_current_limit = spmi_regulator_set_ilim,
 };
 
-static struct regulator_ops spmi_ftsmps_ops = {
+static const struct regulator_ops spmi_ftsmps_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1342,7 +1429,7 @@ static struct regulator_ops spmi_ftsmps_ops = {
 	.set_pull_down		= spmi_regulator_common_set_pull_down,
 };
 
-static struct regulator_ops spmi_ult_lo_smps_ops = {
+static const struct regulator_ops spmi_ult_lo_smps_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1356,7 +1443,7 @@ static struct regulator_ops spmi_ult_lo_smps_ops = {
 	.set_pull_down		= spmi_regulator_common_set_pull_down,
 };
 
-static struct regulator_ops spmi_ult_ho_smps_ops = {
+static const struct regulator_ops spmi_ult_ho_smps_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1371,7 +1458,7 @@ static struct regulator_ops spmi_ult_ho_smps_ops = {
 	.set_pull_down		= spmi_regulator_common_set_pull_down,
 };
 
-static struct regulator_ops spmi_ult_ldo_ops = {
+static const struct regulator_ops spmi_ult_ldo_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1388,7 +1475,7 @@ static struct regulator_ops spmi_ult_ldo_ops = {
 	.set_soft_start		= spmi_regulator_common_set_soft_start,
 };
 
-static struct regulator_ops spmi_ftsmps426_ops = {
+static const struct regulator_ops spmi_ftsmps426_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1403,7 +1490,7 @@ static struct regulator_ops spmi_ftsmps426_ops = {
 	.set_pull_down		= spmi_regulator_common_set_pull_down,
 };
 
-static struct regulator_ops spmi_hfs430_ops = {
+static const struct regulator_ops spmi_hfs430_ops = {
 	.enable			= regulator_enable_regmap,
 	.disable		= regulator_disable_regmap,
 	.is_enabled		= regulator_is_enabled_regmap,
@@ -1443,6 +1530,30 @@ static const struct spmi_regulator_mapping supported_regulators[] = {
 	SPMI_VREG(LDO,   LV_P300,  0, INF, LDO,    ldo,    pldo,    10000),
 	SPMI_VREG(LDO,   LV_P600,  0, INF, LDO,    ldo,    pldo,    10000),
 	SPMI_VREG(LDO,   LV_P1200, 0, INF, LDO,    ldo,    pldo,    10000),
+	SPMI_VREG(LDO, HT_N300_ST,   0, INF, FTSMPS426, ftsmps426,
+							ht_nldo,   30000),
+	SPMI_VREG(LDO, HT_N600_ST,   0, INF, FTSMPS426, ftsmps426,
+							ht_nldo,   30000),
+	SPMI_VREG(LDO, HT_N1200_ST,  0, INF, FTSMPS426, ftsmps426,
+							ht_nldo,   30000),
+	SPMI_VREG(LDO, HT_LVP150,    0, INF, FTSMPS426, ftsmps426,
+							ht_lvpldo, 10000),
+	SPMI_VREG(LDO, HT_LVP300,    0, INF, FTSMPS426, ftsmps426,
+							ht_lvpldo, 10000),
+	SPMI_VREG(LDO, L660_N300_ST, 0, INF, FTSMPS426, ftsmps426,
+							nldo660,   10000),
+	SPMI_VREG(LDO, L660_N600_ST, 0, INF, FTSMPS426, ftsmps426,
+							nldo660,   10000),
+	SPMI_VREG(LDO, L660_P50,     0, INF, FTSMPS426, ftsmps426,
+							pldo660,   10000),
+	SPMI_VREG(LDO, L660_P150,    0, INF, FTSMPS426, ftsmps426,
+							pldo660,   10000),
+	SPMI_VREG(LDO, L660_P600,    0, INF, FTSMPS426, ftsmps426,
+							pldo660,   10000),
+	SPMI_VREG(LDO, L660_LVP150,  0, INF, FTSMPS426, ftsmps426,
+							ht_lvpldo, 10000),
+	SPMI_VREG(LDO, L660_LVP600,  0, INF, FTSMPS426, ftsmps426,
+							ht_lvpldo, 10000),
 	SPMI_VREG_VS(LV100,        0, INF),
 	SPMI_VREG_VS(LV300,        0, INF),
 	SPMI_VREG_VS(MV300,        0, INF),
@@ -1633,45 +1744,43 @@ static int spmi_regulator_init_registers(struct spmi_regulator *vreg,
 		return ret;
 
 	/* Set up enable pin control. */
-	if ((type == SPMI_REGULATOR_LOGICAL_TYPE_SMPS
-	     || type == SPMI_REGULATOR_LOGICAL_TYPE_LDO
-	     || type == SPMI_REGULATOR_LOGICAL_TYPE_VS)
-	    && !(data->pin_ctrl_enable
-			& SPMI_REGULATOR_PIN_CTRL_ENABLE_HW_DEFAULT)) {
-		ctrl_reg[SPMI_COMMON_IDX_ENABLE] &=
-			~SPMI_COMMON_ENABLE_FOLLOW_ALL_MASK;
-		ctrl_reg[SPMI_COMMON_IDX_ENABLE] |=
-		    data->pin_ctrl_enable & SPMI_COMMON_ENABLE_FOLLOW_ALL_MASK;
+	if (!(data->pin_ctrl_enable & SPMI_REGULATOR_PIN_CTRL_ENABLE_HW_DEFAULT)) {
+		switch (type) {
+		case SPMI_REGULATOR_LOGICAL_TYPE_SMPS:
+		case SPMI_REGULATOR_LOGICAL_TYPE_LDO:
+		case SPMI_REGULATOR_LOGICAL_TYPE_VS:
+			ctrl_reg[SPMI_COMMON_IDX_ENABLE] &=
+				~SPMI_COMMON_ENABLE_FOLLOW_ALL_MASK;
+			ctrl_reg[SPMI_COMMON_IDX_ENABLE] |=
+				data->pin_ctrl_enable & SPMI_COMMON_ENABLE_FOLLOW_ALL_MASK;
+			break;
+		default:
+			break;
+		}
 	}
 
 	/* Set up mode pin control. */
-	if ((type == SPMI_REGULATOR_LOGICAL_TYPE_SMPS
-	    || type == SPMI_REGULATOR_LOGICAL_TYPE_LDO)
-		&& !(data->pin_ctrl_hpm
-			& SPMI_REGULATOR_PIN_CTRL_HPM_HW_DEFAULT)) {
-		ctrl_reg[SPMI_COMMON_IDX_MODE] &=
-			~SPMI_COMMON_MODE_FOLLOW_ALL_MASK;
-		ctrl_reg[SPMI_COMMON_IDX_MODE] |=
-			data->pin_ctrl_hpm & SPMI_COMMON_MODE_FOLLOW_ALL_MASK;
-	}
-
-	if (type == SPMI_REGULATOR_LOGICAL_TYPE_VS
-	   && !(data->pin_ctrl_hpm & SPMI_REGULATOR_PIN_CTRL_HPM_HW_DEFAULT)) {
-		ctrl_reg[SPMI_COMMON_IDX_MODE] &=
-			~SPMI_COMMON_MODE_FOLLOW_AWAKE_MASK;
-		ctrl_reg[SPMI_COMMON_IDX_MODE] |=
-		       data->pin_ctrl_hpm & SPMI_COMMON_MODE_FOLLOW_AWAKE_MASK;
-	}
-
-	if ((type == SPMI_REGULATOR_LOGICAL_TYPE_ULT_LO_SMPS
-		|| type == SPMI_REGULATOR_LOGICAL_TYPE_ULT_HO_SMPS
-		|| type == SPMI_REGULATOR_LOGICAL_TYPE_ULT_LDO)
-		&& !(data->pin_ctrl_hpm
-			& SPMI_REGULATOR_PIN_CTRL_HPM_HW_DEFAULT)) {
-		ctrl_reg[SPMI_COMMON_IDX_MODE] &=
-			~SPMI_COMMON_MODE_FOLLOW_AWAKE_MASK;
-		ctrl_reg[SPMI_COMMON_IDX_MODE] |=
-		       data->pin_ctrl_hpm & SPMI_COMMON_MODE_FOLLOW_AWAKE_MASK;
+	if (!(data->pin_ctrl_hpm & SPMI_REGULATOR_PIN_CTRL_HPM_HW_DEFAULT)) {
+		switch (type) {
+		case SPMI_REGULATOR_LOGICAL_TYPE_SMPS:
+		case SPMI_REGULATOR_LOGICAL_TYPE_LDO:
+			ctrl_reg[SPMI_COMMON_IDX_MODE] &=
+				~SPMI_COMMON_MODE_FOLLOW_ALL_MASK;
+			ctrl_reg[SPMI_COMMON_IDX_MODE] |=
+				data->pin_ctrl_hpm & SPMI_COMMON_MODE_FOLLOW_ALL_MASK;
+			break;
+		case SPMI_REGULATOR_LOGICAL_TYPE_VS:
+		case SPMI_REGULATOR_LOGICAL_TYPE_ULT_LO_SMPS:
+		case SPMI_REGULATOR_LOGICAL_TYPE_ULT_HO_SMPS:
+		case SPMI_REGULATOR_LOGICAL_TYPE_ULT_LDO:
+			ctrl_reg[SPMI_COMMON_IDX_MODE] &=
+				~SPMI_COMMON_MODE_FOLLOW_AWAKE_MASK;
+			ctrl_reg[SPMI_COMMON_IDX_MODE] |=
+				data->pin_ctrl_hpm & SPMI_COMMON_MODE_FOLLOW_AWAKE_MASK;
+			break;
+		default:
+			break;
+		}
 	}
 
 	/* Write back any control register values that were modified. */
@@ -1960,6 +2069,55 @@ static const struct spmi_regulator_data pmi8994_regulators[] = {
 	{ }
 };
 
+static const struct spmi_regulator_data pm660_regulators[] = {
+	{ "s1", 0x1400, "vdd_s1", },
+	{ "s2", 0x1700, "vdd_s2", },
+	{ "s3", 0x1a00, "vdd_s3", },
+	{ "s4", 0x1d00, "vdd_s3", },
+	{ "s5", 0x2000, "vdd_s5", },
+	{ "s6", 0x2300, "vdd_s6", },
+	{ "l1", 0x4000, "vdd_l1_l6_l7", },
+	{ "l2", 0x4100, "vdd_l2_l3", },
+	{ "l3", 0x4200, "vdd_l2_l3", },
+	/* l4 is unaccessible on PM660 */
+	{ "l5", 0x4400, "vdd_l5", },
+	{ "l6", 0x4500, "vdd_l1_l6_l7", },
+	{ "l7", 0x4600, "vdd_l1_l6_l7", },
+	{ "l8", 0x4700, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l9", 0x4800, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l10", 0x4900, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l11", 0x4a00, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l12", 0x4b00, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l13", 0x4c00, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l14", 0x4d00, "vdd_l8_l9_l10_l11_l12_l13_l14", },
+	{ "l15", 0x4e00, "vdd_l15_l16_l17_l18_l19", },
+	{ "l16", 0x4f00, "vdd_l15_l16_l17_l18_l19", },
+	{ "l17", 0x5000, "vdd_l15_l16_l17_l18_l19", },
+	{ "l18", 0x5100, "vdd_l15_l16_l17_l18_l19", },
+	{ "l19", 0x5200, "vdd_l15_l16_l17_l18_l19", },
+	{ }
+};
+
+static const struct spmi_regulator_data pm660l_regulators[] = {
+	{ "s1", 0x1400, "vdd_s1", },
+	{ "s2", 0x1700, "vdd_s2", },
+	{ "s3", 0x1a00, "vdd_s3", },
+	{ "s4", 0x1d00, "vdd_s4", },
+	{ "s5", 0x2000, "vdd_s5", },
+	{ "l1", 0x4000, "vdd_l1_l9_l10", },
+	{ "l2", 0x4100, "vdd_l2", },
+	{ "l3", 0x4200, "vdd_l3_l5_l7_l8", },
+	{ "l4", 0x4300, "vdd_l4_l6", },
+	{ "l5", 0x4400, "vdd_l3_l5_l7_l8", },
+	{ "l6", 0x4500, "vdd_l4_l6", },
+	{ "l7", 0x4600, "vdd_l3_l5_l7_l8", },
+	{ "l8", 0x4700, "vdd_l3_l5_l7_l8", },
+	{ "l9", 0x4800, "vdd_l1_l9_l10", },
+	{ "l10", 0x4900, "vdd_l1_l9_l10", },
+	{ }
+};
+
+
 static const struct spmi_regulator_data pm8004_regulators[] = {
 	{ "s2", 0x1700, "vdd_s2", },
 	{ "s5", 0x2000, "vdd_s5", },
@@ -1988,6 +2146,8 @@ static const struct of_device_id qcom_spmi_regulator_match[] = {
 	{ .compatible = "qcom,pm8950-regulators", .data = &pm8950_regulators },
 	{ .compatible = "qcom,pm8994-regulators", .data = &pm8994_regulators },
 	{ .compatible = "qcom,pmi8994-regulators", .data = &pmi8994_regulators },
+	{ .compatible = "qcom,pm660-regulators", .data = &pm660_regulators },
+	{ .compatible = "qcom,pm660l-regulators", .data = &pm660l_regulators },
 	{ .compatible = "qcom,pms405-regulators", .data = &pms405_regulators },
 	{ }
 };
@@ -2007,6 +2167,7 @@ static int qcom_spmi_regulator_probe(struct platform_device *pdev)
 	struct device_node *node = pdev->dev.of_node;
 	struct device_node *syscon, *reg_node;
 	struct property *reg_prop;
+	unsigned int saw_version = 0;
 	int ret, lenp;
 	struct list_head *vreg_list;
 
@@ -2028,8 +2189,28 @@ static int qcom_spmi_regulator_probe(struct platform_device *pdev)
 		syscon = of_parse_phandle(node, "qcom,saw-reg", 0);
 		saw_regmap = syscon_node_to_regmap(syscon);
 		of_node_put(syscon);
-		if (IS_ERR(saw_regmap))
+		if (IS_ERR(saw_regmap)) {
 			dev_err(dev, "ERROR reading SAW regmap\n");
+			return PTR_ERR(saw_regmap);
+		}
+
+		regmap_read(saw_regmap, SAW_REG_VERSION, &saw_version);
+		switch (saw_version) {
+		case SAW_VERSION(2, 1):
+			saw_regs = msm_spm_reg_offsets_saw21;
+			break;
+		case SAW_VERSION(1, 0):
+		case SAW_VERSION(3, 0):
+			saw_regs = msm_spm_reg_offsets_saw30;
+			break;
+		case SAW_VERSION(4, 1):
+			saw_regs = msm_spm_reg_offsets_saw41;
+			break;
+		default:
+			dev_err(dev, "Unsupported SAW version - 0x%08x\n", saw_version);
+			saw_regmap = NULL;
+			return -EINVAL;
+		}
 	}
 
 	for (reg = match->data; reg->name; reg++) {

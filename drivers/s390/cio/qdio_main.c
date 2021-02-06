@@ -413,15 +413,8 @@ static inline void qdio_stop_polling(struct qdio_q *q)
 
 static inline void account_sbals(struct qdio_q *q, unsigned int count)
 {
-	int pos;
-
 	q->q_stats.nr_sbal_total += count;
-	if (count == QDIO_MAX_BUFFERS_MASK) {
-		q->q_stats.nr_sbals[7]++;
-		return;
-	}
-	pos = ilog2(count);
-	q->q_stats.nr_sbals[pos]++;
+	q->q_stats.nr_sbals[ilog2(count)]++;
 }
 
 static void process_buffer_error(struct qdio_q *q, unsigned int start,
@@ -464,11 +457,7 @@ static int get_inbound_buffer_frontier(struct qdio_q *q, unsigned int start)
 
 	q->timestamp = get_tod_clock_fast();
 
-	/*
-	 * Don't check 128 buffers, as otherwise qdio_inbound_q_moved
-	 * would return 0.
-	 */
-	count = min(atomic_read(&q->nr_buf_used), QDIO_MAX_BUFFERS_MASK);
+	count = atomic_read(&q->nr_buf_used);
 	if (!count)
 		return 0;
 
@@ -521,14 +510,7 @@ static int get_inbound_buffer_frontier(struct qdio_q *q, unsigned int start)
 
 static int qdio_inbound_q_moved(struct qdio_q *q, unsigned int start)
 {
-	int count;
-
-	count = get_inbound_buffer_frontier(q, start);
-
-	if (count && !is_thinint_irq(q->irq_ptr) && MACHINE_IS_LPAR)
-		q->u.in.timestamp = get_tod_clock();
-
-	return count;
+	return get_inbound_buffer_frontier(q, start);
 }
 
 static inline int qdio_inbound_q_done(struct qdio_q *q, unsigned int start)
@@ -546,42 +528,7 @@ static inline int qdio_inbound_q_done(struct qdio_q *q, unsigned int start)
 		/* more work coming */
 		return 0;
 
-	if (is_thinint_irq(q->irq_ptr))
-		return 1;
-
-	/* don't poll under z/VM */
-	if (MACHINE_IS_VM)
-		return 1;
-
-	/*
-	 * At this point we know, that inbound first_to_check
-	 * has (probably) not moved (see qdio_inbound_processing).
-	 */
-	if (get_tod_clock_fast() > q->u.in.timestamp + QDIO_INPUT_THRESHOLD) {
-		DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "in done:%02x", start);
-		return 1;
-	} else
-		return 0;
-}
-
-static inline void qdio_handle_aobs(struct qdio_q *q, int start, int count)
-{
-	unsigned char state = 0;
-	int j, b = start;
-
-	for (j = 0; j < count; ++j) {
-		get_buf_state(q, b, &state, 0);
-		if (state == SLSB_P_OUTPUT_PENDING) {
-			struct qaob *aob = q->u.out.aobs[b];
-			if (aob == NULL)
-				continue;
-
-			q->u.out.sbal_state[b].flags |=
-				QDIO_OUTBUF_STATE_FLAG_PENDING;
-			q->u.out.aobs[b] = NULL;
-		}
-		b = next_buf(b);
-	}
+	return 1;
 }
 
 static inline unsigned long qdio_aob_for_buffer(struct qdio_output_q *q,
@@ -673,6 +620,19 @@ void qdio_inbound_processing(unsigned long data)
 	__qdio_inbound_processing(q);
 }
 
+static void qdio_check_pending(struct qdio_q *q, unsigned int index)
+{
+	unsigned char state;
+
+	if (get_buf_state(q, index, &state, 0) > 0 &&
+	    state == SLSB_P_OUTPUT_PENDING &&
+	    q->u.out.aobs[index]) {
+		q->u.out.sbal_state[index].flags |=
+			QDIO_OUTBUF_STATE_FLAG_PENDING;
+		q->u.out.aobs[index] = NULL;
+	}
+}
+
 static int get_outbound_buffer_frontier(struct qdio_q *q, unsigned int start)
 {
 	unsigned char state = 0;
@@ -745,8 +705,13 @@ static inline int qdio_outbound_q_moved(struct qdio_q *q, unsigned int start)
 
 	if (count) {
 		DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "out moved:%1d", q->nr);
-		if (q->u.out.use_cq)
-			qdio_handle_aobs(q, start, count);
+
+		if (q->u.out.use_cq) {
+			unsigned int i;
+
+			for (i = 0; i < count; i++)
+				qdio_check_pending(q, QDIO_BUFNR(start + i));
+		}
 	}
 
 	return count;
@@ -1254,7 +1219,6 @@ static void qdio_trace_init_data(struct qdio_irq *irq,
 				 struct qdio_initialize *data)
 {
 	DBF_DEV_EVENT(DBF_ERR, irq, "qfmt:%1u", data->q_format);
-	DBF_DEV_HEX(irq, data->adapter_name, 8, DBF_ERR);
 	DBF_DEV_EVENT(DBF_ERR, irq, "qpff%4x", data->qib_param_field_format);
 	DBF_DEV_HEX(irq, &data->qib_param_field, sizeof(void *), DBF_ERR);
 	DBF_DEV_HEX(irq, &data->input_slib_elements, sizeof(void *), DBF_ERR);

@@ -435,12 +435,12 @@ static struct port_buffer *alloc_buf(struct virtio_device *vdev, size_t buf_size
 		/*
 		 * Allocate DMA memory from ancestor. When a virtio
 		 * device is created by remoteproc, the DMA memory is
-		 * associated with the grandparent device:
-		 * vdev => rproc => platform-dev.
+		 * associated with the parent device:
+		 * virtioY => remoteprocX#vdevYbuffer.
 		 */
-		if (!vdev->dev.parent || !vdev->dev.parent->parent)
+		buf->dev = vdev->dev.parent;
+		if (!buf->dev)
 			goto free_buf;
-		buf->dev = vdev->dev.parent->parent;
 
 		/* Increase device refcnt to avoid freeing it */
 		get_device(buf->dev);
@@ -2112,18 +2112,18 @@ fail:
 	return err;
 }
 
-static struct virtio_device_id id_table[] = {
+static const struct virtio_device_id id_table[] = {
 	{ VIRTIO_ID_CONSOLE, VIRTIO_DEV_ANY_ID },
 	{ 0 },
 };
 MODULE_DEVICE_TABLE(virtio, id_table);
 
-static unsigned int features[] = {
+static const unsigned int features[] = {
 	VIRTIO_CONSOLE_F_SIZE,
 	VIRTIO_CONSOLE_F_MULTIPORT,
 };
 
-static struct virtio_device_id rproc_serial_id_table[] = {
+static const struct virtio_device_id rproc_serial_id_table[] = {
 #if IS_ENABLED(CONFIG_REMOTEPROC)
 	{ VIRTIO_ID_RPROC_SERIAL, VIRTIO_DEV_ANY_ID },
 #endif
@@ -2131,7 +2131,7 @@ static struct virtio_device_id rproc_serial_id_table[] = {
 };
 MODULE_DEVICE_TABLE(virtio, rproc_serial_id_table);
 
-static unsigned int rproc_serial_features[] = {
+static const unsigned int rproc_serial_features[] = {
 };
 
 #ifdef CONFIG_PM_SLEEP

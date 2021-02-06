@@ -12,10 +12,13 @@
 #include <linux/kernel.h>
 #include <linux/of_address.h>
 #include <linux/pm_opp.h>
+#include <linux/pm_runtime.h>
+#include <linux/pm_domain.h>
 #include <linux/slab.h>
 #include <linux/soc/qcom/mdt_loader.h>
 #include <soc/qcom/ocmem.h>
 #include "adreno_gpu.h"
+#include "a6xx_gpu.h"
 #include "msm_gem.h"
 #include "msm_mmu.h"
 
@@ -189,12 +192,46 @@ struct msm_gem_address_space *
 adreno_iommu_create_address_space(struct msm_gpu *gpu,
 		struct platform_device *pdev)
 {
-	struct iommu_domain *iommu = iommu_domain_alloc(&platform_bus_type);
-	struct msm_mmu *mmu = msm_iommu_new(&pdev->dev, iommu);
+	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
+	struct iommu_domain *iommu;
+	struct msm_mmu *mmu;
 	struct msm_gem_address_space *aspace;
+	u64 start, size;
 
-	aspace = msm_gem_address_space_create(mmu, "gpu", SZ_16M,
-		0xffffffff - SZ_16M);
+	iommu = iommu_domain_alloc(&platform_bus_type);
+	if (!iommu)
+		return NULL;
+
+
+	if (adreno_is_a6xx(adreno_gpu)) {
+		struct a6xx_gpu *a6xx_gpu = to_a6xx_gpu(adreno_gpu);
+		struct io_pgtable_domain_attr pgtbl_cfg;
+		/*
+		* This allows GPU to set the bus attributes required to use system
+		* cache on behalf of the iommu page table walker.
+		*/
+		if (!IS_ERR(a6xx_gpu->htw_llc_slice)) {
+			pgtbl_cfg.quirks = IO_PGTABLE_QUIRK_ARM_OUTER_WBWA;
+			iommu_domain_set_attr(iommu, DOMAIN_ATTR_IO_PGTABLE_CFG, &pgtbl_cfg);
+		}
+	}
+
+	mmu = msm_iommu_new(&pdev->dev, iommu);
+	if (IS_ERR(mmu)) {
+		iommu_domain_free(iommu);
+		return ERR_CAST(mmu);
+	}
+
+	/*
+	 * Use the aperture start or SZ_16M, whichever is greater. This will
+	 * ensure that we align with the allocated pagetable range while still
+	 * allowing room in the lower 32 bits for GMEM and whatnot
+	 */
+	start = max_t(u64, SZ_16M, iommu->geometry.aperture_start);
+	size = iommu->geometry.aperture_end - start + 1;
+
+	aspace = msm_gem_address_space_create(mmu, "gpu",
+		start & GENMASK_ULL(48, 0), size);
 
 	if (IS_ERR(aspace) && !IS_ERR(mmu))
 		mmu->funcs->destroy(mmu);
@@ -209,6 +246,8 @@ int adreno_get_param(struct msm_gpu *gpu, uint32_t param, uint64_t *value)
 	switch (param) {
 	case MSM_PARAM_GPU_ID:
 		*value = adreno_gpu->info->revn;
+		if (*value == 506)
+			*value = 530;
 		return 0;
 	case MSM_PARAM_GMEM_SIZE:
 		*value = adreno_gpu->gmem;
@@ -396,28 +435,8 @@ int adreno_hw_init(struct msm_gpu *gpu)
 		ring->next = ring->start;
 
 		/* reset completed fence seqno: */
-		ring->memptrs->fence = ring->seqno;
+		ring->memptrs->fence = ring->fctx->completed_fence;
 		ring->memptrs->rptr = 0;
-	}
-
-	/*
-	 * Setup REG_CP_RB_CNTL.  The same value is used across targets (with
-	 * the excpetion of A430 that disables the RPTR shadow) - the cacluation
-	 * for the ringbuffer size and block size is moved to msm_gpu.h for the
-	 * pre-processor to deal with and the A430 variant is ORed in here
-	 */
-	adreno_gpu_write(adreno_gpu, REG_ADRENO_CP_RB_CNTL,
-		MSM_GPU_RB_CNTL_DEFAULT |
-		(adreno_is_a430(adreno_gpu) ? AXXX_CP_RB_CNTL_NO_UPDATE : 0));
-
-	/* Setup ringbuffer address - use ringbuffer[0] for GPU init */
-	adreno_gpu_write64(adreno_gpu, REG_ADRENO_CP_RB_BASE,
-		REG_ADRENO_CP_RB_BASE_HI, gpu->rb[0]->iova);
-
-	if (!adreno_is_a430(adreno_gpu)) {
-		adreno_gpu_write64(adreno_gpu, REG_ADRENO_CP_RB_RPTR_ADDR,
-			REG_ADRENO_CP_RB_RPTR_ADDR_HI,
-			rbmemptr(gpu->rb[0], rptr));
 	}
 
 	return 0;
@@ -427,11 +446,9 @@ int adreno_hw_init(struct msm_gpu *gpu)
 static uint32_t get_rptr(struct adreno_gpu *adreno_gpu,
 		struct msm_ringbuffer *ring)
 {
-	if (adreno_is_a430(adreno_gpu))
-		return ring->memptrs->rptr = adreno_gpu_read(
-			adreno_gpu, REG_ADRENO_CP_RB_RPTR);
-	else
-		return ring->memptrs->rptr;
+	struct msm_gpu *gpu = &adreno_gpu->base;
+
+	return gpu->funcs->get_rptr(gpu, ring);
 }
 
 struct msm_ringbuffer *adreno_active_ring(struct msm_gpu *gpu)
@@ -457,81 +474,8 @@ void adreno_recover(struct msm_gpu *gpu)
 	}
 }
 
-void adreno_submit(struct msm_gpu *gpu, struct msm_gem_submit *submit,
-		struct msm_file_private *ctx)
+void adreno_flush(struct msm_gpu *gpu, struct msm_ringbuffer *ring, u32 reg)
 {
-	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
-	struct msm_drm_private *priv = gpu->dev->dev_private;
-	struct msm_ringbuffer *ring = submit->ring;
-	unsigned i;
-
-	for (i = 0; i < submit->nr_cmds; i++) {
-		switch (submit->cmd[i].type) {
-		case MSM_SUBMIT_CMD_IB_TARGET_BUF:
-			/* ignore IB-targets */
-			break;
-		case MSM_SUBMIT_CMD_CTX_RESTORE_BUF:
-			/* ignore if there has not been a ctx switch: */
-			if (priv->lastctx == ctx)
-				break;
-			/* fall-thru */
-		case MSM_SUBMIT_CMD_BUF:
-			OUT_PKT3(ring, adreno_is_a4xx(adreno_gpu) ?
-				CP_INDIRECT_BUFFER_PFE : CP_INDIRECT_BUFFER_PFD, 2);
-			OUT_RING(ring, lower_32_bits(submit->cmd[i].iova));
-			OUT_RING(ring, submit->cmd[i].size);
-			OUT_PKT2(ring);
-			break;
-		}
-	}
-
-	OUT_PKT0(ring, REG_AXXX_CP_SCRATCH_REG2, 1);
-	OUT_RING(ring, submit->seqno);
-
-	if (adreno_is_a3xx(adreno_gpu) || adreno_is_a4xx(adreno_gpu)) {
-		/* Flush HLSQ lazy updates to make sure there is nothing
-		 * pending for indirect loads after the timestamp has
-		 * passed:
-		 */
-		OUT_PKT3(ring, CP_EVENT_WRITE, 1);
-		OUT_RING(ring, HLSQ_FLUSH);
-	}
-
-	/* wait for idle before cache flush/interrupt */
-	OUT_PKT3(ring, CP_WAIT_FOR_IDLE, 1);
-	OUT_RING(ring, 0x00000000);
-
-	if (!adreno_is_a2xx(adreno_gpu)) {
-		/* BIT(31) of CACHE_FLUSH_TS triggers CACHE_FLUSH_TS IRQ from GPU */
-		OUT_PKT3(ring, CP_EVENT_WRITE, 3);
-		OUT_RING(ring, CACHE_FLUSH_TS | BIT(31));
-		OUT_RING(ring, rbmemptr(ring, fence));
-		OUT_RING(ring, submit->seqno);
-	} else {
-		/* BIT(31) means something else on a2xx */
-		OUT_PKT3(ring, CP_EVENT_WRITE, 3);
-		OUT_RING(ring, CACHE_FLUSH_TS);
-		OUT_RING(ring, rbmemptr(ring, fence));
-		OUT_RING(ring, submit->seqno);
-		OUT_PKT3(ring, CP_INTERRUPT, 1);
-		OUT_RING(ring, 0x80000000);
-	}
-
-#if 0
-	if (adreno_is_a3xx(adreno_gpu)) {
-		/* Dummy set-constant to trigger context rollover */
-		OUT_PKT3(ring, CP_SET_CONSTANT, 2);
-		OUT_RING(ring, CP_REG(REG_A3XX_HLSQ_CL_KERNEL_GROUP_X_REG));
-		OUT_RING(ring, 0x00000000);
-	}
-#endif
-
-	gpu->funcs->flush(gpu, ring);
-}
-
-void adreno_flush(struct msm_gpu *gpu, struct msm_ringbuffer *ring)
-{
-	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
 	uint32_t wptr;
 
 	/* Copy the shadow to the actual register */
@@ -547,7 +491,7 @@ void adreno_flush(struct msm_gpu *gpu, struct msm_ringbuffer *ring)
 	/* ensure writes to ringbuffer have hit system memory: */
 	mb();
 
-	adreno_gpu_write(adreno_gpu, REG_ADRENO_CP_RB_WPTR, wptr);
+	gpu_write(gpu, reg, wptr);
 }
 
 bool adreno_idle(struct msm_gpu *gpu, struct msm_ringbuffer *ring)
@@ -896,11 +840,16 @@ static int adreno_get_legacy_pwrlevels(struct device *dev)
 }
 
 static int adreno_get_pwrlevels(struct device *dev,
-		struct msm_gpu *gpu)
+		struct adreno_gpu *adreno_gpu)
 {
 	unsigned long freq = ULONG_MAX;
+	struct msm_gpu *gpu = &adreno_gpu->base;
 	struct dev_pm_opp *opp;
-	int ret;
+	struct device **pds = adreno_gpu->pm_domains;
+	struct device_link **pm_links = adreno_gpu->pm_links;
+	const char * const *pd_names = adreno_gpu->info->pm_domains;
+	struct opp_table *opp_table;
+	int ret, i;
 
 	gpu->fast_rate = 0;
 
@@ -908,9 +857,45 @@ static int adreno_get_pwrlevels(struct device *dev,
 	if (!of_find_property(dev->of_node, "operating-points-v2", NULL))
 		ret = adreno_get_legacy_pwrlevels(dev);
 	else {
+		const char *opp_pd_names[] = { pd_names[0], NULL };
+
+		gpu->opp_table = dev_pm_opp_set_clkname(dev, "core");
+		if (IS_ERR(gpu->opp_table))
+			return PTR_ERR(gpu->opp_table);
+
 		ret = dev_pm_opp_of_add_table(dev);
-		if (ret)
+		if (ret) {
 			DRM_DEV_ERROR(dev, "Unable to set the OPP table\n");
+			return ret;
+		}
+
+		for (i = 1; i < ADRENO_PM_DOMAIN_MAX; i ++) {
+			if (!pd_names[i])
+				continue;
+
+			pds[i] = dev_pm_domain_attach_by_name(dev, pd_names[i]);
+			if (IS_ERR(pds[i]))
+				return PTR_ERR(pds[i]);
+
+			pm_links[i] = device_link_add(dev, pds[i], DL_FLAG_RPM_ACTIVE |
+								   DL_FLAG_PM_RUNTIME |
+								   DL_FLAG_STATELESS);
+			if (IS_ERR(pm_links[i]))
+				return PTR_ERR(pm_links[i]);
+		}
+
+		opp_table = dev_pm_opp_attach_genpd(dev, opp_pd_names,
+				&adreno_gpu->opp_pm_domains);
+		if (IS_ERR(opp_table))
+			return PTR_ERR(opp_table);
+
+		pm_links[0] = device_link_add(dev, adreno_gpu->opp_pm_domains[0],
+						DL_FLAG_RPM_ACTIVE |
+						DL_FLAG_PM_RUNTIME |
+						DL_FLAG_STATELESS);
+		if (IS_ERR(pm_links[0]))
+			return PTR_ERR(pm_links[0]);
+
 	}
 
 	if (!ret) {
@@ -931,23 +916,7 @@ static int adreno_get_pwrlevels(struct device *dev,
 
 	DBG("fast_rate=%u, slow_rate=27000000", gpu->fast_rate);
 
-	/* Check for an interconnect path for the bus */
-	gpu->icc_path = of_icc_get(dev, "gfx-mem");
-	if (!gpu->icc_path) {
-		/*
-		 * Keep compatbility with device trees that don't have an
-		 * interconnect-names property.
-		 */
-		gpu->icc_path = of_icc_get(dev, NULL);
-	}
-	if (IS_ERR(gpu->icc_path))
-		gpu->icc_path = NULL;
-
-	gpu->ocmem_icc_path = of_icc_get(dev, "ocmem");
-	if (IS_ERR(gpu->ocmem_icc_path))
-		gpu->ocmem_icc_path = NULL;
-
-	return 0;
+	return 0;;
 }
 
 int adreno_gpu_ocmem_init(struct device *dev, struct adreno_gpu *adreno_gpu,
@@ -993,9 +962,10 @@ int adreno_gpu_init(struct drm_device *drm, struct platform_device *pdev,
 		struct adreno_gpu *adreno_gpu,
 		const struct adreno_gpu_funcs *funcs, int nr_rings)
 {
-	struct adreno_platform_config *config = pdev->dev.platform_data;
+	struct device *dev = &pdev->dev;
+	struct adreno_platform_config *config = dev->platform_data;
 	struct msm_gpu_config adreno_gpu_config  = { 0 };
-	struct msm_gpu *gpu = &adreno_gpu->base;
+	int ret;
 
 	adreno_gpu->funcs = funcs;
 	adreno_gpu->info = adreno_info(config->rev);
@@ -1007,12 +977,20 @@ int adreno_gpu_init(struct drm_device *drm, struct platform_device *pdev,
 
 	adreno_gpu_config.nr_rings = nr_rings;
 
-	adreno_get_pwrlevels(&pdev->dev, gpu);
+	ret = adreno_get_pwrlevels(dev, adreno_gpu);
+	if (ret < 0)
+		return ret;
 
-	pm_runtime_set_autosuspend_delay(&pdev->dev,
+	pm_runtime_set_autosuspend_delay(dev,
 		adreno_gpu->info->inactive_period);
-	pm_runtime_use_autosuspend(&pdev->dev);
-	pm_runtime_enable(&pdev->dev);
+	pm_runtime_use_autosuspend(dev);
+	pm_runtime_enable(dev);
+
+	if (adreno_gpu->base.opp_table) {
+		ret = dev_pm_opp_of_find_icc_paths(dev, adreno_gpu->base.opp_table);
+		if (ret < 0)
+			return ret;
+	}
 
 	return msm_gpu_init(drm, pdev, &adreno_gpu->base, &funcs->base,
 			adreno_gpu->info->name, &adreno_gpu_config);
@@ -1021,13 +999,29 @@ int adreno_gpu_init(struct drm_device *drm, struct platform_device *pdev,
 void adreno_gpu_cleanup(struct adreno_gpu *adreno_gpu)
 {
 	struct msm_gpu *gpu = &adreno_gpu->base;
+	struct msm_drm_private *priv = gpu->dev->dev_private;
 	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(adreno_gpu->info->fw); i++)
 		release_firmware(adreno_gpu->fw[i]);
 
-	icc_put(gpu->icc_path);
-	icc_put(gpu->ocmem_icc_path);
+	pm_runtime_disable(&priv->gpu_pdev->dev);
+
+	for (i = 0; i < ADRENO_PM_DOMAIN_MAX; i ++) {
+		if (!IS_ERR_OR_NULL(adreno_gpu->pm_links[i]))
+			device_link_del(adreno_gpu->pm_links[i]);
+
+		if (i > 0 && !IS_ERR_OR_NULL(adreno_gpu->pm_domains[i]))
+			dev_pm_domain_detach(adreno_gpu->pm_domains[i], true);
+	}
+
+	if (!IS_ERR_OR_NULL(gpu->opp_table)) {
+		dev_pm_opp_put_clkname(gpu->opp_table);
+		dev_pm_opp_detach_genpd(gpu->opp_table);
+	}
 
 	msm_gpu_cleanup(&adreno_gpu->base);
+
+	icc_put(gpu->icc_path);
+	icc_put(gpu->ocmem_icc_path);
 }
