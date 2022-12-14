@@ -33,3 +33,9 @@
 	regulator-min-microvolt = <1100000>;
 	regulator-max-microvolt = <1300000>;
 };
+
+&sdc2_on_state {
+	data-pins {
+		drive-strength = <8>;
+	};
+};
