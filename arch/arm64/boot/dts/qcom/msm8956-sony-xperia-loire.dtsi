@@ -77,6 +77,8 @@
 
 &otg {
 	status = "okay";
+
+	extcon = <&pmi8950_usb_vbus>, <&pmi8950_usb_id>;
 };
 
 &pm8004_spmi_regulators {
