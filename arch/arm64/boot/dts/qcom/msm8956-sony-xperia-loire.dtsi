@@ -264,6 +264,12 @@
 	status = "okay";
 };
 
+&sdc2_on_state {
+	clk-pins {
+		drive-strength = <10>;
+	};
+};
+
 &sdhc_2 {
 	bus-width = <4>;
 	cd-gpios = <&tlmm 100 GPIO_ACTIVE_HIGH>;
