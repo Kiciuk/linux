@@ -1057,9 +1057,24 @@
 			dr_mode = "peripheral";
 			phy_type = "ulpi";
 			phy-names = "usb-phy";
-			phys = <&usb_hs_phy>;
+			phys = <&usb_hs_phy_8916>;
 			status = "disabled";
 			#reset-cells = <1>;
+
+			ulpi {
+				usb_hs_phy_8916: phy {
+					compatible = "qcom,usb-hs-phy-msm8916",
+						     "qcom,usb-hs-phy";
+					#phy-cells = <0>;
+					clocks = <&xo_board>, <&gcc GCC_USB2A_PHY_SLEEP_CLK>;
+					clock-names = "ref", "sleep";
+					resets = <&gcc RST_QUSB2_PHY_BCR>, <&gcc RST_USB2_HS_PHY_ONLY_BCR>;
+					reset-names = "phy", "por";
+					qcom,init-seq = /bits/ 8 <0x0 0x73>,
+								 <0x1 0x38>,
+								 <0x2 0x1b>;
+				};
+			};
 		};
 
 		sdhc_3: mmc@7a24900 {
