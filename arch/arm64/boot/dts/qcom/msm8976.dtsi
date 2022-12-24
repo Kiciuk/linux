@@ -36,6 +36,8 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x0>;
 			enable-method = "psci";
+			clocks = <&apcs_c0>;
+			operating-points-v2 = <&little_cpu_opp_table>;
 			cpu-idle-states = <&little_cpu_sleep_0>;
 			capacity-dmips-mhz = <573>;
 			next-level-cache = <&l2_0>;
@@ -47,6 +49,8 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x1>;
 			enable-method = "psci";
+			clocks = <&apcs_c0>;
+			operating-points-v2 = <&little_cpu_opp_table>;
 			cpu-idle-states = <&little_cpu_sleep_0>;
 			capacity-dmips-mhz = <573>;
 			next-level-cache = <&l2_0>;
@@ -58,6 +62,8 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x2>;
 			enable-method = "psci";
+			clocks = <&apcs_c0>;
+			operating-points-v2 = <&little_cpu_opp_table>;
 			cpu-idle-states = <&little_cpu_sleep_0>;
 			capacity-dmips-mhz = <573>;
 			next-level-cache = <&l2_0>;
@@ -69,6 +75,8 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x3>;
 			enable-method = "psci";
+			clocks = <&apcs_c0>;
+			operating-points-v2 = <&little_cpu_opp_table>;
 			cpu-idle-states = <&little_cpu_sleep_0>;
 			capacity-dmips-mhz = <573>;
 			next-level-cache = <&l2_0>;
@@ -80,6 +88,8 @@
 			compatible = "arm,cortex-a72";
 			reg = <0x100>;
 			enable-method = "psci";
+			clocks = <&apcs>;
+			operating-points-v2 = <&big_cpu_opp_table>;
 			cpu-idle-states = <&big_cpu_sleep_0 &big_cpu_sleep_1>;
 			capacity-dmips-mhz = <1024>;
 			next-level-cache = <&l2_1>;
@@ -91,6 +101,8 @@
 			compatible = "arm,cortex-a72";
 			reg = <0x101>;
 			enable-method = "psci";
+			clocks = <&apcs>;
+			operating-points-v2 = <&big_cpu_opp_table>;
 			cpu-idle-states = <&big_cpu_sleep_0 &big_cpu_sleep_1>;
 			capacity-dmips-mhz = <1024>;
 			next-level-cache = <&l2_1>;
@@ -102,6 +114,8 @@
 			compatible = "arm,cortex-a72";
 			reg = <0x102>;
 			enable-method = "psci";
+			clocks = <&apcs>;
+			operating-points-v2 = <&big_cpu_opp_table>;
 			cpu-idle-states = <&big_cpu_sleep_0 &big_cpu_sleep_1>;
 			capacity-dmips-mhz = <1024>;
 			next-level-cache = <&l2_1>;
@@ -113,6 +127,8 @@
 			compatible = "arm,cortex-a72";
 			reg = <0x103>;
 			enable-method = "psci";
+			clocks = <&apcs>;
+			operating-points-v2 = <&big_cpu_opp_table>;
 			cpu-idle-states = <&big_cpu_sleep_0 &big_cpu_sleep_1>;
 			capacity-dmips-mhz = <1024>;
 			next-level-cache = <&l2_1>;
@@ -203,6 +219,54 @@
 		};
 	};
 
+	little_cpu_opp_table: opp-table-cpu-little {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		opp-200000000 {
+			opp-hz = /bits/ 64 <200000000>;
+		};
+		opp-400000000 {
+			opp-hz = /bits/ 64 <400000000>;
+		};
+		opp-800000000 {
+			opp-hz = /bits/ 64 <800000000>;
+		};
+		opp-1017600000 {
+			opp-hz = /bits/ 64 <1017600000>;
+		};
+		opp-1190400000 {
+			opp-hz = /bits/ 64 <1190400000>;
+		};
+		opp-1305600000 {
+			opp-hz = /bits/ 64 <1305600000>;
+		};
+		opp-1382400000 {
+			opp-hz = /bits/ 64 <1382400000>;
+		};
+		opp-1401600000 {
+			opp-hz = /bits/ 64 <1401600000>;
+		};	
+	};
+
+	big_cpu_opp_table: opp-table-cpu-big {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		opp-400000000 {
+			opp-hz = /bits/ 64 <400000000>;
+		};
+		opp-1190400000 {
+			opp-hz = /bits/ 64 <1190400000>;
+		};
+		opp-1612800000 {
+			opp-hz = /bits/ 64 <1612800000>;
+		};
+		opp-1747200000 {
+			opp-hz = /bits/ 64 <1747200000>;
+		};
+	};
+	
 	firmware {
 		scm: scm {
 			compatible = "qcom,scm-msm8976", "qcom,scm";
@@ -1560,12 +1624,63 @@
 			interrupt-controller;
 			#interrupt-cells = <3>;
 		};
-
+		
+		/* A72 cluster */
 		apcs: mailbox@b011000 {
-			compatible = "qcom,msm8976-apcs-kpss-global",
-				     "qcom,msm8994-apcs-kpss-global", "syscon";
+			compatible = "qcom,msm8976-apcs-kpss-global", "syscon";
 			reg = <0x0b011000 0x1000>;
 			#mbox-cells = <1>;
+			clocks = <&a72_pll>, <&gcc GPLL0_CLK_SRC>;
+			clock-names = "pll", "aux";
+			#clock-cells = <0>;
+		};
+		
+		a72_pll: clock-controller@b016000 {
+			compatible = "qcom,hfpll-msm8976-a72";
+			reg = <0xb016000 0x40>;
+			clocks = <&xo_board>;
+			clock-names = "xo";
+			clock-output-names = "hfpll_a72";
+			#clock-cells = <0>;
+		};
+	
+		apcs_c0: mailbox@b111000 {
+			compatible = "qcom,msm8976-apcs-kpss-global", "syscon";
+			reg = <0x0b111000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a53_pll>, <&gcc GPLL0_CLK_SRC>;
+			clock-names = "pll", "aux";
+			#clock-cells = <0>;
+		};
+		
+		a53_pll: clock-controller@b116000 {
+			compatible = "qcom,hfpll-msm8976-a53";
+			reg = <0xb116000 0x40>;
+			clocks = <&xo_board>;
+			clock-names = "xo";
+			clock-output-names = "hfpll_a53";
+			#clock-cells = <0>;
+		};
+
+		apcs_cci: mailbox@b1d1000 {
+			compatible = "qcom,msm8976-apcs-kpss-global", "syscon";
+			reg = <0x0b1d1000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&cci_pll>, <&gcc GPLL0_CLK_SRC>;
+			clock-names = "pll", "aux";
+			#clock-cells = <0>;
+			assigned-clocks = <&apcs_cci>;
+			assigned-clock-parents = <&cci_pll>;
+			assigned-clock-rates = <614400000>;
+		};
+
+		cci_pll: clock-controller@b1d0000 {
+			compatible = "qcom,hfpll-msm8976-cci";
+			reg = <0xb1d0000 0x40>;
+			clocks = <&xo_board>;
+			clock-names = "xo";
+			clock-output-names = "hfpll_cci";
+			#clock-cells = <0>;
 		};
 
 		timer@b120000 {
