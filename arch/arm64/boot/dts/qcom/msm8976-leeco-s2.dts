@@ -108,7 +108,7 @@
 	qcom,ovp-millivolt = <29600>;
 };
 
-&dsi0 {
+&mdss_dsi0 {
 	panel@0 {
 		compatible = "boe,nt35596s-5p5boe-vdo";
 		reg = <0>;
@@ -126,25 +126,25 @@
 
 		port {
 			panel_in: endpoint {
-				remote-endpoint = <&dsi0_out>;
+				remote-endpoint = <&mdss_dsi0_out>;
 			};
 		};
 	};
 };
 
 
-&dsi0_out {
+&mdss_dsi0_out {
 	data-lanes = <0 1 2 3>;
 	remote-endpoint = <&panel_in>;
 };
 
 
-&dsi0_phy {
+&mdss_dsi0_phy {
 	status = "okay";
 	vddio-supply = <&pm8950_l6>;
 };
 
-&dsi0 {
+&mdss_dsi0 {
 
 	vdd-supply = <&pm8950_l17>;
 	vdda-supply = <&pm8950_l1>;
@@ -247,7 +247,7 @@
 	vddpx-supply = <&pm8950_l5>;
 };
 
-&iris {
+&wcnss_iris {
 	vddxo-supply = <&pm8950_l7>;
 	vddrfa-supply = <&pm8950_l19>;
 	vddpa-supply = <&pm8950_l9>;
@@ -370,8 +370,8 @@
 	status = "okay";
 
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act  &tlmm_pri_act &cross_con_sus >;
-	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus  &tlmm_pri_sus &cross_con_act>;
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act  &tlmm_pri_act>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus  &tlmm_pri_sus>;
 	model = "leeco-s2";
 };
 
@@ -533,4 +533,7 @@
 			regulator-max-microvolt = <1200000>;
 		};
 	};
+};
+&xo_board {
+	clock-frequency = <19200000>;
 };
