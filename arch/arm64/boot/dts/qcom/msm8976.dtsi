@@ -1902,7 +1902,7 @@
 				};
 
 				codec {
-					sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
+					sound-dai = <&lpass_codec 0>, <&pm8950_codec 0>;
 				};
 			};
 
@@ -1917,7 +1917,7 @@
 				};
 
 				codec {
-					sound-dai = <&lpass_codec 1>, <&wcd_codec 1>;
+					sound-dai = <&lpass_codec 1>, <&pm8950_codec 1>;
 				};
 			};
 
@@ -2028,6 +2028,10 @@
 							};
 						};
 
+						q6afecc: clock-controller {
+							compatible = "qcom,q6afe-clocks";
+							#clock-cells = <2>;
+						};
 					};
 
 					q6asm: service@7 {
