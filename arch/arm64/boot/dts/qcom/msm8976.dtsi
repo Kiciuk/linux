@@ -1452,22 +1452,6 @@
 				qcom,ctx-asid = <0>;
 				interrupts = <GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>;
 			};
-			
-			/* gfx3d secure */
-			iommu-ctx@1000 {
-				compatible = "qcom,msm-iommu-v1-sec";
-				reg = <0x1000 0x1000>;
-				qcom,ctx-asid = <2>;
-				interrupts = <GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>;
-			};
-			
-			/* gfx3d priv */
-			iommu-ctx@2000 {
-				compatible = "qcom,msm-iommu-v1-sec";
-				reg = <0x2000 0x1000>;
-				qcom,ctx-asid = <1>;
-				interrupts = <GIC_SPI 242 IRQ_TYPE_LEVEL_HIGH>;
-			};
 
 		};
 		
