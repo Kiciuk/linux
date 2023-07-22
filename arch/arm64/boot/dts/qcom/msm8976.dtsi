@@ -535,6 +535,11 @@
 			clocks = <&gcc GCC_PRNG_AHB_CLK>;
 			clock-names = "core";
 		};
+	
+		restart@4ab000 {
+			compatible = "qcom,pshold";
+			reg = <0x4ab000 0x4>;
+		};
 
 		rpm_msg_ram: sram@60000 {
 			compatible = "qcom,rpm-msg-ram";
