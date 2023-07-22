@@ -935,46 +935,59 @@
 				bias-disable;
 			};
 			
-			cdc_pdm_lines_2_act: pdm-lines-2-on-pins {
-					pins = "gpio116", "gpio117", "gpio118", "gpio119";
-					function = "cdc_pdm0";
-					drive-strength = <8>;
+			cdc_pdm_lines_2_act: pdm-lines-2-on-state {
+				pins = "gpio116", "gpio117", "gpio118", "gpio119";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
 			};
 
-			cdc_pdm_lines_2_sus: pdm-lines-2-off-pins {
-					pins = "gpio116", "gpio117", "gpio118", "gpio119";
-					function = "cdc_pdm0";
-					drive-strength = <2>;
-					bias-disable;
+			cdc_pdm_lines_2_sus: pdm-lines-2-off-state {
+				pins = "gpio116", "gpio117", "gpio118", "gpio119";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
 			};
 
-			cdc_pdm_lines_act: pdm-lines-on-pins {
-					pins = "gpio120", "gpio121";
-					function = "cdc_pdm0";
-					drive-strength = <8>;
+			cdc_pdm_lines_act: pdm-lines-on-state {
+				pins = "gpio120", "gpio121";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
 			};
 
-			cdc_pdm_lines_sus: pdm-lines-off-pins {
-					pins = "gpio120", "gpio121";
-					function = "cdc_pdm0";
-					drive-strength = <2>;
-					bias-disable;
+			cdc_pdm_lines_sus: pdm-lines-off-state {
+				pins = "gpio120", "gpio121";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
 			};
 
-			cdc_reset_active: cdc_reset_active-pins {
-					pins = "gpio133";
-					function = "gpio";
-					output-high;
-					drive-strength = <16>;
-					bias-disable;
+			cdc_reset_active: cdc_reset_active-state {
+				pins = "gpio133";
+				function = "gpio";
+				output-high;
+				drive-strength = <16>;
+				bias-disable;
 			};
 
-			cdc_reset_sus: cdc_reset_sus-pins {
-					pins = "gpio133";
-					function = "gpio";
-					output-low;
-					drive-strength = <16>;
-					bias-disable;
+			cdc_reset_sus: cdc_reset_sus-state {
+				pins = "gpio133";
+				function = "gpio";
+				output-low;
+				drive-strength = <16>;
+				bias-disable;
+			};
+
+			tlmm_pri_act: tlmm_pri_default-state {
+				pins = "gpio123", "gpio124", "gpio125", "gpio127";
+				function = "pri_mi2s";
+				drive-strength = <8>;
+			};
+
+			tlmm_pri_sus: tlmm_pri_sleep-state {
+				pins =  "gpio123", "gpio124", "gpio125", "gpio127";
+				function = "pri_mi2s";
+				drive-strength = <2>;
+				bias-pull-down;
 			};
 
 			wcss_wlan_default: wcss-wlan-default-state  {
