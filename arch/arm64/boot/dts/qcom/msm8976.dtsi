@@ -1936,10 +1936,12 @@
 			reg = <0xc0f0000 0x400>;
 			#sound-dai-cells = <1>;
 
-			clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
-					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
-				 <&xo_board>;
-			clock-names = "mclk", "ahbix-clk";
+			clocks = <&xo_board>,
+				 <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
+					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			clock-names = "ahbix-clk", "mclk";
+			assigned-clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			assigned-clock-rates = <9600000>;
 		};
 		
 		lpass: remoteproc@c200000 {
