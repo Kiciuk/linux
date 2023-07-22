@@ -6,6 +6,10 @@
  * Copyright (c) 2022, Marijn Suijten <marijn.suijten@somainline.org>
  */
 
+#include <dt-bindings/soc/qcom,apr.h>
+#include <dt-bindings/sound/qcom,q6afe.h>
+#include <dt-bindings/sound/qcom,q6asm.h>
+
 #include <dt-bindings/clock/qcom,gcc-msm8976.h>
 #include <dt-bindings/clock/qcom,rpmcc.h>
 #include <dt-bindings/gpio/gpio.h>
@@ -930,6 +934,48 @@
 				drive-strength = <2>;
 				bias-disable;
 			};
+			
+			cdc_pdm_lines_2_act: pdm-lines-2-on-pins {
+					pins = "gpio116", "gpio117", "gpio118", "gpio119";
+					function = "cdc_pdm0";
+					drive-strength = <8>;
+			};
+
+			cdc_pdm_lines_2_sus: pdm-lines-2-off-pins {
+					pins = "gpio116", "gpio117", "gpio118", "gpio119";
+					function = "cdc_pdm0";
+					drive-strength = <2>;
+					bias-disable;
+			};
+
+			cdc_pdm_lines_act: pdm-lines-on-pins {
+					pins = "gpio120", "gpio121";
+					function = "cdc_pdm0";
+					drive-strength = <8>;
+			};
+
+			cdc_pdm_lines_sus: pdm-lines-off-pins {
+					pins = "gpio120", "gpio121";
+					function = "cdc_pdm0";
+					drive-strength = <2>;
+					bias-disable;
+			};
+
+			cdc_reset_active: cdc_reset_active-pins {
+					pins = "gpio133";
+					function = "gpio";
+					output-high;
+					drive-strength = <16>;
+					bias-disable;
+			};
+
+			cdc_reset_sus: cdc_reset_sus-pins {
+					pins = "gpio133";
+					function = "gpio";
+					output-low;
+					drive-strength = <16>;
+					bias-disable;
+			};
 
 			wcss_wlan_default: wcss-wlan-default-state  {
 
@@ -1777,6 +1823,228 @@
 			clock-names = "xo";
 			clock-output-names = "hfpll_cci";
 			#clock-cells = <0>;
+		};
+
+		sound: sound@c051000 {
+			compatible = "qcom,msm8916-qdsp6-sndcard";
+			reg = <0xc051000 0x4>,
+			      <0xc051004 0x4>,
+			      <0xc055000 0x4>,
+			      <0xc052000 0x4>;
+			reg-names = "mic-iomux",
+				    "spkr-iomux",
+				    "pri-iomux",
+				    "quin-iomux";
+
+			dai-link-multimedia1 {
+				link-name = "MultiMedia1";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>;
+				};
+			};
+
+			dai-link-multimedia2 {
+				link-name = "MultiMedia2";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>;
+				};
+			};
+
+			dai-link-multimedia3 {
+				link-name = "MultiMedia3";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>;
+				};
+			};
+
+			dai-link-multimedia4 {
+				link-name = "MultiMedia4";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA4>;
+				};
+			};
+
+			sound_dai_primary: dai-link-primary {
+				link-name = "Primary MI2S";
+				cpu {
+					sound-dai = <&q6afedai PRIMARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+
+				codec {
+					sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
+				};
+			};
+
+			sound_dai_tertiary: dai-link-tertiary {
+				link-name = "Tertiary MI2S";
+				cpu {
+					sound-dai = <&q6afedai TERTIARY_MI2S_TX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+
+				codec {
+					sound-dai = <&lpass_codec 1>, <&wcd_codec 1>;
+				};
+			};
+
+			sound_dai_quaternary: dai-link-quaternary {
+				link-name = "Quaternary MI2S";
+				status = "disabled"; /* Needs extra codec configuration */
+				cpu {
+					sound-dai = <&q6afedai QUATERNARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+			};
+
+			sound_dai_quinary: dai-link-quinary {
+				link-name = "Quinary MI2S";
+				status = "disabled"; /* Needs extra codec configuration */
+				cpu {
+					sound-dai = <&q6afedai QUINARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+			};
+	
+		};
+
+		lpass_codec: audio-codec@c0f0000 {
+			compatible = "qcom,msm8916-wcd-digital-codec";
+			reg = <0xc0f0000 0x400>;
+			#sound-dai-cells = <1>;
+
+			clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
+					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&xo_board>;
+			clock-names = "mclk", "ahbix-clk";
+		};
+		
+		lpass: remoteproc@c200000 {
+			compatible = "qcom,msm8953-adsp-pil";
+			reg = <0x0c200000 0x100>;
+
+			interrupts-extended = <&intc 0 293 IRQ_TYPE_EDGE_RISING>,
+					      <&adsp_smp2p_in 0 IRQ_TYPE_EDGE_RISING>,
+					      <&adsp_smp2p_in 1 IRQ_TYPE_EDGE_RISING>,
+					      <&adsp_smp2p_in 2 IRQ_TYPE_EDGE_RISING>,
+					      <&adsp_smp2p_in 3 IRQ_TYPE_EDGE_RISING>;
+			interrupt-names = "wdog", "fatal", "ready",
+					  "handover", "stop-ack";
+
+			clocks = <&rpmcc RPM_SMD_XO_CLK_SRC>;
+			clock-names = "xo";
+
+			power-domains = <&rpmpd MSM8976_VDDCX>;
+			power-domain-names = "cx";
+
+			memory-region = <&lpass_mem>;
+
+			qcom,smem-states = <&adsp_smp2p_out 0>;
+			qcom,smem-state-names = "stop";
+
+			
+
+			smd-edge {
+				interrupts = <GIC_SPI 289 IRQ_TYPE_EDGE_RISING>;
+
+				label = "lpass";
+				mboxes = <&apcs 8>;
+				qcom,smd-edge = <1>;
+				qcom,remote-pid = <2>;
+
+				apr {
+					compatible = "qcom,apr-v2";
+					qcom,smd-channels = "apr_audio_svc";
+					qcom,apr-domain = <APR_DOMAIN_ADSP>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					q6core: service@3 {
+						reg = <APR_SVC_ADSP_CORE>;
+						compatible = "qcom,q6core";
+					};
+
+					q6afe: service@4 {
+						compatible = "qcom,q6afe";
+						reg = <APR_SVC_AFE>;
+						q6afedai: dais {
+							compatible = "qcom,q6afe-dais";
+							#address-cells = <1>;
+							#size-cells = <0>;
+							#sound-dai-cells = <1>;
+							
+							dai@16 {
+								reg = <PRIMARY_MI2S_RX>;
+								qcom,sd-lines = <0 1>;
+							};
+
+							dai@21 {
+								reg = <TERTIARY_MI2S_TX>;
+								qcom,sd-lines = <0 1>;
+							};
+							
+							dai@127 {
+								reg = <QUINARY_MI2S_RX>;
+								qcom,sd-lines = <0>;
+							};
+						};
+
+					};
+
+					q6asm: service@7 {
+						compatible = "qcom,q6asm";
+						reg = <APR_SVC_ASM>;
+						q6asmdai: dais {
+							compatible = "qcom,q6asm-dais";
+							#address-cells = <1>;
+							#size-cells = <0>;
+							#sound-dai-cells = <1>;	
+							
+							dai@0 {
+								reg = <MSM_FRONTEND_DAI_MULTIMEDIA1>;
+								direction = <Q6ASM_DAI_RX>;
+							};
+
+							dai@1 {
+								reg = <MSM_FRONTEND_DAI_MULTIMEDIA2>;
+								direction = <Q6ASM_DAI_TX>;
+							};
+
+							dai@2 {
+								reg = <MSM_FRONTEND_DAI_MULTIMEDIA3>;
+								direction = <Q6ASM_DAI_RX>;
+							};
+
+							dai@3 {
+								reg = <MSM_FRONTEND_DAI_MULTIMEDIA4>;
+								direction = <Q6ASM_DAI_RX>;
+								is-compress-dai;
+							};
+						};
+					};
+
+					q6adm: service@8 {
+						compatible = "qcom,q6adm";
+						reg = <APR_SVC_ADM>;
+						q6routing: routing {
+							compatible = "qcom,q6adm-routing";
+							#sound-dai-cells = <0>;
+						};
+					};
+				};
+			};
 		};
 
 		timer@b120000 {
