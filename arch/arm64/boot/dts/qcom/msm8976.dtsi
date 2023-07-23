@@ -1443,7 +1443,7 @@
 				 <&gcc GCC_GFX3D_TCU_CLK>;
 			clock-names = "iface", "bus";
 			qcom,iommu-secure-id = <18>;
-			power-domains = <&gcc OXILI_CX_GDSC>;
+			power-domains = <&gcc OXILI_GX_GDSC>;
 
 			/* gfx3d user */
 			iommu-ctx@0000 {
