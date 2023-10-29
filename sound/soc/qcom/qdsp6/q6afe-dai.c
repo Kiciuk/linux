@@ -14,6 +14,7 @@
 #include <sound/pcm_params.h>
 #include "q6dsp-lpass-ports.h"
 #include "q6dsp-common.h"
+#include "q6core.h"
 #include "q6afe.h"
 
 
@@ -443,36 +444,105 @@ static int q6slim_set_channel_map(struct snd_soc_dai *dai,
 	return 0;
 }
 
+static int q6afe_get_bit_clk_id(unsigned int dai_id)
+{
+	switch (dai_id) {
+	case PRIMARY_MI2S_RX:
+	case PRIMARY_MI2S_TX:
+		return Q6AFE_LPASS_CLK_ID_PRI_MI2S_IBIT;
+	case SECONDARY_MI2S_RX:
+	case SECONDARY_MI2S_TX:
+		return Q6AFE_LPASS_CLK_ID_SEC_MI2S_IBIT;
+	case TERTIARY_MI2S_RX:
+	case TERTIARY_MI2S_TX:
+		return Q6AFE_LPASS_CLK_ID_TER_MI2S_IBIT;
+	case QUATERNARY_MI2S_RX:
+	case QUATERNARY_MI2S_TX:
+		return Q6AFE_LPASS_CLK_ID_TER_MI2S_IBIT;
+	case QUINARY_MI2S_RX:
+	case QUINARY_MI2S_TX:
+		return Q6AFE_LPASS_CLK_ID_QUI_MI2S_IBIT;
+
+	case PRIMARY_TDM_RX_0 ... PRIMARY_TDM_TX_7:
+		return Q6AFE_LPASS_CLK_ID_PRI_TDM_IBIT;
+	case SECONDARY_TDM_RX_0 ... SECONDARY_TDM_TX_7:
+		return Q6AFE_LPASS_CLK_ID_SEC_TDM_IBIT;
+	case TERTIARY_TDM_RX_0 ... TERTIARY_TDM_TX_7:
+		return Q6AFE_LPASS_CLK_ID_TER_TDM_IBIT;
+	case QUATERNARY_TDM_RX_0 ... QUATERNARY_TDM_TX_7:
+		return Q6AFE_LPASS_CLK_ID_QUAD_TDM_IBIT;
+	case QUINARY_TDM_RX_0 ... QUINARY_TDM_TX_7:
+		return Q6AFE_LPASS_CLK_ID_QUIN_TDM_IBIT;
+
+	default:
+		return -EINVAL;
+	}
+}
+
+static int q6afe_get_osr_clk_id(unsigned int dai_id)
+{
+	switch (dai_id) {
+	case QUINARY_MI2S_RX:
+	case QUINARY_MI2S_TX:
+		return Q6AFE_LPASS_CLK_ID_QUI_MI2S_OSR;
+
+	case QUINARY_TDM_RX_0 ... QUINARY_TDM_TX_7:
+		return Q6AFE_LPASS_CLK_ID_QUIN_TDM_OSR;
+
+	default:
+		return -EINVAL;
+	}
+}
+
 static int q6afe_mi2s_set_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
 	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
 	struct q6afe_port *port = dai_data->port[dai->id];
+	int clk_src;
+	int clk_root;
+	bool use_new_clks = q6core_get_adsp_version() >= Q6_ADSP_VERSION_2_7;
 
 	switch (clk_id) {
 	case LPAIF_DIG_CLK:
-		return q6afe_port_set_sysclk(port, clk_id, 0, 5, freq, dir);
+		if (use_new_clks) {
+			clk_src = Q6AFE_LPASS_CLK_ATTRIBUTE_COUPLE_NO;
+			clk_root = Q6AFE_LPASS_CLK_ROOT_DEFAULT;
+			clk_id = Q6AFE_LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE;
+		} else {
+			clk_src = 0;
+			clk_root = 5;
+		}
+		break;
 	case LPAIF_BIT_CLK:
 	case LPAIF_OSR_CLK:
-		return q6afe_port_set_sysclk(port, clk_id,
-					     Q6AFE_LPASS_CLK_SRC_INTERNAL,
-					     Q6AFE_LPASS_CLK_ROOT_DEFAULT,
-					     freq, dir);
+		if (use_new_clks) {
+			clk_src = Q6AFE_LPASS_CLK_ATTRIBUTE_COUPLE_NO;
+			clk_root = Q6AFE_LPASS_CLK_ROOT_DEFAULT;
+			if (clk_id == LPAIF_OSR_CLK)
+				clk_id = q6afe_get_osr_clk_id(dai->id);
+			else
+				clk_id = q6afe_get_bit_clk_id(dai->id);
+		} else {
+			clk_src = Q6AFE_LPASS_CLK_SRC_INTERNAL;
+			clk_root = Q6AFE_LPASS_CLK_ROOT_DEFAULT;
+		}
+		break;
 	case Q6AFE_LPASS_CLK_ID_PRI_MI2S_IBIT ... Q6AFE_LPASS_CLK_ID_QUI_MI2S_OSR:
 	case Q6AFE_LPASS_CLK_ID_MCLK_1 ... Q6AFE_LPASS_CLK_ID_INT_MCLK_1:
 	case Q6AFE_LPASS_CLK_ID_WSA_CORE_MCLK ... Q6AFE_LPASS_CLK_ID_VA_CORE_2X_MCLK:
-		return q6afe_port_set_sysclk(port, clk_id,
-					     Q6AFE_LPASS_CLK_ATTRIBUTE_COUPLE_NO,
-					     Q6AFE_LPASS_CLK_ROOT_DEFAULT,
-					     freq, dir);
+		clk_src = Q6AFE_LPASS_CLK_ATTRIBUTE_COUPLE_NO;
+		clk_root = Q6AFE_LPASS_CLK_ROOT_DEFAULT;
+		break;
 	case Q6AFE_LPASS_CLK_ID_PRI_TDM_IBIT ... Q6AFE_LPASS_CLK_ID_QUIN_TDM_EBIT:
-		return q6afe_port_set_sysclk(port, clk_id,
-					     Q6AFE_LPASS_CLK_ATTRIBUTE_INVERT_COUPLE_NO,
-					     Q6AFE_LPASS_CLK_ROOT_DEFAULT,
-					     freq, dir);
+		clk_src = Q6AFE_LPASS_CLK_ATTRIBUTE_INVERT_COUPLE_NO;
+		clk_root = Q6AFE_LPASS_CLK_ROOT_DEFAULT;
+		break;
+	default:
+		return 0;
 	}
 
-	return 0;
+	return q6afe_port_set_sysclk(port, clk_id, clk_src, clk_root, freq, dir);
 }
 
 static const struct snd_soc_dapm_route q6afe_dapm_routes[] = {
