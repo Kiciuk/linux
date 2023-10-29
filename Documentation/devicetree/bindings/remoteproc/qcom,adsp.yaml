@@ -19,6 +19,7 @@ properties:
       - qcom,msm8226-adsp-pil
       - qcom,msm8953-adsp-pil
       - qcom,msm8974-adsp-pil
+      - qcom,msm8976-adsp-pil
       - qcom,msm8996-adsp-pil
       - qcom,msm8996-slpi-pil
       - qcom,msm8998-adsp-pas
@@ -65,6 +66,7 @@ allOf:
               - qcom,msm8226-adsp-pil
               - qcom,msm8953-adsp-pil
               - qcom,msm8974-adsp-pil
+              - qcom,msm8976-adsp-pil
               - qcom,msm8996-adsp-pil
               - qcom,msm8998-adsp-pas
               - qcom,sdm845-adsp-pas
@@ -105,6 +107,7 @@ allOf:
               - qcom,msm8226-adsp-pil
               - qcom,msm8953-adsp-pil
               - qcom,msm8974-adsp-pil
+              - qcom,msm8976-adsp-pil
               - qcom,msm8996-adsp-pil
               - qcom,msm8996-slpi-pil
               - qcom,msm8998-adsp-pas
@@ -136,6 +139,7 @@ allOf:
             enum:
               - qcom,msm8226-adsp-pil
               - qcom,msm8953-adsp-pil
+              - qcom,msm8976-adsp-pil
               - qcom,msm8996-adsp-pil
               - qcom,msm8998-adsp-pas
     then:
@@ -189,6 +193,7 @@ allOf:
               - qcom,msm8226-adsp-pil
               - qcom,msm8953-adsp-pil
               - qcom,msm8974-adsp-pil
+              - qcom,msm8976-adsp-pil
               - qcom,msm8996-adsp-pil
               - qcom,msm8996-slpi-pil
               - qcom,msm8998-adsp-pas
