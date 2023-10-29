@@ -1111,6 +1111,32 @@ int q6afe_set_lpass_clock(struct device *dev, int clk_id, int attri,
 	struct q6afe *afe = dev_get_drvdata(dev->parent);
 	struct afe_clk_set cset = {0,};
 
+	/*
+	 * v2 clocks specified in the device tree may not be supported by the
+	 * firmware. If this is the digital codec core clock, fall back to the
+	 * old method for setting it.
+	 */
+	if (q6core_get_adsp_version() < Q6_ADSP_VERSION_2_7) {
+		struct q6afe_port *port;
+		struct afe_digital_clk_cfg dcfg = {0,};
+		int ret;
+
+		if (clk_id != Q6AFE_LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE)
+			return -EINVAL;
+
+		port = q6afe_port_get_from_id(dev, PRIMARY_MI2S_RX);
+		if (IS_ERR(port))
+			return PTR_ERR(port);
+
+		dcfg.i2s_cfg_minor_version = AFE_API_VERSION_I2S_CONFIG;
+		dcfg.clk_val = freq;
+		dcfg.clk_root = 5;
+		ret = q6afe_set_digital_codec_core_clock(port, &dcfg);
+
+		q6afe_port_put(port);
+		return ret;
+	}
+
 	cset.clk_set_minor_version = AFE_API_VERSION_CLOCK_SET;
 	cset.clk_id = clk_id;
 	cset.clk_freq_in_hz = freq;
