@@ -552,6 +552,57 @@ static const struct venus_resources msm8916_res = {
 	.fwname = "qcom/venus-1.8/venus.mdt",
 };
 
+static const struct freq_tbl msm8976_freq_table[] = {
+	{ 979200, 466000000 },	/* 3840 x 2160 @ 30E */
+	{ 734400, 400000000 },	/* 1920x1080 @ 90E */
+	{ 734400, 360000000 },	/* 1920x1080 @ 90D */
+	{ 489600, 228570000 },	/* 1920x1080 @ 60D */
+	{ 244800, 133333333 },	/* 1920x1080 @ 30D */
+	{ 216000, 100000000 },	/* 1280x720 @ 60D */
+	{ 108000, 80000000 },	/* 1280x720 @ 30D */
+	{ 36000,  72727200 },	/* 854x480 @ 30D */
+};
+
+static const struct bw_tbl msm8976_bw_table_enc[] = {
+	{  979200,   1964000, 0,  0, 0 },	/* 4k UHD @ 30 */
+	{  734400,   1669000, 0,  0, 0 },	/* 1080p @ 90 */
+	{  489600,   1530000, 0,  0, 0 },	/* 1080p @ 60 */
+	{  432000,   1148000, 0,  0, 0 },	/* 720p @ 120 */
+	{  244800,   775000,  0,  0, 0 },	/* 1080p @ 30 */
+	{  216000,   677000,  0,  0, 0 },	/* 720p @ 60 */
+	{  108000,   342000,  0,  0, 0 },	/* 720p @ 30 */
+};
+
+static const struct bw_tbl msm8976_bw_table_dec[] = {
+	{  979200,   2458000, 0,  0, 0 },	/* 4k UHD @ 30 */
+	{  734400,   1967000, 0,  0, 0 },	/* 1080p @ 90 */
+	{  489600,   1148000, 0,  0, 0 },	/* 1080p @ 60 */
+	{  432000,   775000,  0,  0, 0 },	/* 720p @ 120 */
+	{  244800,   574000,  0,  0, 0 },	/* 1080p @ 30 */
+	{  216000,   496000,  0,  0, 0 },	/* 720p @ 60 */
+	{  108000,   252000,  0,  0, 0 },	/* 720p @ 30 */
+};
+
+static const struct venus_resources msm8976_res = {
+	.freq_tbl = msm8976_freq_table,
+	.freq_tbl_size = ARRAY_SIZE(msm8976_freq_table),
+	.reg_tbl = msm8916_reg_preset,
+	.reg_tbl_size = ARRAY_SIZE(msm8916_reg_preset),
+	.clks = {"core", "iface", "bus" },
+	.clks_num = 3,
+	.vcodec0_clks = { "vcodec0_core" },
+	.vcodec1_clks = { "vcodec0_core" },
+	.vcodec_clks_num = 1,
+	.vcodec_num = 1,
+	.max_load = 1011840,
+	.hfi_version = HFI_VERSION_3XX,
+	.vmem_id = VIDC_RESOURCE_NONE,
+	.vmem_size = 0,
+	.vmem_addr = 0,
+	.dma_mask = 0xddc00000 - 1,
+	.fwname = "qcom/venus-4.0/venus-v1.mdt",
+};
+
 static const struct freq_tbl msm8996_freq_table[] = {
 	{ 1944000, 520000000 },	/* 4k UHD @ 60 (decode only) */
 	{  972000, 520000000 },	/* 4k UHD @ 30 */
@@ -921,6 +972,7 @@ static const struct venus_resources sc7280_res = {
 static const struct of_device_id venus_dt_match[] = {
 	{ .compatible = "qcom,msm8916-venus", .data = &msm8916_res, },
 	{ .compatible = "qcom,msm8953-venus", .data = &msm8953_res, },
+	{ .compatible = "qcom,msm8976-venus", .data = &msm8976_res, },
 	{ .compatible = "qcom,msm8996-venus", .data = &msm8996_res, },
 	{ .compatible = "qcom,sdm660-venus", .data = &sdm660_res, },
 	{ .compatible = "qcom,sdm845-venus", .data = &sdm845_res, },
