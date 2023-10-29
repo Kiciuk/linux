@@ -353,6 +353,7 @@
 
 #define Q6AFE_LPASS_MODE_CLK1_VALID 1
 #define Q6AFE_LPASS_MODE_CLK2_VALID 2
+#define Q6AFE_LPASS_CLK_SRC_EXTERNAL 0
 #define Q6AFE_LPASS_CLK_SRC_INTERNAL 1
 #define Q6AFE_LPASS_CLK_ROOT_DEFAULT 0
 #define AFE_API_VERSION_TDM_CONFIG              1
@@ -363,6 +364,30 @@
 #define AFE_CMD_RESP_AVAIL	0
 #define AFE_CMD_RESP_NONE	1
 #define AFE_CLK_TOKEN		1024
+
+#define Q6AFE_CLK_DIG_V1(id, dai) {					\
+		.q6dsp_clk_id	= id,				\
+		.dai_id = dai,					\
+		.clk_id	= LPAIF_DIG_CLK,		\
+		.clk_src= 0,				\
+		.clk_root= 5,				\
+	}
+
+#define Q6AFE_CLK_BIT_V1(id, dai, src) {					\
+		.q6dsp_clk_id	= id,				\
+		.dai_id = dai,					\
+		.clk_id	= LPAIF_BIT_CLK,		\
+		.clk_src= src,				\
+		.clk_root=Q6AFE_LPASS_CLK_ROOT_DEFAULT,				\
+	}
+	
+#define Q6AFE_CLK_OSR_V1(id, dai) {					\
+		.q6dsp_clk_id	= id,				\
+		.dai_id = dai,					\
+		.clk_id	= LPAIF_OSR_CLK,		\
+		.clk_src=Q6AFE_LPASS_CLK_SRC_INTERNAL,				\
+		.clk_root=Q6AFE_LPASS_CLK_ROOT_DEFAULT,				\
+	}
 
 struct q6afe {
 	struct apr_device *apr;
@@ -1105,11 +1130,60 @@ static int q6afe_set_digital_codec_core_clock(struct q6afe_port *port,
 				       sizeof(*cfg));
 }
 
+static const struct q6dsp_clk_v1 q6dsp_v1_clocks[]={
+	Q6AFE_CLK_DIG_V1(Q6AFE_LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE, PRIMARY_MI2S_RX),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_PRI_MI2S_IBIT, PRIMARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_SEC_MI2S_IBIT, SECONDARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_TER_MI2S_IBIT, TERTIARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUAD_MI2S_IBIT, QUATERNARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUI_MI2S_IBIT, QUINARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_PRI_MI2S_EBIT, PRIMARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_SEC_MI2S_EBIT, SECONDARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_TER_MI2S_EBIT, TERTIARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUAD_MI2S_EBIT, QUATERNARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUI_MI2S_EBIT, QUINARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_OSR_V1(Q6AFE_LPASS_CLK_ID_QUI_MI2S_OSR, QUINARY_MI2S_RX),
+};
+
+int q6afe_set_legacy_lpass_clock(struct device *dev, int clk_id, unsigned int freq)
+{
+	struct q6afe_port *port;
+	int ret;
+	struct q6dsp_clk_v1 *clk_init = NULL;
+	
+	for(int i=0;i<ARRAY_SIZE(q6dsp_v1_clocks);i++) {
+		if(q6dsp_v1_clocks[i].q6dsp_clk_id == clk_id) {
+			clk_init=&q6dsp_v1_clocks[i];
+			break;
+		};
+	};
+
+	if (clk_init==NULL)
+		return -EINVAL;
+	
+	port = q6afe_port_get_from_id(dev, clk_init->dai_id);
+	if (IS_ERR(port))
+		return PTR_ERR(port);
+
+	ret = q6afe_port_set_sysclk(port,clk_init->clk_id, clk_init->clk_src,
+				    clk_init->clk_root, freq, 0);
+	q6afe_port_put(port);
+	return ret;
+}
+
 int q6afe_set_lpass_clock(struct device *dev, int clk_id, int attri,
 			  int clk_root, unsigned int freq)
 {
 	struct q6afe *afe = dev_get_drvdata(dev->parent);
 	struct afe_clk_set cset = {0,};
+
+	/*
+	 * v2 clocks specified in the device tree may not be supported by the
+	 * firmware. Fall back to the old method for setting these.
+	 */
+	if (q6core_get_adsp_version() < Q6_ADSP_VERSION_2_7) {
+		return q6afe_set_legacy_lpass_clock(dev,clk_id,freq);
+	}
 
 	cset.clk_set_minor_version = AFE_API_VERSION_CLOCK_SET;
 	cset.clk_id = clk_id;

@@ -212,6 +212,14 @@ struct q6afe_port_config {
 	struct q6afe_cdc_dma_cfg dma_cfg;
 };
 
+struct q6dsp_clk_v1 {
+	int clk_id;
+	int dai_id;
+	int q6dsp_clk_id;
+	int clk_root;
+	int clk_src;
+};
+
 struct q6afe_port;
 
 struct q6afe_port *q6afe_port_get_from_id(struct device *dev, int id);
@@ -231,6 +239,8 @@ void q6afe_cdc_dma_port_prepare(struct q6afe_port *port,
 int q6afe_port_set_sysclk(struct q6afe_port *port, int clk_id,
 			  int clk_src, int clk_root,
 			  unsigned int freq, int dir);
+int q6afe_set_legacy_lpass_clock(struct device *dev, int clk_id,
+				 unsigned int freq)
 int q6afe_set_lpass_clock(struct device *dev, int clk_id, int attri,
 			  int clk_root, unsigned int freq);
 int q6afe_vote_lpass_core_hw(struct device *dev, uint32_t hw_block_id,
