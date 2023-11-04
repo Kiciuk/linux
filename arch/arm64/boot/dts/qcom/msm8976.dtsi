@@ -29,12 +29,7 @@
 			compatible = "fixed-clock";
 			#clock-cells = <0>;
 		};
-		
-		mclk_dummy: mclk-dummy {
-			compatible = "fixed-clock";
-			clock-frequency = <9600000>;
-			#clock-cells = <0>;
-		};
+
 	};
 
 	cpus {
@@ -1213,8 +1208,9 @@
 			compatible = "qcom,msm8916-wcd-digital-codec";
 			reg = <0xc0f0000 0x400>;
 			#sound-dai-cells = <1>;
-			/* mclk clock is part of lpasscc, we set it from machine driver */
-			clocks = <&mclk_dummy>,
+
+			clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
+					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
 				 <&xo_board>;
 			clock-names = "mclk", "ahbix-clk";
 		};
