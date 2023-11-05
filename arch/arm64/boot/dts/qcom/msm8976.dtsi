@@ -294,14 +294,6 @@
 						rpmpd_opp_turbo: opp9 {
 							opp-level = <RPM_SMD_LEVEL_TURBO>;
 						};
-
-						rpmpd_opp_turbo_no_cpr: opp10 {
-							opp-level = <RPM_SMD_LEVEL_TURBO_NO_CPR>;
-						};
-
-						rpmpd_opp_turbo_high: opp111 {
-							opp-level = <RPM_SMD_LEVEL_TURBO_HIGH>;
-						};
 					};
 				};
 			};
