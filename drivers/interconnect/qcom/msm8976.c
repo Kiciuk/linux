@@ -14,7 +14,6 @@
 #include <dt-bindings/interconnect/qcom,msm8976.h>
 
 #include "icc-rpm.h"
-#include "smd-rpm.h"
 
 static const char * const snoc_intf_clocks[] = {
 	"ipa", /* mas_ipa */
@@ -356,7 +355,7 @@ static struct qcom_icc_node mas_spdm = {
 	.name = "mas_spdm",
 	.id = QNOC_MASTER_SPDM,
 	.buswidth = 4,
-	.mas_rpm_id = 50,
+	.mas_rpm_id = -1, //failed
 	.slv_rpm_id = -1,
 	.num_links = ARRAY_SIZE(mas_spdm_links),
 	.links = mas_spdm_links,
@@ -370,7 +369,7 @@ static struct qcom_icc_node mas_dehr = {
 	.name = "mas_dehr",
 	.id = QNOC_MASTER_DEHR,
 	.buswidth = 4,
-	.mas_rpm_id = 48,
+	.mas_rpm_id = -1, //failed
 	.slv_rpm_id = -1,
 	.num_links = ARRAY_SIZE(mas_dehr_links),
 	.links = mas_dehr_links,
@@ -384,7 +383,7 @@ static struct qcom_icc_node mas_xm_usb_hs1 = {
 	.name = "mas_xm_usb_hs1",
 	.id = QNOC_MASTER_XM_USB_HS1,
 	.buswidth = 8,
-	.mas_rpm_id = 136,
+	.mas_rpm_id = -1, //failed
 	.slv_rpm_id = -1,
 	.num_links = ARRAY_SIZE(mas_xm_usb_hs1_links),
 	.links = mas_xm_usb_hs1_links,
@@ -651,7 +650,7 @@ static struct qcom_icc_node mas_lpass_proc = {
 	.name = "mas_lpass_proc",
 	.id = QNOC_MASTER_LPASS_PROC,
 	.buswidth = 8,
-	.mas_rpm_id = 25,
+	.mas_rpm_id = -1, //failed
 	.slv_rpm_id = -1,
 	.qos.qos_mode = NOC_QOS_MODE_BYPASS,
 	.qos.areq_prio = 0,
@@ -725,7 +724,7 @@ static struct qcom_icc_node pcnoc_int_0 = {
 	.name = "pcnoc_int_0",
 	.id = QNOC_PNOC_INT_0,
 	.buswidth = 4,
-	.mas_rpm_id = 85,
+	.mas_rpm_id = -1, //failed
 	.slv_rpm_id = 114,
 	.num_links = ARRAY_SIZE(pcnoc_int_0_links),
 	.links = pcnoc_int_0_links,
@@ -1430,7 +1429,7 @@ static struct platform_driver msm8976_noc_driver = {
 	.driver = {
 		.name = "qnoc-msm8976",
 		.of_match_table = msm8976_noc_of_match,
-		.sync_state = icc_sync_state,
+		//.sync_state = icc_sync_state,
 	},
 };
 
