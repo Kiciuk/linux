@@ -91,7 +91,7 @@
 	
 	status = "okay";
 };
-
+/*
 &blsp2_dma {
 	status = "disabled";
 };
@@ -99,13 +99,16 @@
 &blsp1_dma {
 	status = "disabled";
 };
-
+*/
 &pmi8950_wled {
 	status = "okay";
 
 	qcom,current-limit-microamp = <20000>;
 	qcom,enabled-strings = <0 1>;
 	qcom,ovp-millivolt = <29600>;
+};
+&mdss {
+	status = "okay";
 };
 
 &mdss_dsi0 {
@@ -149,6 +152,10 @@
 	vdd-supply = <&pm8950_l17>;
 	vdda-supply = <&pm8950_l1>;
 	vddio-supply = <&pm8950_l6>;
+};
+
+&adreno_gpu {
+	status = "disabled";
 };
 
 &blsp1_i2c4 {
@@ -248,6 +255,8 @@
 };
 
 &wcnss_iris {
+	compatible = "qcom,wcn3660b";
+
 	vddxo-supply = <&pm8950_l7>;
 	vddrfa-supply = <&pm8950_l19>;
 	vddpa-supply = <&pm8950_l9>;
@@ -363,11 +372,11 @@
 };
 
 &lpass {
-	status= "okay";
+	status= "disabled";
 };
 
 &sound {
-	status = "okay";
+	status= "disabled";
 
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act  &tlmm_pri_act>;
