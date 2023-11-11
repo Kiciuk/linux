@@ -4058,6 +4058,7 @@ static const struct qcom_reset_map gcc_msm8976_resets[] = {
 	[RST_CAMSS_VFE1_BCR]		= { 0x5807c },
 	[RST_CAMSS_CPP_BCR]		= { 0x58080 },
 	[RST_MSS_BCR]			= { 0x71000 },
+	[RST_MDSS_BCR]                  = { 0x4D074 },
 };
 
 static struct gdsc *gcc_msm8976_gdscs[] = {
