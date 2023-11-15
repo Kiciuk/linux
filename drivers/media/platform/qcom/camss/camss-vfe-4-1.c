@@ -938,7 +938,14 @@ static irqreturn_t vfe_isr(int irq, void *dev)
  */
 static void vfe_4_1_pm_domain_off(struct vfe_device *vfe)
 {
-	/* nop */
+	struct camss *camss;
+
+	if (!vfe || vfe->camss->dev->pm_domain)
+		return;
+
+	camss = vfe->camss;
+
+	device_link_del(camss->genpd_link[vfe->id]);
 }
 
 /*
@@ -947,6 +954,20 @@ static void vfe_4_1_pm_domain_off(struct vfe_device *vfe)
  */
 static int vfe_4_1_pm_domain_on(struct vfe_device *vfe)
 {
+	struct camss *camss = vfe->camss;
+	enum vfe_line_id id = vfe->id;
+
+	if (camss->dev->pm_domain)
+		return 0;
+
+	camss->genpd_link[id] = device_link_add(camss->dev, camss->genpd[id], DL_FLAG_STATELESS |
+						DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
+
+	if (!camss->genpd_link[id]) {
+		dev_err(vfe->camss->dev, "Failed to add VFE#%d to power domain\n", id);
+		return -EINVAL;
+	}
+
 	return 0;
 }
 
