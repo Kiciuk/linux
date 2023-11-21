@@ -463,6 +463,38 @@
 			clocks = <&gcc GCC_PRNG_AHB_CLK>;
 			clock-names = "core";
 		};
+		
+		bimc: interconnect@400000 {
+			compatible = "qcom,msm8976-bimc";
+			reg = <0x00400000 0x62000>;
+
+			#interconnect-cells = <1>;
+		};
+	
+
+		pcnoc: interconnect@500000 {
+			compatible = "qcom,msm8976-pcnoc";
+			reg = <0x00500000 0x14000>;
+
+			#interconnect-cells = <1>;
+		};
+
+		snoc: interconnect@580000 {
+			compatible = "qcom,msm8976-snoc";
+			reg = <0x00580000 0x1a000>;
+
+			clock-names = "ipa";
+			clocks =  <&rpmcc RPM_SMD_IPA_CLK>;
+
+			#interconnect-cells = <1>;
+
+			snoc_mm: interconnect {
+				compatible = "qcom,msm8976-snoc-mm";
+				
+				#interconnect-cells = <1>;
+			};
+		};
+		
 	
 		rpm_msg_ram: sram@60000 {
 			compatible = "qcom,rpm-msg-ram";
