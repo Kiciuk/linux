@@ -944,8 +944,8 @@
 					      "tbu",
 					      "tbu_rt";
 
-				operating-points-v2 = <&mdp_opp_table>;
-				power-domains = <&rpmpd MSM8976_VDDCX>;
+				//operating-points-v2 = <&mdp_opp_table>;
+				power-domains = <&gcc MDSS_GDSC>;
 
 				iommus = <&apps_iommu 0x17>;
 				
@@ -956,14 +956,14 @@
 					port@0 {
 						reg = <0>;
 						mdp5_intf1_out: endpoint {
-							remote-endpoint = <&mdss_dsi0_in>;
+							remote-endpoint = <&dsi0_in>;
 						};
 					};
 
 					port@1 {
 						reg = <1>;
 						mdp5_intf2_out: endpoint {
-							remote-endpoint = <&mdss_dsi1_in>;
+							remote-endpoint = <&dsi1_in>;
 						};
 					};
 				};
@@ -1020,7 +1020,7 @@
 				phys = <&mdss_dsi0_phy>;
 				
 				operating-points-v2 = <&dsi0_opp_table>;
-				power-domains = <&rpmpd MSM8976_VDDCX>;
+				power-domains = <&gcc MDSS_GDSC>;
 
 				#address-cells = <1>;
 				#size-cells = <0>;
@@ -1031,14 +1031,14 @@
 
 					port@0 {
 						reg = <0>;
-						mdss_dsi0_in: endpoint {
+						dsi0_in: endpoint {
 							remote-endpoint = <&mdp5_intf1_out>;
 						};
 					};
 
 					port@1 {
 						reg = <1>;
-						mdss_dsi0_out: endpoint {
+						dsi0_out: endpoint {
 						};
 					};
 				};
@@ -1092,7 +1092,7 @@
 							 
 				phys = <&mdss_dsi1_phy>;
 
-				power-domains = <&rpmpd MSM8976_VDDCX>;
+				power-domains = <&gcc MDSS_GDSC>;
 
 				status = "disabled";
 
@@ -1102,7 +1102,7 @@
 
 					port@0 {
 						reg = <0>;
-						mdss_dsi1_in: endpoint {
+						dsi1_in: endpoint {
 							remote-endpoint = <&mdp5_intf2_out>;
 						};
 					};
