@@ -63,7 +63,12 @@ static int enable_clk(struct msm_gpu *gpu)
 	/* Set the RBBM timer rate to 19.2Mhz */
 	if (gpu->rbbmtimer_clk)
 		clk_set_rate(gpu->rbbmtimer_clk, 19200000);
-
+	if (gpu->gtcu_clk)
+		clk_prepare_enable(gpu->gtcu);
+	if (gpu->gtbu_clk)
+		clk_prepare_enable(gpu->gtbu);
+	/* Do we prepare_enable also alwayson? */
+ 
 	return clk_bulk_prepare_enable(gpu->nr_clocks, gpu->grp_clks);
 }
 
@@ -81,6 +86,10 @@ static int disable_clk(struct msm_gpu *gpu)
 
 	if (gpu->rbbmtimer_clk)
 		clk_set_rate(gpu->rbbmtimer_clk, 0);
+	if (gpu->gtcu_clk)
+		clk_disable_unprepare(gpu->gtcu);
+	if (gpu->gtbu_clk)
+		clk_disable_unprepare(gpu->gtbu);
 
 	return 0;
 }
@@ -812,6 +821,12 @@ static int get_clocks(struct platform_device *pdev, struct msm_gpu *gpu)
 
 	gpu->rbbmtimer_clk = msm_clk_bulk_get_clock(gpu->grp_clks,
 		gpu->nr_clocks, "rbbmtimer");
+
+	gpu->gtbu_clk = msm_clk_bulk_get_clock(gpu->grp_clks,
+		gpu->nr_clocks, "gtbu");
+
+	gpu->gtcu_clk = msm_clk_bulk_get_clock(gpu->grp_clks,
+		gpu->nr_clocks, "gtcu");
 
 	return 0;
 }
