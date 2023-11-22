@@ -1942,7 +1942,7 @@
 		};
 		
 		lpass: remoteproc@c200000 {
-			compatible = "qcom,msm8976-adsp-pil", "qcom,msm8953-adsp-pil";
+			compatible = "qcom,msm8996-adsp-pil";
 			reg = <0x0c200000 0x100>;
 
 			interrupts-extended = <&intc 0 293 IRQ_TYPE_EDGE_RISING>,
@@ -1963,8 +1963,6 @@
 
 			qcom,smem-states = <&adsp_smp2p_out 0>;
 			qcom,smem-state-names = "stop";
-
-			
 
 			smd-edge {
 				interrupts = <GIC_SPI 289 IRQ_TYPE_EDGE_RISING>;
