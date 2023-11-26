@@ -64,9 +64,9 @@ static int enable_clk(struct msm_gpu *gpu)
 	if (gpu->rbbmtimer_clk)
 		clk_set_rate(gpu->rbbmtimer_clk, 19200000);
 	if (gpu->gtcu_clk)
-		clk_prepare_enable(gpu->gtcu);
+		clk_prepare_enable(gpu->gtcu_clk);
 	if (gpu->gtbu_clk)
-		clk_prepare_enable(gpu->gtbu);
+		clk_prepare_enable(gpu->gtbu_clk);
 	/* Do we prepare_enable also alwayson? */
  
 	return clk_bulk_prepare_enable(gpu->nr_clocks, gpu->grp_clks);
@@ -87,9 +87,9 @@ static int disable_clk(struct msm_gpu *gpu)
 	if (gpu->rbbmtimer_clk)
 		clk_set_rate(gpu->rbbmtimer_clk, 0);
 	if (gpu->gtcu_clk)
-		clk_disable_unprepare(gpu->gtcu);
+		clk_disable_unprepare(gpu->gtcu_clk);
 	if (gpu->gtbu_clk)
-		clk_disable_unprepare(gpu->gtbu);
+		clk_disable_unprepare(gpu->gtbu_clk);
 
 	return 0;
 }
