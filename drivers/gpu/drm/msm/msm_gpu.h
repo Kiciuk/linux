@@ -245,7 +245,7 @@ struct msm_gpu {
 	struct regulator *gpu_reg, *gpu_cx;
 	struct clk_bulk_data *grp_clks;
 	int nr_clocks;
-	struct clk *ebi1_clk, *core_clk, *rbbmtimer_clk;
+	struct clk *ebi1_clk, *core_clk, *rbbmtimer_clk, *gtbu_clk, *gtcu_clk;
 	uint32_t fast_rate;
 
 	/* Hang and Inactivity Detection:
