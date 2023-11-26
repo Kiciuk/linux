@@ -155,7 +155,7 @@
 };
 
 &adreno_gpu {
-	status = "disabled";
+	status = "okay";
 };
 
 &blsp1_i2c4 {
