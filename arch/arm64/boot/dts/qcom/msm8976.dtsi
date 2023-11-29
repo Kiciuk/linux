@@ -1426,20 +1426,7 @@
 				reg = <0x0 0x1000>;
 				interrupts = <GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>;
 			};
-			
-			/* gfx3d secure */
-			iommu-ctx@1000 {
-				compatible = "qcom,msm-iommu-v2-sec";
-				reg = <0x1000 0x1000>;
-				interrupts = <GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>;
-			};
-			
-			/* gfx3d priv */
-			iommu-ctx@2000 {
-				compatible = "qcom,msm-iommu-v2-sec";
-				reg = <0x2000 0x1000>;
-				interrupts = <GIC_SPI 242 IRQ_TYPE_LEVEL_HIGH>;
-			};
+
 		};
 		
 		spmi_bus: spmi@200f000 {
