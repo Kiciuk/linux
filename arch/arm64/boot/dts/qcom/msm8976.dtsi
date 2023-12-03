@@ -1106,7 +1106,7 @@
 				operating-points-v2 = <&mdp_opp_table>;
 				power-domains = <&gcc MDSS_GDSC>;
 
-				iommus = <&apps_iommu 0x17>;
+				iommus = <&apps_iommu 22>;
 				
 				ports {
 					#address-cells = <1>;
