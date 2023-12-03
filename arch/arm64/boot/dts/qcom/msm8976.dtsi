@@ -1331,7 +1331,6 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 			#iommu-cells = <1>;
-			#global-interrupts = <0>;
 			compatible = "qcom,msm8976-iommu", "qcom,msm-iommu-v2";
 			ranges  = <0 0x01e20000 0x20000>;
 			clocks = <&gcc GCC_SMMU_CFG_CLK>,
