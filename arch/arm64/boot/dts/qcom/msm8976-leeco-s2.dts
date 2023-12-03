@@ -147,7 +147,7 @@
 };
 
 &adreno_gpu {
-	status = "disabled";
+	status = "okay";
 };
 
 &tsens {
