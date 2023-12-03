@@ -28,6 +28,8 @@ properties:
       - enum:
           - qcom,apq8016-sbc-sndcard
           - qcom,msm8916-qdsp6-sndcard
+          - qcom,msm8953-qdsp6-sndcard
+          - qcom,msm8976-qdsp6-sndcard
           - qcom,qrb5165-rb5-sndcard
           - qcom,sc7180-qdsp6-sndcard
           - qcom,sc8280xp-sndcard
@@ -135,6 +137,36 @@ allOf:
           items:
             - const: mic-iomux
             - const: spkr-iomux
+      required:
+        - compatible
+        - model
+        - reg
+        - reg-names
+    else:
+      properties:
+        reg: false
+        reg-names: false
+
+allOf:
+  - if:
+      properties:
+        compatible:
+          contains:
+            enum:
+              - qcom,msm8953-qdsp6-sndcard
+              - qcom,msm8976-qdsp6-sndcard
+    then:
+      properties:
+        reg:
+          items:
+            - description: Microphone I/O mux register address
+            - description: Speaker I/O mux register address
+            - description: Quinary Mi2S I/O mux register address
+        reg-names:
+          items:
+            - const: mic-iomux
+            - const: spkr-iomux
+            - const: quin-iomux
       required:
         - compatible
         - model
