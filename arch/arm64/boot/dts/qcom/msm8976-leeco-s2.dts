@@ -150,6 +150,10 @@
 	status = "disabled";
 };
 
+&tsens {
+status = "disabled";
+};
+
 &blsp1_i2c4 {
 	status = "okay";
 
