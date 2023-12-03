@@ -1403,7 +1403,6 @@
 		
 		adreno_gpu: gpu@1c00000 {
 			compatible = "qcom,adreno-510.0", "qcom,adreno";
-			#stream-id-cells = <16>;
 
 			reg = <0x01c00000 0x40000>;
 			reg-names = "kgsl_3d0_reg_memory";
@@ -1414,18 +1413,12 @@
 			clock-names = "core",
 				      "iface",
 				      "mem",
-				      "rbbmtimer",
-				      "gtcu",
-				      "gtbu",
-				      "alwayson";
+				      "rbbmtimer";
 
 			clocks = <&gcc GCC_GFX3D_OXILI_CLK>,
 			    <&gcc GCC_GFX3D_OXILI_AHB_CLK>,
 			    <&gcc GCC_GFX3D_BIMC_CLK>,
-			    <&gcc GCC_GFX3D_OXILI_TIMER_CLK>,
-			    <&gcc GCC_GFX3D_GTCU_AHB_CLK>,
-			    <&gcc GCC_GFX3D_TBU1_CLK>,
-			    <&gcc GCC_GFX3D_OXILI_AON_CLK>;
+			    <&gcc GCC_GFX3D_OXILI_TIMER_CLK>;
 
 			power-domains = <&rpmpd MSM8976_VDDCX>;
 
