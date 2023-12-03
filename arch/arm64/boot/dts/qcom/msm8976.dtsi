@@ -1848,42 +1848,40 @@
 			compatible = "qcom,msm8916-qdsp6-sndcard";
 			reg = <0xc051000 0x4>,
 			      <0xc051004 0x4>,
-			      <0xc055000 0x4>,
 			      <0xc052000 0x4>;
 			reg-names = "mic-iomux",
 				    "spkr-iomux",
-				    "pri-iomux",
 				    "quin-iomux";
 
-			dai-link-multimedia1 {
+			mm1-dai-link {
 				link-name = "MultiMedia1";
 				cpu {
 					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>;
 				};
 			};
 
-			dai-link-multimedia2 {
+			mm2-dai-link {
 				link-name = "MultiMedia2";
 				cpu {
 					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>;
 				};
 			};
 
-			dai-link-multimedia3 {
+			mm3-dai-link {
 				link-name = "MultiMedia3";
 				cpu {
 					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>;
 				};
 			};
 
-			dai-link-multimedia4 {
+			mm4-dai-link {
 				link-name = "MultiMedia4";
 				cpu {
 					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA4>;
 				};
 			};
 
-			sound_dai_primary: dai-link-primary {
+			sound_dai_primary: primary-dai-link {
 				link-name = "Primary MI2S";
 				cpu {
 					sound-dai = <&q6afedai PRIMARY_MI2S_RX>;
@@ -1898,7 +1896,7 @@
 				};
 			};
 
-			sound_dai_tertiary: dai-link-tertiary {
+			sound_dai_tertiary: tertiary-dai-link {
 				link-name = "Tertiary MI2S";
 				cpu {
 					sound-dai = <&q6afedai TERTIARY_MI2S_TX>;
@@ -1913,7 +1911,7 @@
 				};
 			};
 
-			sound_dai_quaternary: dai-link-quaternary {
+			sound_dai_quaternary: quaternary-dai-link {
 				link-name = "Quaternary MI2S";
 				status = "disabled"; /* Needs extra codec configuration */
 				cpu {
@@ -1925,7 +1923,7 @@
 				};
 			};
 
-			sound_dai_quinary: dai-link-quinary {
+			sound_dai_quinary: quinary-dai-link {
 				link-name = "Quinary MI2S";
 				status = "disabled"; /* Needs extra codec configuration */
 				cpu {
