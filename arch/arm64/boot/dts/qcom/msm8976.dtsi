@@ -1413,12 +1413,23 @@
 			clock-names = "core",
 				      "iface",
 				      "mem",
-				      "rbbmtimer";
+				      "mem_iface",
+				      "gtcu_iface",
+				      "gtbu",
+				      "gtbu1",
+				      "rbbmtimer",
+				      "alwayson";
 
 			clocks = <&gcc GCC_GFX3D_OXILI_CLK>,
 			    <&gcc GCC_GFX3D_OXILI_AHB_CLK>,
+			    <&gcc GCC_GFX3D_OXILI_GMEM_CLK>,
 			    <&gcc GCC_GFX3D_BIMC_CLK>,
-			    <&gcc GCC_GFX3D_OXILI_TIMER_CLK>;
+			    <&gcc GCC_GFX3D_GTCU_AHB_CLK>,
+			    <&gcc GCC_GFX3D_TBU0_CLK>,
+			    <&gcc GCC_GFX3D_TBU1_CLK>,
+			    <&gcc GCC_GFX3D_OXILI_TIMER_CLK>,
+			    <&gcc GCC_GFX3D_OXILI_AON_CLK>;
+
 
 			power-domains = <&rpmpd MSM8976_VDDCX>;
 
