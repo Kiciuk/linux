@@ -368,19 +368,21 @@ status = "disabled";
 };
 
 &lpass {
-	status= "disabled";
+	status= "okay";
 };
 
 &sound {
-	status= "disabled";
+	status= "okay";
 
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act  &tlmm_pri_act>;
-	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus  &tlmm_pri_sus>;
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act  &tlmm_pri_act &cross_con_sus>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus  &tlmm_pri_sus &cross_con_act>;
 	model = "leeco-s2";
 };
 
 &sound_dai_quinary {
+	status = "okay";
+
 	codec {
 		sound-dai = <&speaker_codec>;
 	};

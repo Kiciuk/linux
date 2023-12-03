@@ -965,6 +965,20 @@
 				bias-disable;
 			};
 
+			cross_con_sus: cross_con_suspend-state {
+				pins = "gpio69";
+				function = "gpio";
+				bias-pull-down;
+				drive-strength = <2>;
+			};
+
+			cross_con_act: cross_con_active-state {
+				pins = "gpio69";
+				function = "gpio";
+				bias-pull-down;
+				drive-strength = <8>;
+			};
+
 			cdc_reset_sus: cdc_reset_sus-state {
 				pins = "gpio133";
 				function = "gpio";
