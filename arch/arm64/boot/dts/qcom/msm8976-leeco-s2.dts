@@ -192,7 +192,7 @@ status = "disabled";
 	haptics: haptics@5a {
 		compatible = "ti,drv2604";
 		reg = <0x5a>;
-		enable-gpio = <&tlmm 109 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&tlmm 109 GPIO_ACTIVE_HIGH>;
 		mode = <DRV260X_LRA_MODE>;
 		library-sel = <DRV260X_LIB_LRA>;
 	};
@@ -355,8 +355,6 @@ status = "disabled";
 &otg {
 	status = "okay";
 	extcon = <&tiusb320>,<0>;
-	v1p8-supply = <&pm8950_l7>;
-	v3p3-supply = <&pm8950_l13>;
 };
 
 &usb_hs_phy_8916 {
@@ -415,7 +413,7 @@ status = "disabled";
 
 &rpm_requests {
 
-	pm8950_regulators: pm8950-regulators {
+	pm8950_regulators: regulators {
 		compatible = "qcom,rpm-pm8950-regulators";
 		
 		vdd_s1-supply = <&vph_pwr>;
