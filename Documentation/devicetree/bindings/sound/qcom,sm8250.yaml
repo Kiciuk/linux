@@ -137,17 +137,6 @@ allOf:
           items:
             - const: mic-iomux
             - const: spkr-iomux
-      required:
-        - compatible
-        - model
-        - reg
-        - reg-names
-    else:
-      properties:
-        reg: false
-        reg-names: false
-
-allOf:
   - if:
       properties:
         compatible:
@@ -166,7 +155,8 @@ allOf:
           items:
             - const: mic-iomux
             - const: spkr-iomux
-            - const: quin-iomux
+            - const: quin-iomux     
+ 
       required:
         - compatible
         - model
