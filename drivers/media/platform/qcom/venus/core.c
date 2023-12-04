@@ -757,6 +757,42 @@ static const struct venus_resources msm8953_res = {
 	.fwname = "venus.mdt", /* FIXME */
 };
 
+static const struct freq_tbl msm8976_freq_table[] = {
+	{ 979200, 466000000 },
+	{ 489600, 466000000 },
+	{ 432000, 400000000 },
+	{ 244800, 228570000 },
+	{ 216000, 228570000 },
+	{ 108000, 100000000 },
+};
+static const struct venus_resources msm8976_res = {
+	.freq_tbl = msm8976_freq_table, /* FIXME */
+	.freq_tbl_size = ARRAY_SIZE(msm8976_freq_table),
+	.reg_tbl = msm8953_reg_preset,
+	.reg_tbl_size = ARRAY_SIZE(msm8953_reg_preset),
+	.bw_tbl_enc = sdm660_bw_table_enc,
+	.bw_tbl_enc_size = ARRAY_SIZE(sdm660_bw_table_enc),
+	.bw_tbl_dec = sdm660_bw_table_dec,
+	.bw_tbl_dec_size = ARRAY_SIZE(sdm660_bw_table_dec),
+	.clks = { "core", "iface", "bus" },
+	.clks_num = 3,
+	.vcodec0_clks = { "vcodec0_core" },
+	.vcodec1_clks = { "vcodec0_core" },
+	.vcodec_clks_num = 1,
+	.vcodec_num = 1,
+	.max_load = 1011840,
+	.hfi_version = HFI_VERSION_3XX,
+	.vmem_id = VIDC_RESOURCE_NONE,
+	.vmem_size = 0,
+	.vmem_addr = 0,
+	.cp_start = 0,
+	.cp_size = 0x5dc00000,
+	.cp_nonpixel_start = 0x1000000,
+	.cp_nonpixel_size = 0x24800000,
+	.dma_mask = 0xddc00000 - 1,
+	.fwname = "venus-v1.mdt", /* FIXME */
+};
+
 static const struct freq_tbl sc7180_freq_table[] = {
 	{  0, 500000000 },
 	{  0, 434000000 },
@@ -921,6 +957,7 @@ static const struct venus_resources sc7280_res = {
 static const struct of_device_id venus_dt_match[] = {
 	{ .compatible = "qcom,msm8916-venus", .data = &msm8916_res, },
 	{ .compatible = "qcom,msm8953-venus", .data = &msm8953_res, },
+	{ .compatible = "qcom,msm8976-venus", .data = &msm8976_res, },
 	{ .compatible = "qcom,msm8996-venus", .data = &msm8996_res, },
 	{ .compatible = "qcom,sdm660-venus", .data = &sdm660_res, },
 	{ .compatible = "qcom,sdm845-venus", .data = &sdm845_res, },
