@@ -1697,7 +1697,7 @@
 		};
 		
 		a72_pll: clock-controller@b016000 {
-			compatible = "qcom,hfpll-msm8976-a72";
+			compatible = "qcom,msm8976-hfpll-a72";
 			reg = <0xb016000 0x40>;
 			clocks = <&xo_board>;
 			clock-names = "xo";
@@ -1715,7 +1715,7 @@
 		};
 		
 		a53_pll: clock-controller@b116000 {
-			compatible = "qcom,hfpll-msm8976-a53";
+			compatible = "qcom,msm8976-hfpll-a53";
 			reg = <0xb116000 0x40>;
 			clocks = <&xo_board>;
 			clock-names = "xo";
@@ -1736,7 +1736,7 @@
 		};
 
 		cci_pll: clock-controller@b1d0000 {
-			compatible = "qcom,hfpll-msm8976-cci";
+			compatible = "qcom,msm8976-hfpll-cci";
 			reg = <0xb1d0000 0x40>;
 			clocks = <&xo_board>;
 			clock-names = "xo";
