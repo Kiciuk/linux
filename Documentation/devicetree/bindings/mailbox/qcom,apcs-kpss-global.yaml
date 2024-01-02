@@ -93,6 +93,7 @@ allOf:
           contains:
             enum:
               - qcom,msm8916-apcs-kpss-global
+              - qcom,msm8976-apcs-kpss-global
     then:
       properties:
         clocks:
