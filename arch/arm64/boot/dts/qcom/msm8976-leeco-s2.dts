@@ -147,9 +147,12 @@
 };
 
 &adreno_gpu {
-	status = "disabled";
+	status = "okay";
 };
 
+&tsens {
+status = "disabled";
+};
 &blsp1_i2c4 {
 	status = "okay";
 
@@ -240,7 +243,7 @@
 	};
 };
 
-
+/* No IRIS yet
 &wcnss {
 	status = "okay";
 	vddpx-supply = <&pm8950_l5>;
@@ -255,6 +258,7 @@
 	vdddig-supply = <&pm8950_l5>;
 };
 
+*/
 &tlmm {
 	gpio-reserved-ranges = <0 4>, <8 4>;
 
