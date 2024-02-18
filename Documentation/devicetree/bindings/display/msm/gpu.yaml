@@ -127,39 +127,75 @@ allOf:
       properties:
         compatible:
           contains:
-            pattern: '^qcom,adreno-[3-5][0-9][0-9]\.[0-9]$'
-
+            enum:
+              - qcom,adreno-506.0
+              - qcom,adreno-510.0
     then:
       properties:
         clocks:
-          minItems: 2
-          maxItems: 7
+          minItems: 6
+          maxItems: 6
 
         clock-names:
           items:
-            anyOf:
-              - const: core
-                description: GPU Core clock
-              - const: iface
-                description: GPU Interface clock
-              - const: mem
-                description: GPU Memory clock
-              - const: mem_iface
-                description: GPU Memory Interface clock
-              - const: alt_mem_iface
-                description: GPU Alternative Memory Interface clock
-              - const: gfx3d
-                description: GPU 3D engine clock
-              - const: rbbmtimer
-                description: GPU RBBM Timer for Adreno 5xx series
-              - const: rbcpr
-                description: GPU RB Core Power Reduction clock
-          minItems: 2
-          maxItems: 7
+            - const: alwayson
+              description: GPU Always-On clock
+            - const: core
+              description: GPU Core clock
+            - const: iface
+              description: GPU Interface clock
+            - const: mem
+              description: GPU Memory clock
+            - const: mem_iface
+              description: GPU Memory Interface clock
+            - const: rbbmtimer
+              description: GPU RBBM Timer for Adreno 5xx series
+
+        reg-names:
+          items:
+            - const: kgsl_3d0_reg_memory
 
       required:
         - clocks
         - clock-names
+    else:
+      if:
+        properties:
+          compatible:
+            contains:
+              pattern: '^qcom,adreno-[3-5][0-9][0-9]\.[0-9]$'
+
+      then:
+        properties:
+          clocks:
+            minItems: 2
+            maxItems: 7
+
+          clock-names:
+            items:
+              anyOf:
+                - const: core
+                  description: GPU Core clock
+                - const: iface
+                  description: GPU Interface clock
+                - const: mem
+                  description: GPU Memory clock
+                - const: mem_iface
+                  description: GPU Memory Interface clock
+                - const: alt_mem_iface
+                  description: GPU Alternative Memory Interface clock
+                - const: gfx3d
+                  description: GPU 3D engine clock
+                - const: rbbmtimer
+                  description: GPU RBBM Timer for Adreno 5xx series
+                - const: rbcpr
+                  description: GPU RB Core Power Reduction clock
+            minItems: 2
+            maxItems: 7
+
+        required:
+          - clocks
+          - clock-names
 
   - if:
       properties:
