@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/msm/qcom,adreno-306.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm Adreno 3xx GPU
+
+maintainers:
+  - Rob Clark <robdclark@gmail.com>
+
+description:
+  Device tree bindings for Adreno 306 GPU.
+
+select:
+  properties:
+    compatible:
+      contains:
+        enum: 
+          - qcom,adreno-306.0
+  required:
+    - compatible
+ 
+$ref: /schemas/display/msm/qcom,adreno-common.yaml#
+
+properties:
+  compatible:
+    items:
+      - enum:
+          - qcom,adreno-306.0
+      - const: qcom,adreno
+  reg:
+    items:
+      - description: base address of GPU device
+
+  reg-names:
+    items:
+      - const: kgsl_3d0_reg_memory
+
+  clocks:
+    items:
+      - description: GPU Core clock
+      - description: GPU Interface clock
+      - description: GPU Memory clock
+      - description: GPU Memory Interface clock
+      - description: GPU Memory Interface clock
+      - description: GPU 3D engine clock
+
+  clock-names:
+    items:
+      - const: core
+      - const: iface
+      - const: mem
+      - const: mem_iface
+      - const: alt_mem_iface
+      - const: gfx3d
+
+required:
+  - clocks
+  - clock-names
+
+unevaluatedProperties: false
+

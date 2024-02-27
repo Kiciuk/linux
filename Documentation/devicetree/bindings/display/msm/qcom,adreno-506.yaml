@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/msm/qcom,adreno-506.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm Adreno 506 GPU
+
+maintainers:
+  - Rob Clark <robdclark@gmail.com>
+
+description:
+  Device tree bindings for Adreno 506 GPU.
+
+select:
+  properties:
+    compatible:
+      contains:
+        enum: 
+          - qcom,adreno-504.0
+          - qcom,adreno-505.0
+          - qcom,adreno-506.0
+          - qcom,adreno-510.0
+  required:
+    - compatible
+
+$ref: /schemas/display/msm/qcom,adreno-common.yaml#
+
+properties:
+  compatible:
+    items:
+      - enum:
+          - qcom,adreno-504.0
+          - qcom,adreno-505.0
+          - qcom,adreno-506.0
+          - qcom,adreno-510.0
+      - const: qcom,adreno
+
+  reg:
+    items:
+      - description: base address of GPU device
+
+  reg-names:
+    items:
+      - const: kgsl_3d0_reg_memory
+
+  clocks:
+    items: 
+      - description: GPU Always-On clock
+      - description: GPU Core clock
+      - description: GPU Interface clock
+      - description: GPU Memory clock
+      - description: GPU Memory Interface clock
+      - description: GPU RBBM Timer for Adreno 5xx series
+
+  clock-names:
+    items:
+      - const: alwayson
+      - const: core
+      - const: iface
+      - const: mem 
+      - const: mem_iface
+      - const: rbbmtimer
+
+required:
+  - clocks
+  - clock-names
+
+unevaluatedProperties: false
+

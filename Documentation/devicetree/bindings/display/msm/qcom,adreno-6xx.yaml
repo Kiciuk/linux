@@ -1,0 +1,156 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/msm/qcom,adreno-6xx.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm Adreno 6xx GPU
+
+maintainers:
+  - Rob Clark <robdclark@gmail.com>
+
+description:
+  Device tree bindings for Adreno 600 series of GPU.
+
+properties:
+  compatible:
+    contains:
+      enum:
+        - qcom,adreno-610.0
+        - qcom,adreno-619.1
+
+allOf:
+  - $ref: qcom,adreno-common.yaml#
+  - if:
+      properties:
+        compatible:
+          contains:
+            enum:
+              - qcom,adreno-610.0
+              - qcom,adreno-619.1
+    then:
+      properties:
+        clocks:
+          minItems: 6
+          maxItems: 6
+
+        clock-names:
+          items:
+            - const: core
+              description: GPU Core clock
+            - const: iface
+              description: GPU Interface clock
+            - const: mem_iface
+              description: GPU Memory Interface clock
+            - const: alt_mem_iface
+              description: GPU Alternative Memory Interface clock
+            - const: gmu
+              description: CX GMU clock
+            - const: xo
+              description: GPUCC clocksource clock
+
+        reg-names:
+          minItems: 1
+          items:
+            - const: kgsl_3d0_reg_memory
+            - const: cx_dbgc
+
+      required:
+        - clocks
+        - clock-names
+    else:
+      if:
+        properties:
+          compatible:
+            contains:
+              pattern: '^qcom,adreno-[67][0-9][0-9]\.[0-9]$'
+
+      then: # Starting with A6xx, the clocks are usually defined in the GMU node
+        properties:
+          clocks: false
+          clock-names: false
+
+          reg-names:
+            minItems: 1
+            items:
+              - const: kgsl_3d0_reg_memory
+              - const: cx_mem
+              - const: cx_dbgc
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    // Example a6xx (with GMU):
+
+    #include <dt-bindings/clock/qcom,gpucc-sdm845.h>
+    #include <dt-bindings/clock/qcom,gcc-sdm845.h>
+    #include <dt-bindings/power/qcom-rpmpd.h>
+    #include <dt-bindings/interrupt-controller/irq.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+    #include <dt-bindings/interconnect/qcom,sdm845.h>
+
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        zap_shader_region: memory@8f200000 {
+            compatible = "shared-dma-pool";
+            reg = <0x0 0x90b00000 0x0 0xa00000>;
+            no-map;
+        };
+    };
+
+    gpu@5000000 {
+        compatible = "qcom,adreno-630.2", "qcom,adreno";
+
+        reg = <0x5000000 0x40000>, <0x509e000 0x10>;
+        reg-names = "kgsl_3d0_reg_memory", "cx_mem";
+
+        #cooling-cells = <2>;
+
+        interrupts = <GIC_SPI 300 IRQ_TYPE_LEVEL_HIGH>;
+
+        iommus = <&adreno_smmu 0>;
+
+        operating-points-v2 = <&gpu_opp_table>;
+
+        interconnects = <&rsc_hlos MASTER_GFX3D &rsc_hlos SLAVE_EBI1>;
+        interconnect-names = "gfx-mem";
+
+        qcom,gmu = <&gmu>;
+
+        gpu_opp_table: opp-table {
+            compatible = "operating-points-v2";
+
+            opp-430000000 {
+                opp-hz = /bits/ 64 <430000000>;
+                opp-level = <RPMH_REGULATOR_LEVEL_SVS_L1>;
+                opp-peak-kBps = <5412000>;
+            };
+
+            opp-355000000 {
+                opp-hz = /bits/ 64 <355000000>;
+                opp-level = <RPMH_REGULATOR_LEVEL_SVS>;
+                opp-peak-kBps = <3072000>;
+            };
+
+            opp-267000000 {
+                opp-hz = /bits/ 64 <267000000>;
+                opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
+                opp-peak-kBps = <3072000>;
+            };
+
+            opp-180000000 {
+                opp-hz = /bits/ 64 <180000000>;
+                opp-level = <RPMH_REGULATOR_LEVEL_MIN_SVS>;
+                opp-peak-kBps = <1804000>;
+            };
+        };
+
+        zap-shader {
+            memory-region = <&zap_shader_region>;
+            firmware-name = "qcom/LENOVO/81JL/qcdxkmsuc850.mbn";
+        };
+    };
+...

@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/msm/qcom,adreno-common.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm Adreno common properties
+
+maintainers:
+  - Rob Clark <robdclark@gmail.com>
+
+description:
+  Device tree bindings for Adreno GPUs
+
+properties:
+  $nodename:
+    pattern: "^gpu@[0-9a-f]+$"
+
+  reg:
+    minItems: 1
+    maxItems: 3
+
+  reg-names:
+    minItems: 1
+    maxItems: 3
+
+  power-domains:
+    maxItems: 1
+
+  clocks:
+    minItems: 2
+    maxItems: 6
+
+  clock-names:
+    minItems: 2
+    maxItems: 6
+
+  interrupts:
+    maxItems: 1
+
+  interrupt-names:
+    maxItems: 1
+
+  interconnects:
+    minItems: 1
+    maxItems: 2
+
+  interconnect-names:
+    minItems: 1
+    maxItems: 2
+
+  iommus:
+    minItems: 1
+    maxItems: 64
+
+  sram:
+    $ref: /schemas/types.yaml#/definitions/phandle-array
+    minItems: 1
+    maxItems: 4
+    items:
+      maxItems: 1
+    description: |
+      phandles to one or more reserved on-chip SRAM regions.
+      phandle to the On Chip Memory (OCMEM) that's present on some a3xx and
+      a4xx Snapdragon SoCs. See
+      Documentation/devicetree/bindings/sram/qcom,ocmem.yaml
+
+  operating-points-v2: true
+  opp-table:
+    type: object
+
+  zap-shader:
+    type: object
+    additionalProperties: false
+    description: |
+      For a5xx and a6xx devices this node contains a memory-region that
+      points to reserved memory to store the zap shader that can be used to
+      help bring the GPU out of secure mode.
+    properties:
+      memory-region:
+        maxItems: 1
+
+      firmware-name:
+        description: |
+          Default name of the firmware to load to the remote processor.
+
+  "#cooling-cells":
+    const: 2
+
+  nvmem-cell-names:
+    maxItems: 1
+
+  nvmem-cells:
+    description: efuse registers
+    maxItems: 1
+    
+  qcom,gmu:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: |
+      For GMU attached devices a phandle to the GMU device that will
+      control the power for the GPU.
+
+required:
+  - reg
+  - reg-names
+  - power-domains
+  - interrupts
+  - iommus
+
+additionalProperties: true
