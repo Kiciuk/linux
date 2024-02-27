@@ -1,0 +1,184 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/msm/qcom,adreno-506.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm Adreno 506 GPU
+
+maintainers:
+  - Rob Clark <robdclark@gmail.com>
+
+description:
+  Device tree bindings for Adreno 506 GPU.
+
+select:
+  properties:
+    compatible:
+      contains:
+        enum: 
+          - qcom,adreno-504.0
+          - qcom,adreno-505.0
+          - qcom,adreno-506.0
+          - qcom,adreno-510.0
+  required:
+    - compatible
+
+$ref: /schemas/display/msm/qcom,adreno-common.yaml#
+
+properties:
+  compatible:
+    items:
+      - enum:
+          - qcom,adreno-504.0
+          - qcom,adreno-505.0
+          - qcom,adreno-506.0
+          - qcom,adreno-510.0
+      - const: qcom,adreno
+
+  reg:
+    items:
+      - description: base address of GPU device
+
+  reg-names:
+    items:
+      - const: kgsl_3d0_reg_memory
+
+  clocks:
+    items: 
+      - description: GPU Always-On clock
+      - description: GPU Core clock
+      - description: GPU Interface clock
+      - description: GPU Memory clock
+      - description: GPU Memory Interface clock
+      - description: GPU RBBM Timer for Adreno 5xx series
+
+  clock-names:
+    items:
+      - const: alwayson
+      - const: core
+      - const: iface
+      - const: mem 
+      - const: mem_iface
+      - const: rbbmtimer
+
+required:
+  - clocks
+  - clock-names
+  - power-domains
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    // Example a506 :
+
+    #include <dt-bindings/clock/qcom,gcc-msm8953.h>
+    #include <dt-bindings/power/qcom-rpmpd.h>
+    #include <dt-bindings/interrupt-controller/irq.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+    
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        zap_shader_region: memory@81800000 {
+            compatible = "shared-dma-pool";
+            reg = <0x0 0x81800000 0x0 0x2000>;
+            no-map;
+        };
+    };
+    
+
+    gpu@1c00000 {
+        compatible = "qcom,adreno-506.0", "qcom,adreno";
+
+        reg = <0x01c00000 0x40000>;
+        reg-names = "kgsl_3d0_reg_memory";
+
+        interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+
+        clocks = <&gcc GCC_OXILI_AON_CLK>,
+                 <&gcc GCC_OXILI_GFX3D_CLK>,
+                 <&gcc GCC_OXILI_AHB_CLK>,
+                 <&gcc GCC_BIMC_GFX_CLK>,
+                 <&gcc GCC_BIMC_GPU_CLK>,
+                 <&gcc GCC_OXILI_TIMER_CLK>;
+        
+        clock-names = "alwayson",
+                      "core",
+                      "iface",
+                      "mem",
+                      "mem_iface",
+                      "rbbmtimer";
+
+        power-domains = <&gcc OXILI_GX_GDSC>;
+        iommus = <&gpu_iommu 0>;
+
+        nvmem-cells = <&speedbin_efuse>;
+        nvmem-cell-names = "speed_bin";
+
+        operating-points-v2 = <&gpu_opp_table>;
+
+        #cooling-cells = <2>;
+        
+        gpu_opp_table: opp-table {
+            compatible = "operating-points-v2";
+
+            opp-200000000 {
+                opp-hz = /bits/ 64 <200000000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-266670000 {
+                opp-hz = /bits/ 64 <266670000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-320000000 {
+                opp-hz = /bits/ 64 <320000000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-400000000  {
+                opp-hz = /bits/ 64 <400000000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-510000000 {
+                opp-hz = /bits/ 64 <510000000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-560000000 {
+                opp-hz = /bits/ 64 <560000000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-600000000 {
+                opp-hz = /bits/ 64 <600000000>;
+                opp-supported-hw = <0x1ff>;
+            };
+
+            opp-650000000 {
+                opp-hz = /bits/ 64 <650000000>;
+                opp-supported-hw = <0x185>;
+            };
+
+            opp-685000000 {
+                opp-hz = /bits/ 64 <685000000>;
+                opp-supported-hw = <0x100>;
+            };
+
+            opp-725000000 {
+                opp-hz = /bits/ 64 <725000000>;
+                opp-supported-hw = <0x100>;
+            };
+        };
+
+        zap-shader {
+            memory-region = <&zap_shader_region>;
+            firmware-name = "a506_zap.mdt";
+        };
+    };
+
