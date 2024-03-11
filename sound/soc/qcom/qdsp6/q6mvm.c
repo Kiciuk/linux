@@ -94,7 +94,7 @@ struct q6voice_session *q6mvm_session_create(enum q6voice_path_type path)
 
 	session_name = q6mvm_session_name(path);
 	if (session_name)
-		strlcpy(cmd.name, session_name, sizeof(cmd.name));
+		strscpy(cmd.name, session_name, sizeof(cmd.name));
 
 	mvm = q6voice_session_create(Q6VOICE_SERVICE_MVM, path, &cmd.hdr);
 	if (IS_ERR(mvm))
