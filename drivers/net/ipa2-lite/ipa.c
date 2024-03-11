@@ -14,6 +14,7 @@
 #include <linux/notifier.h>
 #include <linux/of_device.h>
 #include <linux/of_irq.h>
+#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
 #include <linux/remoteproc.h>
 #include <linux/remoteproc/qcom_rproc.h>
