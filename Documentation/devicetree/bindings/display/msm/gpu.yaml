@@ -14,18 +14,6 @@ properties:
   compatible:
     oneOf:
       - description: |
-          The driver is parsing the compat string for Adreno to
-          figure out the chip-id.
-        items:
-          - pattern: '^qcom,adreno-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]$'
-          - const: qcom,adreno
-      - description: |
-          The driver is parsing the compat string for Adreno to
-          figure out the gpu-id and patch level.
-        items:
-          - pattern: '^qcom,adreno-[3][0-9][0-9]\.[0-9]+$'
-          - const: qcom,adreno
-      - description: |
           The driver is parsing the compat string for Imageon to
           figure out the gpu-id and patch level.
         items:
@@ -50,48 +38,11 @@ properties:
   interrupt-names:
     maxItems: 1
 
-  interconnects:
-    minItems: 1
-    maxItems: 2
-
-  interconnect-names:
-    minItems: 1
-    items:
-      - const: gfx-mem
-      - const: ocmem
-
-  iommus:
-    minItems: 1
-    maxItems: 64
-
-  sram:
-    $ref: /schemas/types.yaml#/definitions/phandle-array
-    minItems: 1
-    maxItems: 4
-    items:
-      maxItems: 1
-    description: |
-      phandles to one or more reserved on-chip SRAM regions.
-      phandle to the On Chip Memory (OCMEM) that's present on some a3xx and
-      a4xx Snapdragon SoCs. See
-      Documentation/devicetree/bindings/sram/qcom,ocmem.yaml
-
-  operating-points-v2: true
-  opp-table:
-    type: object
-
   power-domains:
     maxItems: 1
 
   "#cooling-cells":
     const: 2
-
-  nvmem-cell-names:
-    maxItems: 1
-
-  nvmem-cells:
-    description: efuse registers
-    maxItems: 1
 
 
 required:
@@ -100,93 +51,3 @@ required:
   - interrupts
 
 additionalProperties: false
-
-allOf:
-  - if:
-      properties:
-        compatible:
-          contains:
-            pattern: '^qcom,adreno-[3][0-9][0-9]\.[0-9]+$'
-
-    then:
-      properties:
-        clocks:
-          minItems: 2
-          maxItems: 7
-
-        clock-names:
-          items:
-            anyOf:
-              - const: core
-                description: GPU Core clock
-              - const: iface
-                description: GPU Interface clock
-              - const: mem
-                description: GPU Memory clock
-              - const: mem_iface
-                description: GPU Memory Interface clock
-              - const: alt_mem_iface
-                description: GPU Alternative Memory Interface clock
-              - const: gfx3d
-                description: GPU 3D engine clock
-              - const: rbbmtimer
-                description: GPU RBBM Timer for Adreno 5xx series
-              - const: rbcpr
-                description: GPU RB Core Power Reduction clock
-          minItems: 2
-          maxItems: 7
-
-      required:
-        - clocks
-        - clock-names
-
-examples:
-  - |
-
-    // Example a3xx/4xx:
-
-    #include <dt-bindings/clock/qcom,mmcc-msm8974.h>
-    #include <dt-bindings/clock/qcom,rpmcc.h>
-    #include <dt-bindings/interrupt-controller/irq.h>
-    #include <dt-bindings/interrupt-controller/arm-gic.h>
-
-    gpu: gpu@fdb00000 {
-        compatible = "qcom,adreno-330.2", "qcom,adreno";
-
-        reg = <0xfdb00000 0x10000>;
-        reg-names = "kgsl_3d0_reg_memory";
-
-        clock-names = "core", "iface", "mem_iface";
-        clocks = <&mmcc OXILI_GFX3D_CLK>,
-                 <&mmcc OXILICX_AHB_CLK>,
-                 <&mmcc OXILICX_AXI_CLK>;
-
-        interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-        interrupt-names = "kgsl_3d0_irq";
-
-        sram = <&gpu_sram>;
-        power-domains = <&mmcc OXILICX_GDSC>;
-        operating-points-v2 = <&gpu_opp_table>;
-        iommus = <&gpu_iommu 0>;
-        #cooling-cells = <2>;
-    };
-
-    ocmem@fdd00000 {
-        compatible = "qcom,msm8974-ocmem";
-
-        reg = <0xfdd00000 0x2000>,
-              <0xfec00000 0x180000>;
-        reg-names = "ctrl", "mem";
-
-        clocks = <&rpmcc RPM_SMD_OCMEMGX_CLK>,
-                 <&mmcc OCMEMCX_OCMEMNOC_CLK>;
-        clock-names = "core", "iface";
-
-        #address-cells = <1>;
-        #size-cells = <1>;
-        ranges = <0 0xfec00000 0x100000>;
-
-        gpu_sram: gpu-sram@0 {
-            reg = <0x0 0x100000>;
-        };
-    };
