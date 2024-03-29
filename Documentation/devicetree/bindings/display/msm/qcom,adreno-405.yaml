@@ -10,7 +10,7 @@ maintainers:
   - Rob Clark <robdclark@gmail.com>
 
 description:
-  Device tree bindings for Adreno 405 GPU.
+  Adreno 405(MSM8939) GPU.
 
 select:
   properties:
@@ -75,7 +75,8 @@ properties:
       - description: Phandle to not secure priv context-bank
 
   power-domains:
-    maxItems: 1
+    items:
+      - description: OXILI power domain
 
   operating-points-v2: true
   opp-table:
@@ -104,7 +105,6 @@ unevaluatedProperties: false
 
 examples:
   - |
-    // Example a405 :
 
     #include <dt-bindings/clock/qcom,gcc-msm8939.h>
     #include <dt-bindings/power/qcom-rpmpd.h>

@@ -9,16 +9,15 @@ title: Adreno/Imageon 200 GPU
 
 maintainers:
   - Rob Clark <robdclark@gmail.com>
+  
+description:
+  Adreno/Imageon 200 GPU
 
 properties:
   compatible:
-    oneOf:
-      - description: |
-          The driver is parsing the compat string for Imageon to
-          figure out the gpu-id and patch level.
-        items:
-          - pattern: '^amd,imageon-200\.[0-1]$'
-          - const: amd,imageon
+    items:
+      - pattern: '^amd,imageon-200\.[0-1]$'
+      - const: amd,imageon
 
   clocks:
     items: 
@@ -55,8 +54,6 @@ additionalProperties: false
 
 examples:
   - |
-
-    // Example imageon-200:
 
     #include <dt-bindings/clock/imx5-clock.h>
     #include <dt-bindings/interrupt-controller/irq.h>

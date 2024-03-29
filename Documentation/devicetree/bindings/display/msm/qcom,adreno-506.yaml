@@ -4,13 +4,13 @@
 $id: http://devicetree.org/schemas/display/msm/qcom,adreno-506.yaml#
 $schema: http://devicetree.org/meta-schemas/core.yaml#
 
-title: Qualcomm Adreno 506 GPU
+title: Qualcomm Adreno 504/505/506/510 GPU
 
 maintainers:
   - Rob Clark <robdclark@gmail.com>
 
 description:
-  Device tree bindings for Adreno 506 GPU.
+  Qualcomm Adreno 504/505/506/510 GPU
 
 select:
   properties:
@@ -79,7 +79,8 @@ properties:
       - description: Phandle to gpu smmu
 
   power-domains:
-    maxItems: 1
+    items:
+      - description: OXILI GX power domain
 
   operating-points-v2: true
   opp-table:
@@ -119,7 +120,7 @@ required:
   - iommus
   - power-domains
 
-unevaluatedProperties: false
+unevaluatedProperties: true
 
 examples:
   - |
