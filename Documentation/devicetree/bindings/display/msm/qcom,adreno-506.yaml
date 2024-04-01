@@ -47,21 +47,21 @@ properties:
 
   clocks:
     items:
-      - description: GPU Always-On clock
       - description: GPU Core clock
       - description: GPU Interface clock
-      - description: GPU Memory clock
+      - description: GPU Memory Interface clock
       - description: GPU Memory Interface clock
       - description: GPU RBBM Timer for Adreno 5xx series
+      - description: GPU Always-On clock
 
   clock-names:
     items:
-      - const: alwayson
       - const: core
       - const: iface
-      - const: mem
       - const: mem_iface
+      - const: alt_mem_iface
       - const: rbbmtimer
+      - const: alwayson
 
   interconnects:
     minItems: 1
@@ -73,7 +73,7 @@ properties:
 
   interrupts:
     maxItems: 1
-  
+
   iommus:
     items:
       - description: Phandle to gpu smmu
