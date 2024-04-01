@@ -29,28 +29,13 @@ properties:
       pattern: '^qcom,adreno-[67][0-9][0-9]\.[0-9]$'
 
   reg:
-    items:
-      - description: base address of GPU device
-      - description: CX debug region
+    minItems: 1
+    maxItems: 3
+      
+  reg-names:
+    minItems: 1
+    maxItems: 3
 
-  clocks:
-    items:
-      - description: GPU core clock
-      - description: GPU Interface clock
-      - description: GPU Memory Interface clock
-      - description: GPU Memory Interface clock
-      - description: CX GMU clock
-      - description: GPUCC clocksource clock
-  
-  clock-names:
-    items:
-      - const: core
-      - const: iface
-      - const: mem_iface
-      - const: alt_mem_iface
-      - const: gmu
-      - const: xo
-  
   interconnects:
     minItems: 1
     maxItems: 2
@@ -63,8 +48,8 @@ properties:
     maxItems: 1
   
   iommus:
-    items:
-      - description: Phandle to gpu smmu
+    minItems: 1
+    maxItems: 2
 
   power-domains:
     maxItems: 1
@@ -103,7 +88,7 @@ properties:
     description: |
       For GMU attached devices a phandle to the GMU device that will
       control the power for the GPU.
-
+      
 required:
   - reg
   - reg-names
@@ -122,14 +107,41 @@ allOf:
                 - qcom,adreno-619.1
             - const: qcom,adreno
     then:
+      properties:
+        reg:
+          items:
+            - description: base address of GPU device
+            - description: CX debug region
+
+        reg-names:
+          items:
+            - const: kgsl_3d0_reg_memory
+            - const: cx_dbgc
+
+        clocks:
+          items:
+            - description: GPU core clock
+            - description: GPU Interface clock
+            - description: GPU Memory Interface clock
+            - description: GPU Memory Interface clock
+            - description: CX GMU clock
+            - description: GPUCC clocksource clock
+  
+        clock-names:
+          items:
+            - const: core
+            - const: iface
+            - const: mem_iface
+            - const: alt_mem_iface
+            - const: gmu
+            - const: xo
+  
       required:
         - clocks
         - clock-names
         - power-domains
     else:
       properties:
-        clocks: false
-        clock-names: false
         power-domains: false
 
         reg-names:
