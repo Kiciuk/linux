@@ -68,6 +68,10 @@ properties:
 
   interrupts:
     maxItems: 1
+    
+  interrupt-names:
+    items:
+      - const: kgsl_3d0_irq
   
   iommus:
     items:
@@ -118,6 +122,7 @@ examples:
         reg-names = "kgsl_3d0_reg_memory";
 
         interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+        interrupt-names = "kgsl_3d0_irq";
 
         clocks = <&gcc GCC_OXILI_GFX3D_CLK>,
                  <&gcc GCC_OXILI_AHB_CLK>,
