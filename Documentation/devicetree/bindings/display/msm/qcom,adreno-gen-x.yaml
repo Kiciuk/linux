@@ -1,0 +1,179 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/msm/qcom,adreno-gen-x.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm Adreno Gen X GPU
+
+maintainers:
+  - Rob Clark <robdclark@gmail.com>
+
+description:
+  Qualcomm Adreno Gen X GPU
+
+select:
+  properties:
+    compatible:
+      contains:
+        pattern: '^qcom,adreno-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]$'
+  required:
+    - compatible
+
+properties:
+  $nodename:
+    pattern: "^gpu@[0-9a-f]+$"
+
+  compatible:
+    items:
+      - pattern: '^qcom,adreno-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]$'
+      - const: qcom,adreno
+
+  reg:
+    items:
+      - description: base address of GPU device
+      - description: CX memory region
+      - description: CX debug region
+      
+  reg-names:
+    items:
+      - const: kgsl_3d0_reg_memory
+      - const: cx_mem
+      - const: cx_dbgc
+  
+  interrupts:
+    maxItems: 1
+  
+  iommus:
+    minItems: 1
+    maxItems: 2
+
+  operating-points-v2: true
+  opp-table:
+    type: object
+
+  zap-shader:
+    type: object
+    additionalProperties: false
+    description: |
+      For a5xx and a6xx devices this node contains a memory-region that
+      points to reserved memory to store the zap shader that can be used to
+      help bring the GPU out of secure mode.
+    properties:
+      memory-region:
+        maxItems: 1
+
+      firmware-name:
+        description: |
+          Default name of the firmware to load to the remote processor.
+
+  "#cooling-cells":
+    const: 2
+
+  nvmem-cell-names:
+    maxItems: 1
+
+  nvmem-cells:
+    description: efuse registers
+    maxItems: 1
+
+  qcom,gmu:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: |
+      For GMU attached devices a phandle to the GMU device that will
+      control the power for the GPU.
+
+required:
+  - reg
+  - reg-names
+  - interrupts
+  - iommus
+
+additionalProperties: true
+
+examples:
+  - |
+
+    #include <dt-bindings/clock/qcom,rpmh.h>
+    #include <dt-bindings/power/qcom-rpmpd.h>
+    #include <dt-bindings/interrupt-controller/irq.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        gpu_micro_code_mem: gpu-micro-code-region@9b09a000 {
+            reg = <0 0x9b09a000 0 0x2000>;
+            no-map;
+        };
+    };
+
+    gpu@3d00000 {
+        compatible = "qcom,adreno-43050a01", "qcom,adreno";
+
+        reg = <0x03d00000 0x40000>,
+              <0x03d9e000 0x1000>,
+              <0x03d61000 0x800>;
+        reg-names = "kgsl_3d0_reg_memory",
+                    "cx_mem",
+                    "cx_dbgc";
+
+        interrupts = <GIC_SPI 300 IRQ_TYPE_LEVEL_HIGH>;
+
+        iommus = <&adreno_smmu 0 0x0>,
+                 <&adreno_smmu 1 0x0>;
+
+        operating-points-v2 = <&gpu_opp_table>;
+
+        qcom,gmu = <&gmu>;
+
+        gpu_opp_table: opp-table {
+            compatible = "operating-points-v2";
+
+            opp-680000000 {
+              opp-hz = /bits/ 64 <680000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_SVS_L1>;
+            };
+
+            opp-615000000 {
+              opp-hz = /bits/ 64 <615000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_SVS_L0>;
+            };
+
+            opp-550000000 {
+              opp-hz = /bits/ 64 <550000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_SVS>;
+            };
+
+            opp-475000000 {
+              opp-hz = /bits/ 64 <475000000>;
+             opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_L1>;
+            };
+
+            opp-401000000 {
+              opp-hz = /bits/ 64 <401000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
+            };
+
+            opp-348000000 {
+              opp-hz = /bits/ 64 <348000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D0>;
+            };
+
+            opp-295000000 {
+              opp-hz = /bits/ 64 <295000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D1>;
+            };
+
+            opp-220000000 {
+              opp-hz = /bits/ 64 <220000000>;
+              opp-level = <RPMH_REGULATOR_LEVEL_LOW_SVS_D2>;
+            };
+          };
+
+            zap-shader {
+                memory-region = <&gpu_micro_code_mem>;
+            };
+        };
