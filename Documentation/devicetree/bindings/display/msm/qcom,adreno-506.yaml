@@ -120,7 +120,35 @@ required:
   - iommus
   - power-domains
 
-unevaluatedProperties: true
+unevaluatedProperties: false
+
+allOf:
+  - if:
+      properties:
+        compatible:
+          items:
+            - enum:
+                - qcom,adreno-510.0
+            - const: qcom,adreno
+    then:
+      properties:
+        clocks:
+          items:
+            - description: GPU Core clock
+            - description: GPU Interface clock
+            - description: GPU Memory clock
+            - description: GPU Memory Interface clock
+            - description: GPU RBBM Timer for Adreno 5xx series
+            - description: GPU Always-On clock
+  
+        clock-names:
+          items:
+            - const: core
+            - const: iface
+            - const: mem
+            - const: mem_iface
+            - const: rbbmtimer
+            - const: alwayson
 
 examples:
   - |
@@ -151,19 +179,19 @@ examples:
 
         interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
 
-        clocks = <&gcc GCC_OXILI_AON_CLK>,
-                 <&gcc GCC_OXILI_GFX3D_CLK>,
+        clocks = <&gcc GCC_OXILI_GFX3D_CLK>,
                  <&gcc GCC_OXILI_AHB_CLK>,
                  <&gcc GCC_BIMC_GFX_CLK>,
                  <&gcc GCC_BIMC_GPU_CLK>,
-                 <&gcc GCC_OXILI_TIMER_CLK>;
+                 <&gcc GCC_OXILI_TIMER_CLK>,
+                 <&gcc GCC_OXILI_AON_CLK>;
 
-        clock-names = "alwayson",
-                      "core",
+        clock-names = "core",
                       "iface",
-                      "mem",
                       "mem_iface",
-                      "rbbmtimer";
+                      "alt_mem_iface",
+                      "rbbmtimer",
+                      "alwayson";
 
         power-domains = <&gcc OXILI_GX_GDSC>;
         iommus = <&gpu_iommu 0>;
