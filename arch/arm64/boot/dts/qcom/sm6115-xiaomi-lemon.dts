@@ -119,6 +119,16 @@
 	status = "okay";
 };
 
+/delete-node/ &usb_qmpphy;
+&usb_dwc3 {
+phys = <&usb_hsphy>;
+phy-names = "usb2-phy";
+	ports {
+	/delete-node/ port@1;
+	};
+
+};
+
 &mdss_dsi0 {
 	vdda-supply = <&pm6125_l18>;
 	status = "okay";
