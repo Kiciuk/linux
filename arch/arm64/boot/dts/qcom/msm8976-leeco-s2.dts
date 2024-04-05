@@ -70,13 +70,13 @@
 			debounce-interval = <15>;
 		};
 	};
-	ibb_vreg: fake-ibb-vreg {
+	ibb1_vreg: fake-ibb-vreg {
 		compatible = "regulator-fixed";
 		regulator-name = "fakeibb_vreg";
 		regulator-min-microvolt = <4000000>;
 		regulator-max-microvolt = <4000000>;
 	};
-	lab_vreg: fake-lab-vreg {
+	lab1_vreg: fake-lab-vreg {
 		compatible = "regulator-fixed";
 		regulator-name = "fakelab_vreg";
 		regulator-min-microvolt = <4000000>;
@@ -366,7 +366,7 @@ status = "disabled";
 	v1p8-supply = <&pm8950_l7>;
 	v3p3-supply = <&pm8950_l13>;
 };
-
+/*
 &lpass {
 	status= "disabled";
 };
@@ -396,7 +396,7 @@ status = "disabled";
 	vdd-cdc-tx-rx-cx-supply = <&pm8950_s4>;
 	vdd-micbias-supply = <&pm8950_l13>;
 };
-
+*/
 &pm8950_spmi_regulators {
 	vdd_s5-supply = <&vph_pwr>;
 
