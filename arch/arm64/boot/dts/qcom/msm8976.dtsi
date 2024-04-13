@@ -687,6 +687,12 @@
 			};
 		};
 
+		bimc: interconnect@400000 {
+			reg = <0x00400000 0x62000>;
+			compatible = "qcom,msm8976-bimc";
+			#interconnect-cells = <1>;
+		};
+
 		tsens: thermal-sensor@4a9000 {
 			compatible = "qcom,msm8976-tsens", "qcom,tsens-v1";
 			reg = <0x004a9000 0x1000>, /* TM */
@@ -721,6 +727,25 @@
 					   "s10_p1", "s10_p2";
 			#qcom,sensors = <11>;
 			#thermal-sensor-cells = <1>;
+		};
+		
+		pcnoc: interconnect@500000 {
+			reg = <0x00500000 0x14000>;
+			compatible = "qcom,msm8976-pcnoc";
+			#interconnect-cells = <1>;
+		};
+
+		snoc: interconnect@580000 {
+			reg = <0x00580000 0x1a000>;
+			compatible = "qcom,msm8976-snoc";
+			#interconnect-cells = <1>;
+			clocks = <&rpmcc RPM_SMD_IPA_CLK>;
+			clock-names = "ipa";
+
+			snoc_mm: interconnect-snoc {
+				compatible = "qcom,msm8939-snoc-mm";
+				#interconnect-cells = <1>;
+			};
 		};
 
 		tlmm: pinctrl@1000000 {
