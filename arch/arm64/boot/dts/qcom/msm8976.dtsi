@@ -1093,7 +1093,7 @@
 
 			mdss_dsi0: dsi@1a94000 {
 				compatible = "qcom,msm8976-dsi-ctrl", "qcom,mdss-dsi-ctrl";
-				reg = <0x01a94000 0x25c>;
+				reg = <0x01a94000 0x300>;
 				reg-names = "dsi_ctrl";
 
 				interrupt-parent = <&mdss>;
@@ -1194,7 +1194,11 @@
 
 				phys = <&mdss_dsi1_phy>;
 
+				operating-points-v2 = <&dsi0_opp_table>;
 				power-domains = <&gcc MDSS_GDSC>;
+
+				#address-cells = <1>;
+				#size-cells = <0>;				
 
 				status = "disabled";
 
