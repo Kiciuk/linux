@@ -427,10 +427,6 @@ status = "disabled";
 		vdd_l5_l6_l7_l16-supply = <&pm8950_s4>;
 		vdd_l8_l11_l12_l17_l22-supply = <&vph_pwr>;
 		
-		pm8950_s1: s1 {
-			regulator-min-microvolt = <863000>;
-			regulator-max-microvolt = <1162500>;	
-		};
 	
 		pm8950_s3: s3 {
 			regulator-min-microvolt = <1325000>;
