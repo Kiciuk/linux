@@ -322,6 +322,8 @@
 #define MSM8976_VDDMX		3
 #define MSM8976_VDDMX_AO	4
 #define MSM8976_VDDMX_VFL	5
+#define MSM8976_VDDMD		6
+#define MSM8976_VDDMD_AO	7
 
 /* MSM8994 Power Domain Indexes */
 #define MSM8994_VDDCX		0
