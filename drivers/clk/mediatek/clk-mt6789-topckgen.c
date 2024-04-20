@@ -11,8 +11,12 @@
 #include "clk-gate.h"
 #include "clk-mux.h"
 
-#include <dt-bindings/clock/mt6789-clk.h>
+#include <dt-bindings/clock/mediatek,mt6789-clk.h>
 #include <linux/clk.h>
+
+/* Regular Number Definition */
+#define INV_OFS	-1
+#define INV_BIT	-1
 
 static DEFINE_SPINLOCK(mt6789_clk_lock);
 
@@ -735,7 +739,7 @@ static const struct mtk_mux top_muxes[] = {
 	MUX_GATE_CLR_SET_UPD(CLK_TOP_AES_UFSFDE_SEL , "aes_ufsfde_sel", aes_ufsfde_parents , 0xD0,
 			     0xD4, 0xD8 , 16 , 3 , 23 , 0x08 , 19 ),
 	MUX_GATE_CLR_SET_UPD(CLK_TOP_UFS_SEL , "ufs_sel", ufs_parents , 0xD0, 0xD4,
-			     0xD8 , 24 , 3 , 31 , 0x08 , 20 ),
+			     0xD8 , 24 , 3 , 31 ,0x08 , 20 ),
 	/* CLK_CFG_13 */
 	MUX_GATE_CLR_SET_UPD(CLK_TOP_AUD_1_SEL , "aud_1_sel", aud_1_parents , 0xE0, 0xE4,
 			     0xE8 , 0 , 1 , 7 , 0x08 , 21 ),

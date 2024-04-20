@@ -47,7 +47,7 @@
 		.pcwibits = MT6789_INTEGER_BITS,			\
 	}
 
-static const struct mtk_pll_data apmixed_plls[] = {
+static const struct mtk_pll_data plls[] = {
 	PLL(CLK_APMIXED_ARMPLL_LL, "armpll_ll", 0x208 , 0x208, 0, 0 ,
 	    0x214 , PLL_AO, BIT(0) , 0x20C, 24 ,
 	    0, 0, 0 , 0x20C, 0, 22 ),
