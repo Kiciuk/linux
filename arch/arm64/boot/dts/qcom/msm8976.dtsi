@@ -426,6 +426,19 @@
 			reg = <0x0 0x8dd00000 0x0 0x1400000>;
 			no-map;
 		};
+
+		rmtfs_mem: memory@d5700000 {
+			compatible = "qcom,rmtfs-mem";
+			reg = <0x0 0xd5700000 0x0 0x200000>;
+			no-map;
+
+			qcom,client-id = <1>;
+		};
+
+		mba_mem: mba_mem@d5a00000 {
+			reg = <0x0 0xd5a00000 0x0 0x100000>;
+			no-map;
+		};
 	};
 
 	smp2p-hexagon {
@@ -1437,6 +1450,59 @@
 			#size-cells = <0>;
 			interrupt-controller;
 			#interrupt-cells = <4>;
+		};
+		mpss: remoteproc@4080000 {
+			compatible = "qcom,msm8953-mss-pil";
+			reg = <0x04080000 0x100>,
+			      <0x04020000 0x040>;
+			reg-names = "qdsp6", "rmb";
+
+			interrupts-extended = <&intc GIC_SPI 24 IRQ_TYPE_EDGE_RISING>,
+					      <&modem_smp2p_in 0 IRQ_TYPE_EDGE_RISING>,
+					      <&modem_smp2p_in 1 IRQ_TYPE_EDGE_RISING>,
+					      <&modem_smp2p_in 2 IRQ_TYPE_EDGE_RISING>,
+					      <&modem_smp2p_in 3 IRQ_TYPE_EDGE_RISING>;
+			interrupt-names = "wdog", "fatal", "ready",
+					  "handover", "stop-ack";
+
+			power-domains = <&rpmpd MSM8976_VDDCX>,
+					<&rpmpd MSM8976_VDDMX>,
+					<&rpmpd MSM8976_VDDMD>;
+			power-domain-names = "cx", "mx","mss";
+
+			clocks = <&gcc GCC_MSS_CFG_AHB_CLK>,
+				 <&gcc GCC_MSS_Q6_BIMC_AXI_CLK>,
+				 <&gcc GCC_BOOT_ROM_AHB_CLK>,
+				 <&rpmcc RPM_SMD_XO_CLK_SRC>;
+			clock-names = "iface", "bus", "mem", "xo";
+
+			qcom,smem-states = <&modem_smp2p_out 0>;
+			qcom,smem-state-names = "stop";
+			
+			resets = <&gcc RST_MSS_BCR>;
+			reset-names = "mss_restart";
+
+			qcom,halt-regs = <&tcsr 0x18000 0x19000 0x1a000>;
+			pll-supply = <&pm8950_l7>;
+			status = "okay";
+
+			mba {
+				memory-region = <&mba_mem>;
+			};
+
+			mpss {
+				memory-region = <&mpss_mem>;
+			};
+
+			smd-edge {
+				interrupts = <GIC_SPI 25 IRQ_TYPE_EDGE_RISING>;
+
+				qcom,smd-edge = <0>;
+				qcom,ipc = <&apcs 8 12>;
+				qcom,remote-pid = <1>;
+
+				label = "modem";
+			};
 		};
 
 		sdhc_1: mmc@7824900 {

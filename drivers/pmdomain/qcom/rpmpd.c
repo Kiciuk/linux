@@ -759,7 +759,7 @@ static struct rpmpd *msm8976_rpmpds[] = {
 static const struct rpmpd_desc msm8976_desc = {
 	.rpmpds = msm8976_rpmpds,
 	.num_pds = ARRAY_SIZE(msm8976_rpmpds),
-	.max_state = RPM_SMD_LEVEL_TURBO_HIGH,
+	.max_state = RPM_SMD_LEVEL_TURBO,
 };
 
 static struct rpmpd *msm8994_rpmpds[] = {
