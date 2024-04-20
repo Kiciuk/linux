@@ -752,6 +752,8 @@ static struct rpmpd *msm8976_rpmpds[] = {
 	[MSM8976_VDDMX] =	&mx_s6a_lvl,
 	[MSM8976_VDDMX_AO] =	&mx_s6a_lvl_ao,
 	[MSM8976_VDDMX_VFL] =	&mx_rwsm6_vfl,
+	[MSM8976_VDDMD] =	&md_s1a_lvl,
+	[MSM8976_VDDMD_AO] =	&md_s1a_lvl_ao,
 };
 
 static const struct rpmpd_desc msm8976_desc = {
