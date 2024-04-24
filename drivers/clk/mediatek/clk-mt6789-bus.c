@@ -173,9 +173,34 @@ static const struct mtk_gate ifrao_clks[] = {
 	GATE_IFRAO5(CLK_IFRAO_AP_DMA, "ifrao_ap_dma" , "apdma_ck" , 31),
 };
 
+// ti,syscon reset definitions
+static u16 ifrao_rst_ofs[] = {
+	INFRA_RST0_SET_OFFSET, 
+	INFRA_RST1_SET_OFFSET, 
+	INFRA_RST2_SET_OFFSET, 
+	INFRA_RST3_SET_OFFSET, 
+};
+
+static u16 ifrao_idx_map[] = {
+	[MT6789_INFRA_RST0_LVTS_AP_SWRST] = 0 * RST_NR_PER_BANK + 0,
+	[MT6789_INFRA_RST1_UFSHCI_SWRST] = 1 * RST_NR_PER_BANK + 15,
+	[MT6789_INFRA_RST2_UNIPRO_SWRST] = 3 * RST_NR_PER_BANK + 7,
+	[MT6789_INFRA_RST3_UFS_CRYPTO_SWRST] = 4 * RST_NR_PER_BANK + 21,
+};
+
+static const struct mtk_clk_rst_desc clk_rst_desc = {
+	.version = MTK_RST_SET_CLR,
+	.rst_bank_ofs = infrao_rst_ofs,
+	.rst_bank_nr = ARRAY_SIZE(infrao_rst_ofs),
+	.rst_idx_map = ifrao_idx_map,
+	.rst_idx_map_nr = ARRAY_SIZE(infrao_idx_map),
+};
+
+
 static const struct mtk_clk_desc ifrao_mcd = {
 	.clks = ifrao_clks,
 	.num_clks = ARRAY_SIZE(ifrao_clks),
+	.rst_desc = &clk_rst_desc,
 };
 
 static const struct of_device_id of_match_clk_mt6789_bus[] = {
