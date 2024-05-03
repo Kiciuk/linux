@@ -18,7 +18,11 @@ obj-$(CONFIG_COMMON_CLK_MT6779_VDECSYS) += clk-mt6779-vdec.o
 obj-$(CONFIG_COMMON_CLK_MT6779_VENCSYS) += clk-mt6779-venc.o
 obj-$(CONFIG_COMMON_CLK_MT6779_MFGCFG) += clk-mt6779-mfg.o
 obj-$(CONFIG_COMMON_CLK_MT6779_AUDSYS) += clk-mt6779-aud.o
-obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mt6789-apmixed.o clk-mt6789-topckgen.o
+obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mt6789-apmixed.o clk-mt6789-topckgen.o \
+				     clk-mt6789-bus.o clk-mt6789-cam.o clk-mt6789-i2c.o \
+				     clk-mt6789-img.o clk-mt6789-impen.o clk-mt6789-mmsys.o \
+				     clk-mt6789-mfgcfg.o clk-mt6789-vcodec.o clk-mt6789-audiosys.o \
+				     clk-mt6789-disp_dsc.o
 obj-$(CONFIG_COMMON_CLK_MT6795) += clk-mt6795-apmixedsys.o clk-mt6795-infracfg.o \
 				   clk-mt6795-pericfg.o clk-mt6795-topckgen.o
 obj-$(CONFIG_COMMON_CLK_MT6795_MFGCFG) += clk-mt6795-mfg.o

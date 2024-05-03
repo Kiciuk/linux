@@ -1,0 +1,31 @@
+make: Entering directory '/mnt/linux'
+make[1]: Entering directory '/mnt/linux/.output'
+  GEN     Makefile
+  CALL    ../scripts/checksyscalls.sh
+  CC      drivers/pmdomain/mediatek/mtk-pm-domains.o
+make[1]: Leaving directory '/mnt/linux/.output'
+make: Leaving directory '/mnt/linux'
+
+Run 'pmbootstrap log' for details.
+
+Before you report this error, ensure that pmbootstrap is up to date.
+Find the latest version here: https://git.sr.ht/~postmarketos/pmbootstrap/refs
+Your version: 2.0.0
+make: Entering directory '/mnt/linux'
+make[1]: Entering directory '/mnt/linux/.output'
+  GEN     Makefile
+  CALL    ../scripts/checksyscalls.sh
+  CC      drivers/pmdomain/mediatek/mtk-pm-domains.o
+make[1]: Leaving directory '/mnt/linux/.output'
+make: Leaving directory '/mnt/linux'
+
+Run 'pmbootstrap log' for details.
+
+Before you report this error, ensure that pmbootstrap is up to date.
+Find the latest version here: https://git.sr.ht/~postmarketos/pmbootstrap/refs
+Your version: 2.0.0
+make: Entering directory '/mnt/linux'
+make[1]: Entering directory '/mnt/linux/.output'
+  GEN     Makefile
+  CALL    ../scripts/checksyscalls.sh
+  CC      drivers/pmdomain/mediatek/mtk-pm-domains.o
