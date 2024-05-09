@@ -77,9 +77,6 @@
 
 #define PINGPONG_SM8150_MASK \
 	(BIT(DPU_PINGPONG_DITHER) | BIT(DPU_PINGPONG_DSC))
-	
-#define PINGPONG_MSM8976_MASK \
-	()	
 
 #define CTL_SC7280_MASK \
 	(BIT(DPU_CTL_ACTIVE_CFG) | \
@@ -418,16 +415,6 @@ static const struct dpu_lm_sub_blks qcm2290_lm_sblk = {
 	},
 };
 
-/* MSM8976 */
-
-static const struct dpu_lm_sub_blks msm8976_lm_sblk = {
-	.maxwidth = DEFAULT_DPU_LINE_WIDTH,
-	.maxblendstages = 4, /* excluding base layer */
-	.blendstage_base = { /* offsets relative to mixer base */
-		0x20, 0x50, 0x80, 0xb0
-	},
-};
-
 /*************************************************************
  * DSPP sub blocks config
  *************************************************************/
@@ -444,10 +431,6 @@ static const struct dpu_dspp_sub_blks sdm845_dspp_sblk = {
 /*************************************************************
  * PINGPONG sub blocks config
  *************************************************************/
-static const struct dpu_pingpong_sub_blks msm8976_pp_sblk = {
-	/* No dither block */
-};
-
 static const struct dpu_pingpong_sub_blks sdm845_pp_sblk_te = {
 	.te2 = {.name = "te2", .base = 0x2000, .len = 0x0,
 		.version = 0x1},

@@ -63,24 +63,4 @@
 #define MDP_PERIPH_TOP0			MDP_WD_TIMER_0_CTL
 #define MDP_PERIPH_TOP0_END		CLK_CTRL3
 
-/**
- * MDP TOP block Register and bit fields and defines
- * for legacy targets (MSM8976)
- */
-#define MDP_VSYNC_SEL_8976              0x330
-#define MDP_WD_TIMER_2_CTL_8976         0x3A0
-#define MDP_WD_TIMER_2_CTL2_8976        0x3A4
-#define MDP_WD_TIMER_2_LOAD_VALUE_8976  0x3A8
-#define CLK_CTRL3_8976                  0x3B0
-#define CLK_STATUS3_8976                0x3B4
-#define CLK_CTRL4_8976                  0x3B8
-#define CLK_STATUS4_8976                0x3BC
-#define CLK_CTRL5_8976                  0x3C0
-#define CLK_STATUS5_8976                0x3C4
-#define HW_EVENTS_CTL_8976              0x3D0
-#define DCE_SEL_8976                    0x428
-#define MDP_PERIPH_TOP0_END_8976	CLK_CTRL3_8976
-
-
-
 #endif /*_DPU_HWIO_H */
