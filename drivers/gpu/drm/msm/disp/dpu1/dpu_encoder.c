@@ -2481,6 +2481,7 @@ static const struct drm_encoder_helper_funcs dpu_encoder_helper_funcs = {
 	.atomic_disable = dpu_encoder_virt_atomic_disable,
 	.atomic_enable = dpu_encoder_virt_atomic_enable,
 	.atomic_check = dpu_encoder_virt_atomic_check,
+	.late_enable = true,
 };
 
 static const struct drm_encoder_funcs dpu_encoder_funcs = {
