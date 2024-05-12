@@ -38,6 +38,11 @@
 #define PP_DITHER_BITDEPTH		0x004
 #define PP_DITHER_MATRIX		0x008
 
+// Defnitions for legacy DPU targets (<1.16)
+#define PP_DCE_DATA_IN_SWAP_LEGACY             0xc8
+#define PP_DCE_DATA_OUT_SWAP_LEGACY            0xcc
+
+
 #define DITHER_DEPTH_MAP_INDEX 9
 
 static u32 dither_depth_map[DITHER_DEPTH_MAP_INDEX] = {
@@ -311,6 +316,12 @@ struct dpu_hw_pingpong *dpu_hw_pingpong_init(struct drm_device *dev,
 	}
 
 	if (test_bit(DPU_PINGPONG_DSC, &cfg->features)) {
+		if (mdss_rev->core_major_ver == 1 && mdss_rev->core_minor_ver == 11)
+	{
+	printk("DPU ver MSM8976 detected");
+	#define PP_DCE_DATA_OUT_SWAP     0xcc
+	}
+	
 		c->ops.setup_dsc = dpu_hw_pp_setup_dsc;
 		c->ops.enable_dsc = dpu_hw_pp_dsc_enable;
 		c->ops.disable_dsc = dpu_hw_pp_dsc_disable;

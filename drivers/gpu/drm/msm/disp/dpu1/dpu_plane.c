@@ -1075,7 +1075,7 @@ static void dpu_plane_sspp_update_pipe(struct drm_plane *plane,
 		}
 	}
 
-	_dpu_plane_set_qos_lut(plane, pipe, fmt, pipe_cfg);
+	//_dpu_plane_set_qos_lut(plane, pipe, fmt, pipe_cfg);
 
 	if (pipe->sspp->idx != SSPP_CURSOR0 &&
 	    pipe->sspp->idx != SSPP_CURSOR1)

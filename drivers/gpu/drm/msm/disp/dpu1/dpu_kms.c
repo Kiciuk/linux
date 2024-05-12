@@ -406,6 +406,7 @@ static void dpu_kms_disable_vblank(struct msm_kms *kms, struct drm_crtc *crtc)
 
 static void dpu_kms_enable_commit(struct msm_kms *kms)
 {
+printk("DPU:KMS: dpu_kms_enable_commit");
 	struct dpu_kms *dpu_kms = to_dpu_kms(kms);
 	pm_runtime_get_sync(&dpu_kms->pdev->dev);
 }
@@ -418,6 +419,7 @@ static void dpu_kms_disable_commit(struct msm_kms *kms)
 
 static void dpu_kms_flush_commit(struct msm_kms *kms, unsigned crtc_mask)
 {
+printk("DPU:KMS: dpu_kms_flush_commit");
 	struct dpu_kms *dpu_kms = to_dpu_kms(kms);
 	struct drm_crtc *crtc;
 
@@ -432,6 +434,7 @@ static void dpu_kms_flush_commit(struct msm_kms *kms, unsigned crtc_mask)
 
 static void dpu_kms_complete_commit(struct msm_kms *kms, unsigned crtc_mask)
 {
+printk("DPU:KMS: dpu_kms_complete_comit");
 	struct dpu_kms *dpu_kms = to_dpu_kms(kms);
 	struct drm_crtc *crtc;
 
@@ -446,6 +449,7 @@ static void dpu_kms_complete_commit(struct msm_kms *kms, unsigned crtc_mask)
 static void dpu_kms_wait_for_commit_done(struct msm_kms *kms,
 		struct drm_crtc *crtc)
 {
+printk("DPU:KMS: dpu_kms_wait_for_commit_done");
 	struct drm_encoder *encoder;
 	struct drm_device *dev;
 	int ret;
@@ -486,6 +490,7 @@ static void dpu_kms_wait_for_commit_done(struct msm_kms *kms,
 
 static void dpu_kms_wait_flush(struct msm_kms *kms, unsigned crtc_mask)
 {
+printk("DPU:KMS: dpu_kms_wait_flush");
 	struct dpu_kms *dpu_kms = to_dpu_kms(kms);
 	struct drm_crtc *crtc;
 
@@ -832,6 +837,7 @@ static void dpu_kms_destroy(struct msm_kms *kms)
 
 static int dpu_irq_postinstall(struct msm_kms *kms)
 {
+printk("DPU:KMS: dpu_irq_postinstall");
 	struct msm_drm_private *priv;
 	struct dpu_kms *dpu_kms = to_dpu_kms(kms);
 
@@ -841,12 +847,13 @@ static int dpu_irq_postinstall(struct msm_kms *kms)
 	priv = dpu_kms->dev->dev_private;
 	if (!priv)
 		return -EINVAL;
-
+printk("DPU:KMS: dpu_irq_postinstall: DONE");
 	return 0;
 }
 
 static void dpu_kms_mdp_snapshot(struct msm_disp_state *disp_state, struct msm_kms *kms)
 {
+printk("DPU:KMS: mdp_snapshot: START");
 	int i;
 	struct dpu_kms *dpu_kms;
 	const struct dpu_mdss_cfg *cat;
@@ -926,8 +933,15 @@ static void dpu_kms_mdp_snapshot(struct msm_disp_state *disp_state, struct msm_k
 	if (cat->mdp[0].features & BIT(DPU_MDP_PERIPH_0_REMOVED)) {
 		msm_disp_snapshot_add_block(disp_state, MDP_PERIPH_TOP0,
 				dpu_kms->mmio + cat->mdp[0].base, "top");
+				
+	if (1)
+		msm_disp_snapshot_add_block(disp_state, cat->mdp[0].len - MDP_PERIPH_TOP0_END_LEGACY,
+				dpu_kms->mmio + cat->mdp[0].base + MDP_PERIPH_TOP0_END_LEGACY, "top_2");
+	else
 		msm_disp_snapshot_add_block(disp_state, cat->mdp[0].len - MDP_PERIPH_TOP0_END,
 				dpu_kms->mmio + cat->mdp[0].base + MDP_PERIPH_TOP0_END, "top_2");
+				
+				
 	} else {
 		msm_disp_snapshot_add_block(disp_state, cat->mdp[0].len,
 				dpu_kms->mmio + cat->mdp[0].base, "top");
@@ -952,6 +966,7 @@ static void dpu_kms_mdp_snapshot(struct msm_disp_state *disp_state, struct msm_k
 	if (cat->cdm)
 		msm_disp_snapshot_add_block(disp_state, cat->cdm->len,
 					    dpu_kms->mmio + cat->cdm->base, cat->cdm->name);
+	 printk("DPU:KMS: mdp_snapshot: DONE");
 
 	pm_runtime_put_sync(&dpu_kms->pdev->dev);
 }
@@ -1381,6 +1396,7 @@ static const struct dev_pm_ops dpu_pm_ops = {
 
 static const struct of_device_id dpu_dt_match[] = {
 	{ .compatible = "qcom,msm8953-mdp5", .data = &dpu_msm8953_cfg, },
+	{ .compatible = "qcom,msm8976-mdp5", .data = &dpu_msm8976_cfg, },
 	{ .compatible = "qcom,msm8996-mdp5", .data = &dpu_msm8996_cfg, },
 	{ .compatible = "qcom,msm8998-dpu", .data = &dpu_msm8998_cfg, },
 	{ .compatible = "qcom,qcm2290-dpu", .data = &dpu_qcm2290_cfg, },

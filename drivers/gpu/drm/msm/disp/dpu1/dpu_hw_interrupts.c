@@ -641,14 +641,19 @@ void dpu_core_irq_preinstall(struct msm_kms *kms)
 	int i;
 
 	pm_runtime_get_sync(&dpu_kms->pdev->dev);
+	printk("[dpu:hw_intr: runtime_get_sync]");
 	dpu_clear_irqs(dpu_kms);
+	printk("[dpu:hw_intr: clear_irqs]");
 	dpu_disable_all_irqs(dpu_kms);
+	printk("[dpu:hw_intr: _disable_all_irqs]");
 	pm_runtime_put_sync(&dpu_kms->pdev->dev);
 
 	for (i = 1; i <= DPU_NUM_IRQS; i++) {
+		printk("[dpu:hw_intr: irq_get_entry]");
 		irq_entry = dpu_core_irq_get_entry(dpu_kms->hw_intr, i);
 		atomic_set(&irq_entry->count, 0);
 	}
+	printk("[dpu:hw_intr: irq_get_entry: DONE]");
 }
 
 void dpu_core_irq_uninstall(struct msm_kms *kms)

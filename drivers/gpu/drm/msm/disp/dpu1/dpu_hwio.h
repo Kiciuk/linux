@@ -62,5 +62,25 @@
 
 #define MDP_PERIPH_TOP0			MDP_WD_TIMER_0_CTL
 #define MDP_PERIPH_TOP0_END		CLK_CTRL3
+/**
+ * MDP TOP block Register and bit fields and defines
+ * for legacy DPU version(<1.16)
+ */
+#define MDP_VSYNC_SEL_LEGACY              0x330
+#define MDP_WD_TIMER_2_CTL_LEGACY         0x3A0
+#define MDP_WD_TIMER_2_CTL2_LEGACY        0x3A4
+#define MDP_WD_TIMER_2_LOAD_VALUE_LEGACY  0x3A8
+#define CLK_CTRL3_LEGACY                  0x3B0
+#define CLK_STATUS3_LEGACY                0x3B4
+#define CLK_CTRL4_LEGACY                  0x3B8
+#define CLK_STATUS4_LEGACY                0x3BC
+#define CLK_CTRL5_LEGACY                  0x3C0
+#define CLK_STATUS5_LEGACY                0x3C4
+#define HW_EVENTS_CTL_LEGACY              0x3D0
+#define DCE_SEL_LEGACY                    0x428
+#define MDP_PERIPH_TOP0_END_LEGACY	CLK_CTRL3_LEGACY
+
+
+
 
 #endif /*_DPU_HWIO_H */

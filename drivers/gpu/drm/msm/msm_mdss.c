@@ -219,6 +219,7 @@ static void msm_mdss_setup_ubwc_dec_40(struct msm_mdss *msm_mdss)
 #define MDSS_HW_MSM8996		0x1007
 #define MDSS_HW_MSM8937		0x100e
 #define MDSS_HW_MSM8953		0x1010
+#define MDSS_HW_MSM8976		0x100b
 #define MDSS_HW_MSM8998		0x3000
 #define MDSS_HW_SDM660		0x3002
 #define MDSS_HW_SDM630		0x3003
@@ -253,7 +254,12 @@ static const struct msm_mdss_data *msm_mdss_generate_mdp5_mdss_data(struct msm_m
 		data->highest_bank_bit = 2;
 	else
 		data->highest_bank_bit = 1;
-
+		
+	if (hw_rev == MDSS_HW_MSM8976)
+	{
+		data->ubwc_dec_version = 0;
+		data->ubwc_enc_version = 0;
+};
 	return data;
 }
 

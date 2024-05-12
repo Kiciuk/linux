@@ -26,6 +26,12 @@
 	 BIT(DPU_SSPP_SCALER_QSEED2) |\
 	 BIT(DPU_SSPP_CSC))
 
+// QOS registers are not fully available the _LUT registers are either not accessible
+// or getting readed as 0 on mdp backend maybe we need to toggle QOS enable register first?
+#define VIG_MSM8976_MASK \
+	(BIT(DPU_SSPP_SCALER_QSEED2) |\
+	 BIT(DPU_SSPP_CSC))
+
 #define VIG_MSM8996_MASK \
 	(BIT(DPU_SSPP_QOS) | BIT(DPU_SSPP_CDP) |\
 	 BIT(DPU_SSPP_TS_PREFILL) | BIT(DPU_SSPP_SCALER_QSEED2) |\
@@ -481,12 +487,24 @@ static const struct dpu_lm_sub_blks qcm2290_lm_sblk = {
 	},
 };
 
+static const struct dpu_lm_sub_blks msm8976_lm_sblk = {
+	.maxwidth = DEFAULT_DPU_LINE_WIDTH,
+	.maxblendstages = 4, /* excluding base layer */
+	.blendstage_base = { /* offsets relative to mixer base */
+		0x20, 0x50, 0x80, 0xb0
+	},
+};
+
 /*************************************************************
  * DSPP sub blocks config
  *************************************************************/
 static const struct dpu_dspp_sub_blks msm8998_dspp_sblk = {
 	.pcc = {.name = "pcc", .base = 0x1700,
 		.len = 0x90, .version = 0x10007},
+};
+
+static const struct dpu_dspp_sub_blks msm8976_dspp_sblk = {
+	/* It appears there is no specific blocks exposed */
 };
 
 static const struct dpu_dspp_sub_blks sdm845_dspp_sblk = {
@@ -550,6 +568,7 @@ static const struct dpu_cdm_cfg sc7280_cdm = {
  * VBIF sub blocks config
  *************************************************************/
 /* VBIF QOS remap */
+static const u32 msm8976_rt_pri_lvl[] = {2, 2, 2, 2};
 static const u32 msm8998_rt_pri_lvl[] = {1, 2, 2, 2};
 static const u32 msm8998_nrt_pri_lvl[] = {1, 1, 1, 1};
 static const u32 sdm845_rt_pri_lvl[] = {3, 3, 4, 4, 5, 5, 6, 6};
@@ -569,6 +588,35 @@ static const struct dpu_vbif_dynamic_ot_cfg msm8998_ot_rdwr_cfg[] = {
 		.pps = 3840 * 2160 * 30,
 		.ot_limit = 16,
 	},
+};
+
+static const struct dpu_vbif_cfg msm8976_vbif[] = {
+	{
+	.name = "vbif_0", .id = VBIF_RT,
+	.base = 0, .len = 0x1040,
+	.default_ot_rd_limit = 16,
+	.default_ot_wr_limit = 16,
+	.features = BIT(DPU_VBIF_QOS_REMAP) | BIT(DPU_VBIF_QOS_OTLIM),
+	.xin_halt_timeout = 0x4000,
+	.qos_rp_remap_size = 0x20,
+	.dynamic_ot_rd_tbl = {
+		.count = ARRAY_SIZE(msm8998_ot_rdwr_cfg),
+		.cfg = msm8998_ot_rdwr_cfg,
+		},
+	.dynamic_ot_wr_tbl = {
+		.count = ARRAY_SIZE(msm8998_ot_rdwr_cfg),
+		.cfg = msm8998_ot_rdwr_cfg,
+		},
+	.qos_rt_tbl = {
+		.npriority_lvl = ARRAY_SIZE(msm8976_rt_pri_lvl),
+		.priority_lvl = msm8976_rt_pri_lvl,
+		},
+	.qos_nrt_tbl = {
+		.npriority_lvl = ARRAY_SIZE(msm8998_nrt_pri_lvl),
+		.priority_lvl = msm8998_nrt_pri_lvl,
+		},
+	},
+	/* TODO: VBIF_NRT */
 };
 
 static const struct dpu_vbif_cfg msm8996_vbif[] = {
@@ -784,6 +832,7 @@ static const struct dpu_qos_lut_entry sc7180_qos_nrt[] = {
  *************************************************************/
 
 #include "catalog/dpu_1_7_msm8996.h"
+#include "catalog/dpu_1_11_msm8976.h"
 #include "catalog/dpu_1_16_msm8953.h"
 
 #include "catalog/dpu_3_0_msm8998.h"

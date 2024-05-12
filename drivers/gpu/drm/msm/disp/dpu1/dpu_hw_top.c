@@ -132,9 +132,18 @@ static void dpu_hw_setup_vsync_source(struct dpu_hw_mdp *mdp,
 			wd_ctl2 = MDP_WD_TIMER_3_CTL2;
 			break;
 		case DPU_VSYNC_SOURCE_WD_TIMER_2:
-			wd_load_value = MDP_WD_TIMER_2_LOAD_VALUE;
-			wd_ctl = MDP_WD_TIMER_2_CTL;
-			wd_ctl2 = MDP_WD_TIMER_2_CTL2;
+			if (1)
+				{
+					wd_load_value = MDP_WD_TIMER_2_LOAD_VALUE_LEGACY;
+					wd_ctl = MDP_WD_TIMER_2_CTL_LEGACY;
+					wd_ctl2 = MDP_WD_TIMER_2_CTL2_LEGACY;
+				}
+			else
+				{
+					wd_load_value = MDP_WD_TIMER_2_LOAD_VALUE;
+					wd_ctl = MDP_WD_TIMER_2_CTL;
+					wd_ctl2 = MDP_WD_TIMER_2_CTL2;
+				};
 			break;
 		case DPU_VSYNC_SOURCE_WD_TIMER_1:
 			wd_load_value = MDP_WD_TIMER_1_LOAD_VALUE;
@@ -175,7 +184,13 @@ static void dpu_hw_setup_vsync_source_and_vsync_sel(struct dpu_hw_mdp *mdp,
 
 	c = &mdp->hw;
 
+	
+	
+	if (1)
+	reg = DPU_REG_READ(c, MDP_VSYNC_SEL_LEGACY);
+	else
 	reg = DPU_REG_READ(c, MDP_VSYNC_SEL);
+	
 	for (i = 0; i < cfg->pp_count; i++) {
 		int pp_idx = cfg->ppnumber[i] - PINGPONG_0;
 
@@ -185,6 +200,9 @@ static void dpu_hw_setup_vsync_source_and_vsync_sel(struct dpu_hw_mdp *mdp,
 		reg &= ~(0xf << pp_offset[pp_idx]);
 		reg |= (cfg->vsync_source & 0xf) << pp_offset[pp_idx];
 	}
+	if (1)
+	DPU_REG_WRITE(c, MDP_VSYNC_SEL_LEGACY, reg);
+	else
 	DPU_REG_WRITE(c, MDP_VSYNC_SEL, reg);
 
 	dpu_hw_setup_vsync_source(mdp, cfg);

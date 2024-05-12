@@ -271,9 +271,13 @@ static void dpu_hw_sspp_setup_format(struct dpu_sw_pipe *pipe,
 		if (DPU_FORMAT_IS_UBWC(fmt))
 			opmode |= MDSS_MDP_OP_BWC_EN;
 		src_format |= (fmt->fetch_mode & 3) << 30; /*FRAME_FORMAT */
+		
+		/* 8976 has no highest bank bit and either support ubwc */
+		if(0)
 		DPU_REG_WRITE(c, SSPP_FETCH_CONFIG,
 			DPU_FETCH_CONFIG_RESET_VALUE |
 			ctx->ubwc->highest_bank_bit << 18);
+			
 		switch (ctx->ubwc->ubwc_enc_version) {
 		case UBWC_1_0:
 			fast_clear = fmt->alpha_enable ? BIT(31) : 0;
@@ -302,6 +306,7 @@ static void dpu_hw_sspp_setup_format(struct dpu_sw_pipe *pipe,
 
 	opmode |= MDSS_MDP_OP_PE_OVERRIDE;
 
+
 	/* if this is YUV pixel format, enable CSC */
 	if (DPU_FORMAT_IS_YUV(fmt))
 		src_format |= BIT(15);
@@ -323,6 +328,7 @@ static void dpu_hw_sspp_setup_format(struct dpu_sw_pipe *pipe,
 	DPU_REG_WRITE(c, op_mode_off, opmode);
 
 	/* clear previous UBWC error */
+	if(0)
 	DPU_REG_WRITE(c, SSPP_UBWC_ERROR_STATUS, BIT(31));
 }
 

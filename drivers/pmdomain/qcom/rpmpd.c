@@ -476,9 +476,9 @@ static struct rpmpd mx_rwmx0_vfl = {
 	.key = KEY_FLOOR_LEVEL,
 };
 
-static struct rpmpd mx_rwsm6_vfl = {
+static struct rpmpd mx_s6a_vfl = {
 	.pd = { .name = "mx_vfl", },
-	.res_type = RPMPD_RWSM,
+	.res_type = RPMPD_SMPA,
 	.res_id = 6,
 	.key = KEY_FLOOR_LEVEL,
 };
@@ -748,10 +748,10 @@ static const struct rpmpd_desc msm8974pro_pma8084_desc = {
 static struct rpmpd *msm8976_rpmpds[] = {
 	[MSM8976_VDDCX] =	&cx_s2a_lvl,
 	[MSM8976_VDDCX_AO] =	&cx_s2a_lvl_ao,
-	[MSM8976_VDDCX_VFL] =	&cx_rwsc2_vfl,
+	[MSM8976_VDDCX_VFL] =	&cx_s2a_vfl,
 	[MSM8976_VDDMX] =	&mx_s6a_lvl,
 	[MSM8976_VDDMX_AO] =	&mx_s6a_lvl_ao,
-	[MSM8976_VDDMX_VFL] =	&mx_rwsm6_vfl,
+	[MSM8976_VDDMX_VFL] =	&mx_s6a_vfl,
 	[MSM8976_VDDMD] =	&md_s1a_lvl,
 	[MSM8976_VDDMD_AO] =	&md_s1a_lvl_ao,
 };
