@@ -1,20 +1,21 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Based on data from msm8937-bus.dtsi in Qualcomm's msm-3.18 release:
+ *   Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
+ */
 
-#include <linux/clk.h>
+
 #include <linux/device.h>
 #include <linux/interconnect-provider.h>
-#include <linux/io.h>
+#include <linux/mod_devicetable.h>
 #include <linux/module.h>
-#include <linux/of_device.h>
-#include <linux/of_platform.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-#include <linux/slab.h>
+
 
 #include <dt-bindings/interconnect/qcom,msm8937.h>
 
 #include "icc-rpm.h"
-#include "smd-rpm.h"
 
 enum {
 	QNOC_MASTER_AMPSS_M0 = 1,
@@ -1223,6 +1224,8 @@ static const struct qcom_icc_desc msm8937_bimc = {
 	.num_nodes = ARRAY_SIZE(msm8937_bimc_nodes),
 	.bus_clk_desc = &bimc_clk,
 	.regmap_cfg = &msm8937_bimc_regmap_config,
+	.qos_offset = 0x8000,
+	.ab_coeff = 154,
 };
 
 static struct qcom_icc_node *msm8937_pcnoc_nodes[] = {
@@ -1344,20 +1347,28 @@ static const struct qcom_icc_desc msm8937_snoc_mm = {
 	.bus_clk_desc = &bus_2_clk,
 	.regmap_cfg = &msm8937_snoc_regmap_config,
 	.qos_offset = 0x7000,
+	.ab_coeff = 154,
 };
 
+static const struct of_device_id msm8937_noc_of_match[] = {
+	{ .compatible = "qcom,msm8937-bimc", .data = &msm8937_bimc },
+	{ .compatible = "qcom,msm8937-pcnoc", .data = &msm8937_pcnoc },
+	{ .compatible = "qcom,msm8937-snoc", .data = &msm8937_snoc },
+	{ .compatible = "qcom,msm8937-snoc-mm", .data = &msm8937_snoc_mm },
+	{ }
+};
 MODULE_DEVICE_TABLE(of, msm8937_noc_of_match);
 
 static struct platform_driver msm8937_noc_driver = {
 	.probe = qnoc_probe,
-	.remove = qnoc_remove,
+	.remove_new = qnoc_remove,
 	.driver = {
 		.name = "qnoc-msm8937",
 		.of_match_table = msm8937_noc_of_match,
 		.sync_state = icc_sync_state,
 	},
 };
-
 module_platform_driver(msm8937_noc_driver);
-MODULE_DESCRIPTION("Qualcomm msm8937 NoC driver");
+
+MODULE_DESCRIPTION("Qualcomm MSM8937 NoC driver");
 MODULE_LICENSE("GPL");
