@@ -1416,6 +1416,7 @@ static const struct qcom_icc_desc msm8976_snoc_mm = {
 	.bus_clk_desc = &bus_2_clk,
 	.regmap_cfg = &msm8976_snoc_regmap_config,
 	.qos_offset = 0x7000,
+	.ab_coeff = 154,
 };
 
 static const struct of_device_id msm8976_noc_of_match[] = {
