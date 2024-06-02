@@ -993,6 +993,8 @@ static const struct msm_kms_funcs kms_funcs = {
 #endif
 };
 
+struct platform_device
+
 static void _dpu_kms_mmu_destroy(struct dpu_kms *dpu_kms)
 {
 	struct msm_mmu *mmu;
@@ -1042,6 +1044,12 @@ static int dpu_kms_hw_init(struct msm_kms *kms)
 	unsigned long max_core_clk_rate;
 	u32 core_rev;
 
+/
+
+	ret = dpu_smp_init(to_platform_device(dev->dev), dev);
+	if (ret)
+		return ret;
+
 	if (!kms) {
 		DPU_ERROR("invalid kms\n");
 		return rc;
@@ -1056,6 +1064,18 @@ static int dpu_kms_hw_init(struct msm_kms *kms)
 	rc = dpu_kms_global_obj_init(dpu_kms);
 	if (rc)
 		return rc;
+		
+//initialize SMP crap here
+
+	if (dpu_kms->catalog->caps & MDP_CAP_SMP) {
+		dpu_kms->smp = dpu_smp_init(dpu_kms, &config->hw->smp); //check where we would put it
+		if (IS_ERR(dpu_kms->smp)) {
+			ret = PTR_ERR(dpu_kms->smp);
+			dpu_kms->smp = NULL;
+			goto fail;
+		}
+	}
+	
 
 	atomic_set(&dpu_kms->bandwidth_ref, 0);
 

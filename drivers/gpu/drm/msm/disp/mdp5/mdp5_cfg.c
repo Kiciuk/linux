@@ -740,8 +740,7 @@ static const struct mdp5_cfg_hw msm8x76_config = {
 	.name = "msm8x76",
 	.mdp = {
 		.count = 1,
-		.caps = MDP_CAP_SMP |
-			MDP_CAP_DSC |
+		.caps = MDP_CAP_DSC |
 			MDP_CAP_SRC_SPLIT |
 			0,
 	},
@@ -750,15 +749,7 @@ static const struct mdp5_cfg_hw msm8x76_config = {
 		.base = { 0x01000, 0x01200, 0x01400 },
 		.flush_hw_mask = 0xffffffff,
 	},
-	.smp = {
-		.mmb_count = 10,
-		.mmb_size = 10240,
-		.clients = {
-			[SSPP_VIG0] = 1, [SSPP_VIG1] = 9,
-			[SSPP_DMA0] = 4,
-			[SSPP_RGB0] = 7, [SSPP_RGB1] = 8,
-		},
-	},
+	
 	.pipe_vig = {
 		.count = 2,
 		.base = { 0x04000, 0x06000 },

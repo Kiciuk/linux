@@ -929,6 +929,9 @@ static int dpu_plane_atomic_check(struct drm_plane *plane,
 
 	rotation = drm_rotation_simplify(new_plane_state->rotation,
 					supported_rotations);
+					
+// 		 mdp5_plane_atomic_check_with_state			
+					
 
 	if ((pipe_hw_caps->features & BIT(DPU_SSPP_INLINE_ROTATION)) &&
 		(rotation & DRM_MODE_ROTATE_90)) {
