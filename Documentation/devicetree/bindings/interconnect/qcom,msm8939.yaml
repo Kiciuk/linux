@@ -56,19 +56,8 @@ examples:
   - |
     #include <dt-bindings/clock/qcom,rpmcc.h>
 
-    snoc: interconnect@580000 {
-        compatible = "qcom,msm8939-snoc";
-        reg = <0x00580000 0x14000>;
-        #interconnect-cells = <1>;
-    };
-
     bimc: interconnect@400000 {
         compatible = "qcom,msm8939-bimc";
         reg = <0x00400000 0x62000>;
-        #interconnect-cells = <1>;
-
-          snoc_mm: interconnect-snoc {
-              compatible = "qcom,msm8939-snoc-mm";
-              #interconnect-cells = <1>;
-          };
+        #interconnect-cells = <2>;
     };
