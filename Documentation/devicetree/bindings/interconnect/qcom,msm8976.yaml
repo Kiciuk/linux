@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/interconnect/qcom,msm8976.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Qualcomm MSM8976 Network-On-Chip interconnect
+
+maintainers:
+  - Konrad Dybcio <konradybcio@kernel.org>
+
+description:
+  The Qualcomm MSM8976 interconnect providers support adjusting the
+  bandwidth requirements between the various NoC fabrics.
+
+properties:
+  compatible:
+    enum:
+      - qcom,msm8976-bimc
+      - qcom,msm8976-pcnoc
+      - qcom,msm8976-snoc
+
+  reg:
+    maxItems: 1
+    
+  clocks:
+    maxItems: 1
+
+  clock-names:
+    maxItems: 1
+
+patternProperties:
+  '^interconnect-[a-z0-9\-]+$':
+    type: object
+    $ref: qcom,rpm-common.yaml#
+    unevaluatedProperties: false
+    description:
+      The interconnect providers do not have a separate QoS register space,
+      but share parent's space.
+
+    properties:
+      compatible:
+        const: qcom,msm8976-snoc-mm
+
+    required:
+      - compatible
+
+required:
+  - compatible
+  - reg
+
+allOf:
+  - $ref: qcom,rpm-common.yaml#
+  - if:
+      properties:
+        compatible:
+          const: qcom,msm8976-snoc
+
+    then:
+      properties:
+        clocks:
+          items:
+            - description: IPA clock from RPMCC
+
+        clock-names:
+          items:
+            - const: ipa
+
+  - if:
+      properties:
+        compatible:
+          enum:
+            - qcom,msm8976-bimc
+            - qcom,msm8976-pcnoc
+
+    then:
+      properties:
+        clocks: false
+        clock-names: false
+
+unevaluatedProperties: false
+
+examples:
+  - |
+    bimc: interconnect@400000 {
+        compatible = "qcom,msm8976-bimc";
+        reg = <0x00400000 0x62000>;
+        #interconnect-cells = <2>;
+    };
+
