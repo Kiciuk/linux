@@ -110,8 +110,8 @@
 		backlight = <&pmi8950_wled>;
 
 		supply-names = "vsp", "vsn";
-		vsp-supply = <&lab_vreg>;
-		vsn-supply = <&ibb_vreg>;
+		vsp-supply = <&lab1_vreg>;
+		vsn-supply = <&ibb1_vreg>;
 
 		reset-gpios = <&tlmm 25 GPIO_ACTIVE_LOW>;
 
@@ -138,9 +138,13 @@
 	status = "okay";
 	vddio-supply = <&pm8950_l6>;
 };
+&mdss_dsi1_phy  {
+	status = "okay";
+	vddio-supply = <&pm8950_l6>;
+};
 
 &mdss_dsi0 {
-
+	status = "okay";
 	vdd-supply = <&pm8950_l17>;
 	vdda-supply = <&pm8950_l1>;
 	vddio-supply = <&pm8950_l6>;

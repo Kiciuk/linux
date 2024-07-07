@@ -307,7 +307,7 @@
 
 		smd-edge {
 			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
-			mboxes = <&apcs 0>;
+			qcom,ipc = <&apcs 8 0>;
 			qcom,smd-edge = <15>;
 
 			rpm_requests: rpm-requests {
