@@ -195,7 +195,7 @@ status = "disabled";
 	haptics: haptics@5a {
 		compatible = "ti,drv2604";
 		reg = <0x5a>;
-		enable-gpio = <&tlmm 109 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&tlmm 109 GPIO_ACTIVE_HIGH>;
 		mode = <DRV260X_LRA_MODE>;
 		library-sel = <DRV260X_LIB_LRA>;
 	};
@@ -263,6 +263,7 @@ status = "disabled";
 };
 
 */
+
 &tlmm {
 	gpio-reserved-ranges = <0 4>, <8 4>;
 
@@ -323,6 +324,21 @@ status = "disabled";
 		drive-strength = <2>;
 		bias-pull-down;
 	};
+	cross_con_sus: cross_con_sus {
+		pins = "gpio69";
+		function = "gpio";
+		bias-pull-down;
+		drive-strength = <2>;
+
+	};
+	cross_con_act: cross_con_act {
+		pins = "gpio69";
+		function = "gpio";
+		bias-pull-down;
+		drive-strength = <8>;
+
+	};
+	
 };
 
 &pm8004_lsid5 {
@@ -370,13 +386,16 @@ status = "disabled";
 	v1p8-supply = <&pm8950_l7>;
 	v3p3-supply = <&pm8950_l13>;
 };
-/*
+
 &lpass {
-	status= "disabled";
+	status= "okay";
 };
 
+&lpass_codec {
+	status= "okay";
+};
 &sound {
-	status= "disabled";
+	status= "okay";
 
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act  &tlmm_pri_act>;
@@ -385,6 +404,7 @@ status = "disabled";
 };
 
 &sound_dai_quinary {
+status = "okay";
 	codec {
 		sound-dai = <&speaker_codec>;
 	};
@@ -400,7 +420,18 @@ status = "disabled";
 	vdd-cdc-tx-rx-cx-supply = <&pm8950_s4>;
 	vdd-micbias-supply = <&pm8950_l13>;
 };
-*/
+&pm8950_codec {
+	status="okay";
+	qcom,micbias1-ext-cap;
+	qcom,hphl-jack-type-normally-open;
+	qcom,mbhc-vthreshold-low = <75 150 237 450 500>;
+	qcom,mbhc-vthreshold-high = <75 150 237 450 500>;
+	vdd-cdc-io-supply = <&pm8950_l5>;
+	vdd-cdc-tx-rx-cx-supply = <&pm8950_s4>;
+	vdd-micbias-supply = <&pm8950_l13>;
+};
+
+
 &pm8950_spmi_regulators {
 	vdd_s5-supply = <&vph_pwr>;
 
