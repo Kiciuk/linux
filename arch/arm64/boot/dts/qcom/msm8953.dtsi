@@ -496,6 +496,44 @@
 			interrupt-controller;
 			#interrupt-cells = <2>;
 
+			cdc_pdm_lines_2_default: cdc-pdm-lines-2-default-state {
+				pins = "gpio70", "gpio71", "gpio72";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
+			};
+
+			cdc_pdm_lines_2_sleep: cdc-pdm-lines-2-sleep-state {
+				pins = "gpio70", "gpio71", "gpio72";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
+			};
+
+			cdc_pdm_lines_act: cdc-pdm-lines-default-state {
+				pins = "gpio69", "gpio73", "gpio74";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
+			};
+			cdc_pdm_lines_sus: cdc-pdm-lines-sleep-state {
+				pins = "gpio69", "gpio73", "gpio74";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
+			};
+
+			cdc_pdm_comp_lines_act: cdc-pdm-comp-lines-default-state {
+				pins = "gpio67", "gpio68";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
+			};
+
+			cdc_pdm_comp_lines_sus: cdc-pdm-comp-lines-sleep-state {
+				pins = "gpio67", "gpio68";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
+			};
+
 			uart_console_active: uart-console-active-state {
 				pins = "gpio4", "gpio5";
 				function = "blsp_uart2";
@@ -725,6 +763,32 @@
 				bias-disable;
 			};
 
+			pri_mi2s_default: mi2s-pri-default-state {
+				pins = "gpio88","gpio91", "gpio93";
+				function = "pri_mi2s";
+				drive-strength = <8>;
+			};
+
+			pri_mi2s_sleep: mi2s-pri-sleep-state {
+				pins = "gpio88", "gpio91", "gpio93";
+				function = "pri_mi2s";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+			
+			sec_mi2s_default: mi2s-sec-default-state {
+				pins = "gpio135", "gpio136", "gpio137", "gpio138";
+				function = "sec_mi2s";
+				drive-strength = <8>;
+			};
+
+			sec_mi2s_sleep: mi2s-sec-sleep-state {
+				pins = "gpio135", "gpio136", "gpio137", "gpio138";
+				function = "sec_mi2s";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+
 			spi_3_default: spi-3-default-state {
 				pins = "gpio10", "gpio11";
 				function = "blsp_spi3";
@@ -796,7 +860,7 @@
 					drive-strength = <6>;
 					bias-pull-up;
 				};
-			};
+			};	
 		};
 
 		gcc: clock-controller@1800000 {
@@ -1847,6 +1911,122 @@
 				reg = <0x0b128000 0x1000>;
 				status = "disabled";
 			};
+		};
+
+		sound: sound-card@c051000 {
+			compatible = "qcom,msm8953-qdsp6-sndcard";
+			reg = <0x0c051000 0x4>,
+			      <0x0c051004 0x4>,
+			      <0x0c052000 0x4>;
+			reg-names = "mic-iomux",
+				    "spkr-iomux",
+				    "quin-iomux";
+
+			audio-routing =
+				"AMIC1", "MIC BIAS External1",
+				"AMIC2", "MIC BIAS External2",
+				"AMIC3", "MIC BIAS External1",
+				"MM_DL1", "MultiMedia1 Playback",
+				"MM_DL3", "MultiMedia3 Playback",
+				"MM_DL4", "MultiMedia4 Playback",
+				"MultiMedia2 Capture", "MM_UL2";
+
+			status = "disabled";
+
+			mm1-dai-link {
+				link-name = "MultiMedia1";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>;
+				};
+			};
+
+			mm2-dai-link {
+				link-name = "MultiMedia2";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>;
+				};
+			};
+
+			mm3-dai-link {
+				link-name = "MultiMedia3";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>;
+				};
+			};
+
+			mm4-dai-link {
+				link-name = "MultiMedia4";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA4>;
+				};
+			};
+
+			primary-dai-link {
+				link-name = "Primary MI2S";
+				cpu {
+					sound-dai = <&q6afedai PRIMARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+
+				codec {
+					sound-dai = <&lpass_codec 0>, <&pm8953_codec 0>;
+				};
+			};
+
+			tertiary-dai-link {
+				link-name = "Tertiary MI2S";
+				cpu {
+					sound-dai = <&q6afedai TERTIARY_MI2S_TX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+
+				codec {
+					sound-dai = <&lpass_codec 1>, <&pm8953_codec 1>;
+				};
+			};
+
+			sound_dai_quaternary: quaternary-dai-link {
+				link-name = "Quaternary MI2S";
+				status = "disabled"; /* Needs extra codec configuration */
+				cpu {
+					sound-dai = <&q6afedai QUATERNARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+			};
+
+			sound_dai_quinary: quinary-dai-link {
+				link-name = "Quinary MI2S";
+				status = "disabled"; /* Needs extra codec configuration */
+				cpu {
+					sound-dai = <&q6afedai QUINARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+			};
+		};
+
+		lpass_codec: audio-codec@c0f0000 {
+			compatible = "qcom,msm8916-wcd-digital-codec";
+			reg = <0x0c0f0000 0x400>;
+			#sound-dai-cells = <1>;
+
+			clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
+					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&xo_board>;
+			clock-names = "mclk", "ahbix-clk";
+
+			status = "disabled";
 		};
 
 		lpass: remoteproc@c200000 {
