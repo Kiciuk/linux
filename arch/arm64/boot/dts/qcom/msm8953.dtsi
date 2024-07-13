@@ -797,6 +797,72 @@
 					bias-pull-up;
 				};
 			};
+
+			cdc_pdm_lines_2_act: pdm-lines-2-on-pins {
+				pins = "gpio70", "gpio71", "gpio72";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
+			};
+
+			cdc_pdm_lines_2_sus: pdm-lines-2-off-pins {
+				pins = "gpio70", "gpio71", "gpio72";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
+			};
+
+			cdc_pdm_lines_act: pdm-lines-on-pins {
+				pins = "gpio69", "gpio73", "gpio74";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
+			};
+			cdc_pdm_lines_sus: pdm-lines-off-pins {
+				pins = "gpio69", "gpio73", "gpio74";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
+			};
+
+			cdc_pdm_comp_lines_act: pdm-comp-lines-on-pins {
+				pins = "gpio67", "gpio68";
+				function = "cdc_pdm0";
+				drive-strength = <8>;
+			};
+
+			cdc_pdm_comp_lines_sus: pdm-comp-lines-off-pins {
+				pins = "gpio67", "gpio68";
+				function = "cdc_pdm0";
+				drive-strength = <2>;
+				bias-disable;
+			};
+			
+			pri_tlmm_act: tlmm-pri-default {
+				pins = "gpio91", "gpio93";
+				function = "pri_mi2s";
+				drive-strength = <8>;
+				/* bias-disable; */
+			};
+
+			pri_tlmm_sus: tlmm-pri-sleep {
+				pins = "gpio91", "gpio93";
+				function = "pri_mi2s";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+			
+			sec_tlmm_act: tlmm-quat-default {
+				pins = "gpio135", "gpio136", "gpio137", "gpio138";
+				function = "sec_mi2s";
+				drive-strength = <8>;
+				/* bias-disable; */
+			};
+
+			sec_tlmm_sus: tlmm-quat-sleep {
+				pins = "gpio135", "gpio136", "gpio137", "gpio138";
+				function = "sec_mi2s";
+				drive-strength = <2>;
+				bias-pull-down;
+			};	
 		};
 
 		gcc: clock-controller@1800000 {
@@ -1847,6 +1913,98 @@
 				reg = <0x0b128000 0x1000>;
 				status = "disabled";
 			};
+		};
+
+		sound_card: sound-card@c051000 {
+			compatible = "qcom,msm8953-qdsp6-sndcard";
+			reg = <0xc051000 0x4>,
+			      <0xc051004 0x4>,
+			      <0xc052000 0x4>;
+			reg-names = "mic-iomux",
+				    "spkr-iomux",
+				    "quin-iomux";
+
+			audio-routing =
+				"AMIC1", "MIC BIAS External1",
+				"AMIC2", "MIC BIAS External2",
+				"AMIC3", "MIC BIAS External1",
+				"MM_DL1", "MultiMedia1 Playback",
+				"MM_DL3", "MultiMedia3 Playback",
+				"MM_DL4", "MultiMedia4 Playback",
+				"MultiMedia2 Capture", "MM_UL2";
+
+			status = "disabled";
+
+			mm1-dai-link {
+				link-name = "MultiMedia1";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>;
+				};
+			};
+
+			mm2-dai-link {
+				link-name = "MultiMedia2";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>;
+				};
+			};
+
+			mm3-dai-link {
+				link-name = "MultiMedia3";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>;
+				};
+			};
+
+			mm4-dai-link {
+				link-name = "MultiMedia4";
+				cpu {
+					sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA4>;
+				};
+			};
+
+			primary-mi2s-dai-link {
+				link-name = "Primary MI2S";
+				cpu {
+					sound-dai = <&q6afedai PRIMARY_MI2S_RX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+
+				codec {
+					sound-dai = <&lpass_codec 0>, <&pm8953_codec 0>;
+				};
+			};
+
+			tertiary-mi2s-dai-link {
+				link-name = "Tertiary MI2S";
+				cpu {
+					sound-dai = <&q6afedai TERTIARY_MI2S_TX>;
+				};
+
+				platform {
+					sound-dai = <&q6routing>;
+				};
+
+				codec {
+					sound-dai = <&lpass_codec 1>, <&pm8953_codec 1>;
+				};
+			};
+		};
+
+		lpass_codec: audio-codec@c0f0000 {
+			compatible = "qcom,msm8916-wcd-digital-codec";
+			reg = <0xc0f0000 0x400>;
+			#sound-dai-cells = <1>;
+
+			clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
+					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&xo_board>;
+			clock-names = "mclk", "ahbix-clk";
+
+			status = "disabled";
 		};
 
 		lpass: remoteproc@c200000 {
