@@ -15,16 +15,22 @@ properties:
     enum:
       - qcom,apq8016-sbc-sndcard
       - qcom,msm8916-qdsp6-sndcard
+      - qcom,msm8953-qdsp6-sndcard
+      - qcom,msm8976-qdsp6-sndcard
 
   reg:
+    minItems: 2
     items:
       - description: Microphone I/O mux register address
       - description: Speaker I/O mux register address
+      - description: Quinary Mi2S I/O mux register address
 
   reg-names:
+    minItems: 2
     items:
       - const: mic-iomux
       - const: spkr-iomux
+      - const: quin-iomux
 
   audio-routing:
     $ref: /schemas/types.yaml#/definitions/non-unique-string-array
@@ -105,6 +111,27 @@ required:
   - reg
   - reg-names
   - model
+
+allOf:
+  - if:
+      properties:
+        compatible:
+          contains:
+            enum:
+              - qcom,apq8016-sbc-sndcard
+              - qcom,msm8916-qdsp6-sndcard
+    then:
+      properties:
+        reg:
+          maxItems: 2
+        reg-names:
+          maxItems: 2
+    else:
+      properties:
+        reg:
+          minItems: 3
+        reg-names:
+          minItems: 3
 
 additionalProperties: false
 
