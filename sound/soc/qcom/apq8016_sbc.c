@@ -236,6 +236,11 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 	struct apq8016_sbc_data *data = snd_soc_card_get_drvdata(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int mi2s, ret;
+	void __iomem *lpass_cc = ioremap(0xc02c000,0x50);;
+	printk("[PRE]DIGCODEC_CMD_RCGR: 0x%X\n",readl(lpass_cc));
+	printk("[PRE]DIGCODEC_CFG_RCGR: 0x%X\n",readl(lpass_cc+0x4));
+	printk("[PRE]DIGCODEC_CBCR ADDRESS: 0x%X\n",readl(lpass_cc+0x14));
+	printk("[PRE]DIGCODEC_AHB_CBCR: 0x%X\n",readl(lpass_cc+0x18));
 
 	mi2s = qdsp6_dai_get_lpass_id(cpu_dai);
 	if (mi2s < 0)
@@ -250,9 +255,14 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 	if (ret)
 		dev_err(card->dev, "Failed to enable LPAIF dig clk: %d\n", ret);
 
+
 	ret = snd_soc_dai_set_sysclk(cpu_dai, qdsp6_get_clk_id(data, mi2s), MI2S_BCLK_RATE, 0);
 	if (ret)
 		dev_err(card->dev, "Failed to enable LPAIF bit clk: %d\n", ret);
+printk("[POST]DIGCODEC_CMD_RCGR: 0x%X\n",readl(lpass_cc));
+	printk("[POST]DIGCODEC_CFG_RCGR: 0x%X\n",readl(lpass_cc+0x4));
+	printk("[POST]DIGCODEC_CBCR ADDRESS: 0x%X\n",readl(lpass_cc+0x14));
+	printk("[POST]DIGCODEC_AHB_CBCR: 0x%X\n",readl(lpass_cc+0x18));
 	return ret;
 }
 
