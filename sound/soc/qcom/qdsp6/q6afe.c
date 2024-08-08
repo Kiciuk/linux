@@ -353,6 +353,7 @@
 
 #define Q6AFE_LPASS_MODE_CLK1_VALID 1
 #define Q6AFE_LPASS_MODE_CLK2_VALID 2
+#define Q6AFE_LPASS_CLK_SRC_EXTERNAL 0
 #define Q6AFE_LPASS_CLK_SRC_INTERNAL 1
 #define Q6AFE_LPASS_CLK_ROOT_DEFAULT 0
 #define AFE_API_VERSION_TDM_CONFIG              1
@@ -1105,6 +1106,53 @@ static int q6afe_set_digital_codec_core_clock(struct q6afe_port *port,
 				       sizeof(*cfg));
 }
 
+struct q6dsp_clk_v1 {
+	int clk_id;
+	int dai_id;
+	int q6dsp_clk_id;
+	int clk_root;
+	int clk_src;
+};
+
+#define Q6AFE_CLK_DIG_V1(id, dai) {					\
+		.q6dsp_clk_id	= id,				\
+		.dai_id = dai,					\
+		.clk_id	= LPAIF_DIG_CLK,		\
+		.clk_src= 0,				\
+		.clk_root= 5,				\
+	}
+
+#define Q6AFE_CLK_BIT_V1(id, dai, src) {					\
+		.q6dsp_clk_id	= id,				\
+		.dai_id = dai,					\
+		.clk_id	= LPAIF_BIT_CLK,		\
+		.clk_src= src,				\
+		.clk_root=Q6AFE_LPASS_CLK_ROOT_DEFAULT,				\
+	}
+	
+#define Q6AFE_CLK_OSR_V1(id, dai) {					\
+		.q6dsp_clk_id	= id,				\
+		.dai_id = dai,					\
+		.clk_id	= LPAIF_OSR_CLK,		\
+		.clk_src=Q6AFE_LPASS_CLK_SRC_INTERNAL,				\
+		.clk_root=Q6AFE_LPASS_CLK_ROOT_DEFAULT,				\
+	}
+	
+static const struct q6dsp_clk_v1 q6dsp_v1_clocks[]={
+	Q6AFE_CLK_DIG_V1(Q6AFE_LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE, PRIMARY_MI2S_RX),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_PRI_MI2S_IBIT, PRIMARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_SEC_MI2S_IBIT, SECONDARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_TER_MI2S_IBIT, TERTIARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUAD_MI2S_IBIT, QUATERNARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUI_MI2S_IBIT, QUINARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_INTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_PRI_MI2S_EBIT, PRIMARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_SEC_MI2S_EBIT, SECONDARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_TER_MI2S_EBIT, TERTIARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUAD_MI2S_EBIT, QUATERNARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_BIT_V1(Q6AFE_LPASS_CLK_ID_QUI_MI2S_EBIT, QUINARY_MI2S_RX, Q6AFE_LPASS_CLK_SRC_EXTERNAL),
+	Q6AFE_CLK_OSR_V1(Q6AFE_LPASS_CLK_ID_QUI_MI2S_OSR, QUINARY_MI2S_RX),
+};
+
 int q6afe_set_lpass_clock(struct device *dev, int clk_id, int attri,
 			  int clk_root, unsigned int freq)
 {
@@ -1118,21 +1166,31 @@ int q6afe_set_lpass_clock(struct device *dev, int clk_id, int attri,
 	 */
 	if (q6core_get_adsp_version() < Q6_ADSP_VERSION_2_7) {
 		struct q6afe_port *port;
-		struct afe_digital_clk_cfg dcfg = {0,};
 		int ret;
+		struct q6dsp_clk_v1 *clk_init = NULL;
+		printk("[Q6AFE_CLOCKS]Requesting clk_id: %d" ,clk_id);
+		
+		for(int i=0;i<ARRAY_SIZE(q6dsp_v1_clocks);i++)
+		{
+		printk("[Q6AFE_CLOCKS_FOR]: Iterating [%d] element | clk_id:%d q6dsp_clk_id: %d", i, q6dsp_v1_clocks[i].clk_id, q6dsp_v1_clocks[i].q6dsp_clk_id);
+			if(q6dsp_v1_clocks[i].q6dsp_clk_id == clk_id) {
+				clk_init=&q6dsp_v1_clocks[i];
+				printk("[Q6AFE_CLOCKS_FOR_IF]: Found requested clock at index %d",i);
+				break;
+			 };
+		};
 
-		if (clk_id != Q6AFE_LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE)
+		if (clk_init==NULL)
 			return -EINVAL;
-
-		port = q6afe_port_get_from_id(dev, PRIMARY_MI2S_RX);
+			
+		printk("[Q6AFE_V1_FALLBACK] QDSP6_CLK_ID: 0x%d CLK_ID:0x%d DAI_ID:0x%d FREQ:%d", clk_init->q6dsp_clk_id, clk_init->clk_id, clk_init->dai_id, freq);
+		
+		port = q6afe_port_get_from_id(dev, clk_init->dai_id);
 		if (IS_ERR(port))
 			return PTR_ERR(port);
 
-		dcfg.i2s_cfg_minor_version = AFE_API_VERSION_I2S_CONFIG;
-		dcfg.clk_val = freq;
-		dcfg.clk_root = 5;
-		ret = q6afe_set_digital_codec_core_clock(port, &dcfg);
-
+		ret = q6afe_port_set_sysclk(port,clk_init->clk_id, clk_init->clk_src,
+					    clk_init->clk_root, freq, 0);
 		q6afe_port_put(port);
 		return ret;
 	}
