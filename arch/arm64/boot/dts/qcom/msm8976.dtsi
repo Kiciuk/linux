@@ -1955,6 +1955,10 @@
 
 			status = "disabled";
 
+			clocks = <&q6afecc LPASS_CLK_ID_PRI_MI2S_IBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>, 
+					  <&q6afecc LPASS_CLK_ID_TER_MI2S_IBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>, 
+					  <&q6afecc LPASS_CLK_ID_QUI_MI2S_IBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			clock-names = "primary", "tertiary","quinary";
 			mm1-dai-link {
 				link-name = "MultiMedia1";
 				cpu {
@@ -2044,8 +2048,11 @@
 			reg = <0xc0f0000 0x400>;
 			#sound-dai-cells = <1>;
 
-			clocks = <&mclk_cdc>, <&xo_board>;
+			clocks = <&q6afecc LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE
+					   LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&xo_board>;
 			clock-names = "mclk", "ahbix-clk";
+			
 			
 			status = "disabled";
 		};
@@ -2118,6 +2125,10 @@
 								reg = <QUINARY_MI2S_RX>;
 								qcom,sd-lines = <0>;
 							};
+						};
+						q6afecc: clock-controller {
+							compatible = "qcom,q6afe-clocks";
+							#clock-cells = <2>;
 						};
 					};
 
