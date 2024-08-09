@@ -248,13 +248,6 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 
 	if (++data->mi2s_clk_count[mi2s] > 1)
 		return 0;
-		/* On newer legacy SoC (MSM8976) lpass codec clocks are not available in gcc region
-		 so we have to request clock from machine driver using V1 API) */
-	if (data->q6afe_clk_ver == Q6AFE_CLK_V1 && data->dig_cdc_mclk_en == true)
-		ret = snd_soc_dai_set_sysclk(cpu_dai,  LPAIF_DIG_CLK, DEFAULT_MCLK_RATE, 0);
-	if (ret)
-		dev_err(card->dev, "Failed to enable LPAIF dig clk: %d\n", ret);
-
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, qdsp6_get_clk_id(data, mi2s), MI2S_BCLK_RATE, 0);
 	if (ret)
@@ -284,11 +277,6 @@ static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
 	ret = snd_soc_dai_set_sysclk(cpu_dai, qdsp6_get_clk_id(data, mi2s), 0, 0);
 	if (ret)
 		dev_err(card->dev, "Failed to disable LPAIF bit clk: %d\n", ret);
-		
-	if (data->q6afe_clk_ver == Q6AFE_CLK_V1 && data->dig_cdc_mclk_en == true)
-		ret = snd_soc_dai_set_sysclk(cpu_dai,  LPAIF_DIG_CLK, 0, 0);
-	if (ret)
-		dev_err(card->dev, "Failed to disable LPAIF dig clk: %d\n", ret);
 
 }
 
