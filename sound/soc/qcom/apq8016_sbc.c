@@ -37,6 +37,7 @@ struct apq8016_sbc_data {
 	bool q6afe_clk_ver;
 	bool dig_cdc_mclk_en;
 	int mi2s_clk_count[MI2S_COUNT];
+	struct clk *primary_mi2s_clk, *tertiary_mi2s_clk, *quinary_mi2s_clk;
 };
 
 #define MIC_CTRL_TER_WS_SLAVE_SEL	BIT(21)
@@ -236,6 +237,7 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 	struct apq8016_sbc_data *data = snd_soc_card_get_drvdata(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int mi2s, ret;
+	
 	void __iomem *lpass_cc = ioremap(0xc02c000,0x50);;
 	printk("[PRE]DIGCODEC_CMD_RCGR: 0x%X\n",readl(lpass_cc));
 	printk("[PRE]DIGCODEC_CFG_RCGR: 0x%X\n",readl(lpass_cc+0x4));
@@ -248,10 +250,11 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 
 	if (++data->mi2s_clk_count[mi2s] > 1)
 		return 0;
-
+/*
 	ret = snd_soc_dai_set_sysclk(cpu_dai, qdsp6_get_clk_id(data, mi2s), MI2S_BCLK_RATE, 0);
 	if (ret)
 		dev_err(card->dev, "Failed to enable LPAIF bit clk: %d\n", ret);
+		*/
 printk("[POST]DIGCODEC_CMD_RCGR: 0x%X\n",readl(lpass_cc));
 	printk("[POST]DIGCODEC_CFG_RCGR: 0x%X\n",readl(lpass_cc+0x4));
 	printk("[POST]DIGCODEC_CBCR ADDRESS: 0x%X\n",readl(lpass_cc+0x14));
@@ -273,11 +276,11 @@ static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
 
 	if (--data->mi2s_clk_count[mi2s] > 0)
 		return;
-
+/*
 	ret = snd_soc_dai_set_sysclk(cpu_dai, qdsp6_get_clk_id(data, mi2s), 0, 0);
 	if (ret)
 		dev_err(card->dev, "Failed to disable LPAIF bit clk: %d\n", ret);
-
+*/
 }
 
 static const struct snd_soc_ops msm8916_qdsp6_be_ops = {
@@ -304,7 +307,8 @@ static int msm8916_qdsp6_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 static void msm8916_qdsp6_add_ops(struct snd_soc_card *card)
 {
 	struct snd_soc_dai_link *link;
-	int i;
+	int i, ret;
+	struct apq8016_sbc_data *pdata = snd_soc_card_get_drvdata(card);
 
 	/* Make it obvious to userspace that QDSP6 is used */
 	card->components = "qdsp6";
@@ -389,6 +393,31 @@ static int apq8016_sbc_platform_probe(struct platform_device *pdev)
 	data->quin_iomux = devm_platform_ioremap_resource_byname(pdev, "quin-iomux");
 	if (IS_ERR(data->quin_iomux))
 		return PTR_ERR(data->quin_iomux);
+	
+	data->primary_mi2s_clk = devm_clk_get(dev, "primary");
+data->tertiary_mi2s_clk = devm_clk_get(dev, "tertiary");
+data->quinary_mi2s_clk = devm_clk_get(dev, "quinary");
+
+clk_set_rate(data->primary_mi2s_clk, MI2S_BCLK_RATE);
+clk_set_rate(data->tertiary_mi2s_clk, MI2S_BCLK_RATE);
+clk_set_rate(data->quinary_mi2s_clk, MI2S_BCLK_RATE);
+
+ret = clk_prepare_enable(data->primary_mi2s_clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable mclk %d\n", ret);
+	}
+	
+ret = clk_prepare_enable(data->tertiary_mi2s_clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable mclk %d\n", ret);
+	}
+	
+ret = clk_prepare_enable(data->quinary_mi2s_clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable mclk %d\n", ret);
+	}
+	
+
 
 	snd_soc_card_set_drvdata(card, data);
 
