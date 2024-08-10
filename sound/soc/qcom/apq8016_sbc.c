@@ -22,6 +22,15 @@
 
 #define MI2S_COUNT  (MI2S_QUATERNARY + 1)
 
+enum {
+	DT_MI2S_PRIMARY_CLK,
+	DT_MI2S_SECONDARY_CLK,
+	DT_MI2S_TERTIARY_CLK,
+	DT_MI2S_QUATERNARY_CLK,
+	DT_MI2S_QUINARY_CLK,
+	
+};
+
 struct apq8016_sbc_data {
 	struct snd_soc_card card;
 	void __iomem *mic_iomux;
@@ -29,6 +38,7 @@ struct apq8016_sbc_data {
 	struct snd_soc_jack jack;
 	bool jack_setup;
 	int mi2s_clk_count[MI2S_COUNT];
+	struct clk *mi2s_clk[];
 };
 
 #define MIC_CTRL_TER_WS_SLAVE_SEL	BIT(21)
@@ -308,6 +318,9 @@ static int apq8016_sbc_platform_probe(struct platform_device *pdev)
 	card->controls = apq8016_sbc_snd_controls;
 	card->num_controls = ARRAY_SIZE(apq8016_sbc_snd_controls);
 
+	ret = devm_clk_bulk_get_optional(pdev->dev, MI2S_COUNT,
+					 data->mi2s_clk);
+				 
 	ret = qcom_snd_parse_of(card);
 	if (ret)
 		return ret;
