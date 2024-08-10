@@ -216,6 +216,32 @@ static struct clk_hw_onecell_data audiocc_hw_onecell_data = {
 	.num = ARRAY_SIZE(audiocc_gfm_clks),
 };
 
+static struct clk_gfm *sm6115_aoncc_gfm_clks[] = {
+	[LPASS_CDC_VA_MCLK]		= &lpass_gfm_va_mclk,
+	[LPASS_CDC_TX_NPL]		= &lpass_gfm_tx_npl,
+};
+
+static struct clk_hw_onecell_data sm6115_aoncc_hw_onecell_data = {
+	.hws = {
+		[LPASS_CDC_VA_MCLK]	= &lpass_gfm_va_mclk.hw,
+		[LPASS_CDC_TX_NPL]	= &lpass_gfm_tx_npl.hw,
+	},
+	.num = ARRAY_SIZE(sm6115_aoncc_gfm_clks),
+};
+
+static struct clk_gfm *sm6115_audiocc_gfm_clks[] = {
+	[LPASS_CDC_RX_NPL]		= &lpass_gfm_rx_npl,
+	[LPASS_CDC_RX_MCLK_MCLK2]	= &lpass_gfm_rx_mclk_mclk2,
+};
+
+static struct clk_hw_onecell_data sm6115_audiocc_hw_onecell_data = {
+	.hws = {
+		[LPASS_CDC_RX_NPL]	= &lpass_gfm_rx_npl.hw,
+		[LPASS_CDC_RX_MCLK_MCLK2] = &lpass_gfm_rx_mclk_mclk2.hw,
+	},
+	.num = ARRAY_SIZE(sm6115_audiocc_gfm_clks),
+};
+
 struct lpass_gfm_data {
 	struct clk_hw_onecell_data *onecell_data;
 	struct clk_gfm **gfm_clks;
@@ -229,6 +255,16 @@ static struct lpass_gfm_data audiocc_data = {
 static struct lpass_gfm_data aoncc_data = {
 	.onecell_data = &aoncc_hw_onecell_data,
 	.gfm_clks = aoncc_gfm_clks,
+};
+
+static struct lpass_gfm_data sm6115_audiocc_data = {
+	.onecell_data = &sm6115_audiocc_hw_onecell_data,
+	.gfm_clks = sm6115_audiocc_gfm_clks,
+};
+
+static struct lpass_gfm_data sm6115_aoncc_data = {
+	.onecell_data = &sm6115_sm6115_aoncc_hw_onecell_data,
+	.gfm_clks = sm6115_sm6115_aoncc_gfm_clks,
 };
 
 static int lpass_gfm_clk_driver_probe(struct platform_device *pdev)
@@ -296,6 +332,14 @@ static const struct of_device_id lpass_gfm_clk_match_table[] = {
 	{
 		.compatible = "qcom,sm8250-lpass-audiocc",
 		.data = &audiocc_data,
+	},
+	{
+		.compatible = "qcom,sm6115-lpass-aoncc",
+		.data = &sm6115_aoncc_data,
+	},
+	{
+		.compatible = "qcom,sm6115-lpass-audiocc",
+		.data = &sm6115_audiocc_data,
 	},
 	{ }
 };
