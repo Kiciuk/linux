@@ -50,7 +50,6 @@ examples:
         qcom,micbias1-microvolt = <1800000>;
         qcom,micbias2-microvolt = <1800000>;
         qcom,micbias3-microvolt = <1800000>;
-        qcom,micbias4-microvolt = <1800000>;
         qcom,rx-device = <&wcd937x_rx>;
         qcom,tx-device = <&wcd937x_tx>;
         #sound-dai-cells = <1>;
