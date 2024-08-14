@@ -246,7 +246,9 @@ static int aw87390_profile_set(struct snd_kcontrol *kcontrol,
 }
 
 static const struct snd_kcontrol_new aw87390_controls[] = {
-	AW87390_PROFILE_EXT("AW87390 Profile Set", aw87390_profile_info,
+	AW87390_PROFILE_EXT("AW87390 Profile Set", 0, aw87390_profile_info,
+		aw87390_profile_get, aw87390_profile_set),
+	AW87390_PROFILE_EXT("AW87390 Profile Set", 1, aw87390_profile_info,
 		aw87390_profile_get, aw87390_profile_set),
 };
 
