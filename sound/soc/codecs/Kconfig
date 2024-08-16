@@ -55,6 +55,7 @@ config SND_SOC_ALL_CODECS
 	imply SND_SOC_ALC5632
 	imply SND_SOC_AUDIO_IIO_AUX
 	imply SND_SOC_AW8738
+	imply SND_SOC_AW87XXX
 	imply SND_SOC_AW87390
 	imply SND_SOC_AW88395
 	imply SND_SOC_AW88261
@@ -654,6 +655,17 @@ config SND_SOC_AW8738
 	  SND_SOC_SIMPLE_AMPLIFIER, but additionally allows setting the
 	  operation mode using the Awinic-specific one-wire pulse control.
 
+config SND_SOC_AW87XXX
+	tristate "Awinic AW87XXX Dumb Audio Amplifier"
+	depends on I2C
+	select GPIOLIB
+	select REGMAP_I2C
+	help
+	  Enable support for the Awinic AW87XXX dumb Audio amplifiers.
+	  The driver supports simple audio amplifiers similar to
+	  SND_SOC_SIMPLE_AMPLIFIER, but additionally allows setting the
+	  operation mode using the Awinic-specific one-wire pulse control.
+	  
 config SND_SOC_AW88395_LIB
 	select CRC8
 	tristate
