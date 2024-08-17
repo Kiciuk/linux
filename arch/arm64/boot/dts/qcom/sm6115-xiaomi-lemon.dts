@@ -106,10 +106,7 @@
 		regulator-max-microvolt = <4000000>;
 	};
 };
-&dispcc {
-	/* HACK: disable until a panel driver is ready to retain simplefb */
-	status = "disabled";
-};
+
 &gpu {
 	status = "disabled";
 
@@ -124,7 +121,7 @@
 
 &mdss_dsi0 {
 	vdda-supply = <&pm6125_l18>;
-	status = "disabled";
+	status = "okay";
 
 	panel: panel@0 {
 		compatible = "mdss,nt36672a-truly-v2";
@@ -152,7 +149,7 @@
 };
 
 &mdss_dsi0_phy {
-	status = "disabled";
+	status = "okay";
 };
 
 &pm6125_gpios {
