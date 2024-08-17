@@ -20,6 +20,8 @@
 #include <dt-bindings/sound/qcom,q6afe.h>
 #include <dt-bindings/sound/qcom,q6asm.h>
 #include <dt-bindings/reset/ti-syscon.h>
+#include <dt-bindings/clock/qcom,sm8250-lpass-aoncc.h>
+#include <dt-bindings/clock/qcom,sm8250-lpass-audiocc.h>
 
 / {
 	interrupt-parent = <&intc>;
@@ -2807,11 +2809,13 @@
 		};
 		
 		vamacro: codec@a730000 {
-			compatible = "qcom,sm6115-lpass-va-macro", "sm8250_va_data";
+			compatible = "qcom,sm6115-lpass-va-macro", "qcom,sm8250-lpass-va-macro";
 			reg = <0 0x0a730000 0 0x1000>;
-			clocks = <&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			clocks = <&aoncc LPASS_CDC_VA_MCLK>,
+				<&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				<&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
 
-			clock-names = "macro";
+			clock-names = "mclk", "macro", "dcodec";
 
 			#clock-cells = <0>;
 			clock-output-names = "fsgen";
