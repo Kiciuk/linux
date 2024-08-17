@@ -44,11 +44,11 @@
 	codec {
 		compatible = "qcom,wcd9370-codec";
 
-		reset-gpios = <&tlmm 92 GPIO_ACTIVE_LOW>;
-		vdd-buck-supply = <&pm6125_l14>;
-		vdd-rxtx-supply = <&pm6125_l9>;
-		vdd-px-supply = <&pm6125_l9>;
-		vdd-mic-bias-supply = <&vreg_bob>;
+		//reset-gpios = <&tlmm 92 GPIO_ACTIVE_LOW>;
+		//vdd-buck-supply = <&pm6125_l14>;
+		//vdd-rxtx-supply = <&pm6125_l9>;
+		//vdd-px-supply = <&pm6125_l9>;
+		//vdd-mic-bias-supply = <&vreg_bob>;
 		qcom,micbias1-microvolt = <1800000>;
 		qcom,micbias2-microvolt = <1800000>;
 		qcom,micbias3-microvolt = <1800000>;
@@ -3356,7 +3356,7 @@
 	
 	sound: sound {
 		compatible = "qcom,qrb4210-rb2-sndcard";
-		pinctrl-0 = <&lpi_i2s2_active>;
+	//	pinctrl-0 = <&lpi_i2s2_active>;
 		pinctrl-names = "default";
 		model = "Qualcomm-RB2-WSA8815-Speakers-DMIC0";
 		audio-routing = "MM_DL1",  "MultiMedia1 Playback",
@@ -3380,21 +3380,6 @@
 			link-name = "MultiMedia3";
 			cpu {
 				sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA3>;
-			};
-		};
-
-		hdmi-dai-link {
-			link-name = "HDMI Playback";
-			cpu {
-				sound-dai = <&q6afedai SECONDARY_MI2S_RX>;
-			};
-
-			platform {
-				sound-dai = <&q6routing>;
-			};
-
-			codec {
-				sound-dai = <&lt9611_codec 0>;
 			};
 		};
 
