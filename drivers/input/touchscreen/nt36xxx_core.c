@@ -30,6 +30,8 @@
 #include <linux/irqnr.h>
 
 #include "nt36xxx.h"
+ 
+#define CHIP_VER_TRIM_ADDR 0x3F004
 
 /* Main mmap to spi addr */
 enum {
@@ -119,13 +121,18 @@ struct nt36xxx_ts {
 };
 
 static const struct nt36xxx_trim_table trim_id_table[] = {
-#if 0
-	/* TODO: port and test all related module */
+
+
 	{
 		.id = { 0x0A, 0xFF, 0xFF, 0x72, 0x66, 0x03 },
 		.mask = { 1, 0, 0, 1, 1, 1 },
 		.mapid = NT36672A_IC,
+		.hw_crc = 1,  /* 3Bytes */
+		.carrier_system = 0,
 	},
+	/* TODO: port and test all related module */
+#if 0
+	
 	{
 		.id = { 0x55, 0x00, 0xFF, 0x00, 0x00, 0x00 },
 		.mask = { 1, 1, 0, 1, 1, 1 },
@@ -187,14 +194,61 @@ static const struct nt36xxx_trim_table trim_id_table[] = {
 		.mask = { 0, 0, 0, 1, 1, 1 },
 		.mapid = NT36675_IC,
 		.hw_crc = 2,  /* 3Bytes */
+		.carrier_system = 2,
 	},
 	{
 		.id = { 0x0C, 0xFF, 0xFF, 0x72, 0x66, 0x03 },
 		.mask = { 1, 0, 0, 1, 1, 1 },
 		.mapid = NT36675_IC,
 		.hw_crc = 2,  /* 3Bytes */
+		.carrier_system = 2,
 	},
 	{ },
+};
+
+const u32 nt36672a_memory_maps[] = {
+	[MMAP_EVENT_BUF_ADDR]           = 0x21C00,
+	[MMAP_RAW_PIPE0_ADDR]           = 0x20000,
+	[MMAP_RAW_PIPE1_ADDR]           = 0x23000,
+	[MMAP_BASELINE_ADDR]            = 0x20BFC,
+	[MMAP_BASELINE_BTN_ADDR]        = 0x23BFC,
+	[MMAP_DIFF_PIPE0_ADDR]          = 0x206DC,
+	[MMAP_DIFF_PIPE1_ADDR]          = 0x236DC,
+	[MMAP_RAW_BTN_PIPE0_ADDR]       = 0x20510,
+	[MMAP_RAW_BTN_PIPE1_ADDR]       = 0x23510,
+	[MMAP_DIFF_BTN_PIPE0_ADDR]      = 0x20BF0,
+	[MMAP_DIFF_BTN_PIPE1_ADDR]      = 0x23BF0,
+	[MMAP_READ_FLASH_CHECKSUM_ADDR] = 0x24000,
+	[MMAP_RW_FLASH_DATA_ADDR]       = 0x24002,
+	/* Phase 2 Host Download */
+	[MMAP_BOOT_RDY_ADDR]            = 0x3F10D,
+	/* BLD CRC */
+	[MMAP_BLD_LENGTH_ADDR]          = 0x3F10E,	//0x3F10E ~ 0x3F10F	(2 bytes)
+	[MMAP_ILM_LENGTH_ADDR]          = 0x3F118,	//0x3F118 ~ 0x3F119	(2 bytes)
+	[MMAP_DLM_LENGTH_ADDR]          = 0x3F130,	//0x3F130 ~ 0x3F131	(2 bytes)
+	[MMAP_BLD_DES_ADDR]             = 0x3F114,	//0x3F114 ~ 0x3F116	(3 bytes)
+	[MMAP_ILM_DES_ADDR]             = 0x3F128,	//0x3F128 ~ 0x3F12A	(3 bytes)
+	[MMAP_DLM_DES_ADDR]             = 0x3F12C,	//0x3F12C ~ 0x3F12E	(3 bytes)
+	[MMAP_G_ILM_CHECKSUM_ADDR]      = 0x3F100,	//0x3F100 ~ 0x3F103	(4 bytes)
+	[MMAP_G_DLM_CHECKSUM_ADDR]      = 0x3F104,	//0x3F104 ~ 0x3F107	(4 bytes)
+	[MMAP_R_ILM_CHECKSUM_ADDR]      = 0x3F120,	//0x3F120 ~ 0x3F123 (4 bytes)
+	[MMAP_R_DLM_CHECKSUM_ADDR]      = 0x3F124,	//0x3F124 ~ 0x3F127 (4 bytes)
+	[MMAP_BLD_CRC_EN_ADDR]          = 0x3F30E,
+	[MMAP_DMA_CRC_EN_ADDR]          = 0x3F132,
+	[MMAP_BLD_ILM_DLM_CRC_ADDR]     = 0x3F133,
+	[MMAP_DMA_CRC_FLAG_ADDR]        = 0x3F134,
+	
+/* below are specified by dts), so it might change by project-based */
+	[MMAP_SPI_RD_FAST_ADDR] = 0x03F310,
+	[MMAP_SWRST_N8_ADDR] = 0x03F0FE,
+
+	[MMAP_ENG_RST_ADDR] = 0x7FFF80,
+	/* OLD ADDRESS OF TRIM REGISTER*/
+	[MMAP_MAGIC_NUMBER_0X1F64E_ADDR] = 0x1F64E,
+
+	[MMAP_TOP_ADDR] = 0xffffff,
+	
+	
 };
 
 const u32 nt36675_memory_maps[] = {
@@ -227,6 +281,7 @@ const u32 nt36675_memory_maps[] = {
 	[MMAP_SWRST_N8_ADDR] = 0x03F0FE,
 
 	[MMAP_ENG_RST_ADDR] = 0x7FFF80,
+	/* OLD ADDRESS OF TRIM REGISTER*/
 	[MMAP_MAGIC_NUMBER_0X1F64E_ADDR] = 0x1F64E,
 
 	[MMAP_TOP_ADDR] = 0xffffff,
@@ -235,7 +290,7 @@ const u32 nt36675_memory_maps[] = {
 void _debug_irq(struct nt36xxx_ts *ts, int line){
 	struct irq_desc *desc;
 	desc = irq_data_to_desc( irq_get_irq_data(ts->irq));
-	dev_info(ts->dev, "%d irq_desc depth=%d", line, desc->depth );
+	dev_err(ts->dev, "%d irq_desc depth=%d", line, desc->depth );
 }
 
 #define debug_irq(a) _debug_irq(a, __LINE__)
@@ -478,13 +533,15 @@ static int nt36xxx_chip_version_init(struct nt36xxx_ts *ts)
 		return ret;
 	}
 
+
+//just nope
 	do {
-		ret = regmap_raw_read(ts->regmap, ts->mmap[MMAP_MAGIC_NUMBER_0X1F64E_ADDR], buf, 7);
+		ret = regmap_raw_read(ts->regmap, CHIP_VER_TRIM_ADDR , buf, 7);
 
 		if (ret)
 			continue;
 
-		dev_dbg(ts->dev, "%s buf[0]=0x%02X, buf[1]=0x%02X, buf[2]=0x%02X, buf[3]=0x%02X, buf[4]=0x%02X, buf[5]=0x%02X, buf[6]=0x%02X sz=%d\n",
+		dev_err(ts->dev, "%s buf[0]=0x%02X, buf[1]=0x%02X, buf[2]=0x%02X, buf[3]=0x%02X, buf[4]=0x%02X, buf[5]=0x%02X, buf[6]=0x%02X sz=%d\n",
 			__func__, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], sz);
 
 		/* Compare read chip id with trim list */
@@ -504,16 +561,16 @@ static int nt36xxx_chip_version_init(struct nt36xxx_ts *ts)
 				ts->hw_crc = trim_id_table[list].hw_crc;
 
 				if (mapid == 0) {
-					dev_info(ts->dev, "NVT touch IC hw not found i=%d list=%d\n", i, list);
+					dev_err(ts->dev, "NVT touch IC hw not found i=%d list=%d\n", i, list);
 					ret = -ENOENT;
 					goto exit;
 				}
 
 				WARN_ON(ts->hw_crc < 1);
 
-				dev_dbg(ts->dev, "hw crc support=%d\n", ts->hw_crc);
+				dev_err(ts->dev, "hw crc support=%d\n", ts->hw_crc);
 
-				dev_info(ts->dev, "This is NVT touch IC, %x, mapid %d", *(int*)&buf[4], mapid);
+				dev_err(ts->dev, "This is NVT touch IC, %x, mapid %d", *(int*)&buf[4], mapid);
 				return 0;
 			}
 
@@ -562,7 +619,7 @@ static int32_t nvt_bin_header_parser(struct device *dev, int hw_crc, const u8 *f
 	 * ilm_dlm_num (ILM & DLM) + ovly_sec_num + info_sec_num
 	 */
 	*partition_ptr = partition = ilm_dlm_num + ovly_sec_num + info_sec_num;
-	dev_dbg(dev, "ovly_info = %d, ilm_dlm_num = %d, ovly_sec_num = %d, info_sec_num = %d, partition = %d\n",
+	dev_err(dev, "ovly_info = %d, ilm_dlm_num = %d, ovly_sec_num = %d, info_sec_num = %d, partition = %d\n",
 			ovly_info, ilm_dlm_num, ovly_sec_num, info_sec_num, partition);
 
 	/* allocated memory for header info */
@@ -611,7 +668,7 @@ static int32_t nvt_bin_header_parser(struct device *dev, int hw_crc, const u8 *f
 			memcpy(&bin_map[list].crc, &(fwdata[pos+12]), 4);
 
 			if (!hw_crc) {
-				dev_info(dev, "ok, hw_crc not presents!");
+				dev_err(dev, "ok, hw_crc not presents!");
 				return -EINVAL;
 			}
 
@@ -651,7 +708,7 @@ static int32_t nvt_bin_header_parser(struct device *dev, int hw_crc, const u8 *f
 			return -EINVAL;
 		}
 
-		dev_dbg(dev, "[%d][%s] SRAM (0x%08X), SIZE (0x%08X), BIN (0x%08X), CRC (0x%08X)\n",
+		dev_err(dev, "[%d][%s] SRAM (0x%08X), SIZE (0x%08X), BIN (0x%08X), CRC (0x%08X)\n",
 			      list, bin_map[list].name,
 			      bin_map[list].sram_addr, bin_map[list].size,  bin_map[list].bin_addr, bin_map[list].crc);
 	}
@@ -676,17 +733,17 @@ static int32_t nt36xxx_download_firmware_hw_crc(struct nt36xxx_ts *ts) {
 
 		/* ignore reserved partition (Reserved Partition size is zero) */
 		if (!size) {
-			dev_dbg(ts->dev, "found empty part %d. skipping ", list);
+			dev_err(ts->dev, "found empty part %d. skipping ", list);
 			continue;
 		} else {
 			size = size + 1;
-			dev_dbg(ts->dev, "found useful part %d. size 0x%x ", list, size);
+			dev_err(ts->dev, "found useful part %d. size 0x%x ", list, size);
 		}
 
 		bin_map[list].loaded = 1;
 
 		if (size / NT36XXX_TRANSFER_LEN)
-			dev_dbg(ts->dev, "%s %d paged write [%s] 0x%x, window 0x%x, residue 0x%x",
+			dev_err(ts->dev, "%s %d paged write [%s] 0x%x, window 0x%x, residue 0x%x",
 					__func__, __LINE__, bin_map[list].name, size,
 					NT36XXX_TRANSFER_LEN, size % NT36XXX_TRANSFER_LEN);
 
@@ -841,7 +898,7 @@ check_fw:
 	if (ret)
 		goto release_fw_buf;
 
-	dev_dbg(ts->dev, "Get default fw_ver=%d, max_x=%d, max_y=%d\n",
+	dev_err(ts->dev, "Get default fw_ver=%d, max_x=%d, max_y=%d\n",
 				val[2], ts->prop.max_x, ts->prop.max_y);
 
 	if (val[0] != 0xff && retry < 5) {
@@ -850,7 +907,7 @@ check_fw:
 		goto check_fw;
 	}
 
-	dev_info(ts->dev, "Touch IC fw loaded ok");
+	dev_err(ts->dev, "Touch IC fw loaded ok");
 
 	ts->status |= NT36XXX_STATUS_DOWNLOAD_COMPLETE;
 	goto exit;
@@ -1030,7 +1087,7 @@ int nt36xxx_probe(struct device *dev, int irq, const struct input_id *id,
 			return -EINVAL;
 		}
 
-		dev_dbg(ts->dev, "Interrupts GPIO: %#x\n", ts->irq);
+		dev_err(ts->dev, "Interrupts GPIO: %#x\n", ts->irq);
 	}
 
 	gpiod_set_consumer_name(ts->irq_gpio, "nt36xxx irq");
@@ -1067,14 +1124,14 @@ skip_regulators:
 	/* Check and configure the touch screen chip */
 	ret = nt36xxx_eng_reset_idle(ts);
 	if (ret) {
-		dev_err(dev, "Failed to check chip version\n");
+		dev_err(dev, "Failed to check chip version: nt36xxx_eng_reset_idle\n");
 		return ret;
 	}
 
 	/* Set memory maps for the specific chip version */
 	ret = nt36xxx_chip_version_init(ts);
 	if (ret) {
-		dev_err(dev, "Failed to check chip version\n");
+		dev_err(dev, "Failed to check chip version: nt36xxx_chip_version_init\n");
 		return ret;
 	}
 
@@ -1115,7 +1172,7 @@ skip_regulators:
 		devm_drm_panel_add_follower(dev, &ts->panel_follower);
 	}
 
-	dev_info(dev, "Novatek touchscreen initialized\n");
+	dev_err(dev, "Novatek touchscreen initialized\n");
 	return 0;
 }
 

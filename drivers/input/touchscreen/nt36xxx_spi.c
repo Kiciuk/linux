@@ -175,6 +175,14 @@ const struct nt36xxx_chip_data novatek_nt36xxx = {
 	.id = &nt36xxx_spi_input_id,
 };
 
+const struct nt36xxx_chip_data novatek_nt36672a = {
+	.config = &nt36xxx_regmap_config_32bit,
+	.mmap = nt36672a_memory_maps,
+	.abs_x_max = 1080,
+	.abs_y_max = 2400,
+	.id = &nt36xxx_spi_input_id,
+};
+
 static const struct spi_device_id nt36xxx_spi_ids[] = {
 	{ "nt36xxx-spi", 0 },
 	{ },
@@ -182,7 +190,8 @@ static const struct spi_device_id nt36xxx_spi_ids[] = {
 MODULE_DEVICE_TABLE(spi, nt36xxx_spi_ids);
 
 static const struct of_device_id nt36xxx_spi_of_match[] = {
-	{ .compatible = "novatek,nt36xxx-spi", .data = &novatek_nt36xxx, },
+	//{ .compatible = "novatek,nt36xxx-spi", .data = &novatek_nt36xxx, },
+	{ .compatible = "novatek,nt36xxx-spi", .data = &novatek_nt36672a, },	
 	{ }
 };
 MODULE_DEVICE_TABLE(of, nt36xxx_spi_of_match);
