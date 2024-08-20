@@ -1645,6 +1645,7 @@
 					 &config_noc SLAVE_USB3 RPM_ALWAYS_TAG>;
 			interconnect-names = "usb-ddr",
 					     "apps-usb";
+			qcom,select-utmi-as-pipe-clk;
 
 			status = "disabled";
 
