@@ -132,13 +132,19 @@ static const struct reg_default lm3692x_reg_defs[] = {
 	{LM3692X_FAULT_CTRL, 0x7},
 };
 
+static const struct reg_default lm36923_reg_defs[] = {
+	{LM3692X_BOOST_CTRL, 0x6f},
+	{LM3692X_FAULT_CTRL, 0x00},
+
+};
+//hack for now
 static const struct regmap_config lm3692x_regmap_config = {
 	.reg_bits = 8,
 	.val_bits = 8,
 
 	.max_register = LM3692X_FAULT_FLAGS,
-	.reg_defaults = lm3692x_reg_defs,
-	.num_reg_defaults = ARRAY_SIZE(lm3692x_reg_defs),
+	.reg_defaults = lm36923_reg_defs,
+	.num_reg_defaults = ARRAY_SIZE(lm36923_reg_defs),
 	.cache_type = REGCACHE_MAPLE,
 };
 
@@ -237,7 +243,8 @@ static int lm3692x_leds_enable(struct lm3692x_led *led)
 	ret = regmap_write(led->regmap, LM3692X_BL_ADJ_THRESH, 0x00);
 	if (ret)
 		goto out;
-
+/* this doesn't happen on our  dont  enable ramp*/
+/* check pdata for ramp and not set if its unset */
 	ret = regmap_write(led->regmap, LM3692X_BRT_CTRL,
 			LM3692X_BL_ADJ_POL | LM3692X_RAMP_EN);
 	if (ret)
