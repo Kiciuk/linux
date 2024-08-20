@@ -678,43 +678,43 @@
 			qup_spi0_default: qup-spi0-default-state {
 				pins = "gpio0", "gpio1","gpio2", "gpio3";
 				function = "qup0";
-				drive-strength = <2>;
-				bias-pull-up;
+				drive-strength = <6>;
+				bias-disable;
 			};
 
 			qup_spi1_default: qup-spi1-default-state {
 				pins = "gpio4", "gpio5", "gpio69", "gpio70";
 				function = "qup1";
-				drive-strength = <2>;
-				bias-pull-up;
+				drive-strength = <6>;
+				bias-disable;
 			};
 
 			qup_spi2_default: qup-spi2-default-state {
 				pins = "gpio6", "gpio7", "gpio71", "gpio80";
 				function = "qup2";
-				drive-strength = <2>;
-				bias-pull-up;
+				drive-strength = <6>;
+				bias-disable;
 			};
 
 			qup_spi3_default: qup-spi3-default-state {
 				pins = "gpio8", "gpio9", "gpio10", "gpio11";
 				function = "qup3";
-				drive-strength = <2>;
-				bias-pull-up;
+				drive-strength = <6>;
+				bias-disable;
 			};
 
 			qup_spi4_default: qup-spi4-default-state {
 				pins = "gpio12", "gpio13", "gpio96", "gpio97";
 				function = "qup4";
-				drive-strength = <2>;
-				bias-pull-up;
+				drive-strength = <6>;
+				bias-disable;
 			};
 
 			qup_spi5_default: qup-spi5-default-state {
 				pins = "gpio14", "gpio15", "gpio16", "gpio17";
 				function = "qup5";
-				drive-strength = <2>;
-				bias-pull-up;
+				drive-strength = <6>;
+				bias-disable;
 			};
 
 			sdc1_state_on: sdc1-on-state {
