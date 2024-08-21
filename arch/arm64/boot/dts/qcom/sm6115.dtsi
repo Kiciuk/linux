@@ -41,7 +41,8 @@
 		};
 	};
 	
-	wcd937x-codec:codec {
+	wcd937x-codec: codec {
+	
 		compatible = "qcom,wcd9370-codec";
 
 		qcom,micbias1-microvolt = <1800000>;
