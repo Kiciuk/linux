@@ -331,6 +331,10 @@
 	};
 };
 
+&rxmacro {
+	status = "okay";
+};
+
 &sdhc_2 {
 	cd-gpios = <&tlmm 88 GPIO_ACTIVE_HIGH>;
 	pinctrl-names = "default", "sleep";
@@ -350,6 +354,22 @@
 
 &spi2 {
 	clock-frequency = <8000000>;
+	status = "okay";
+};
+
+&swr1 {
+	status = "okay";
+};
+
+&swr2{
+	status = "okay";
+};
+
+&txmacro {
+	status = "okay";
+};
+
+&vamacro {
 	status = "okay";
 };
 
@@ -417,6 +437,14 @@
 };
 
 /delete-node/ &usb_qmpphy;
+&wcd937x-codec {
+	reset-gpios = <&tlmm 92 GPIO_ACTIVE_LOW>;
+	vdd-buck-supply = <&pm6125_l14>;
+	vdd-rxtx-supply = <&pm6125_l9>;
+	vdd-px-supply = <&pm6125_l9>;
+	vdd-mic-bias-supply = <&vph_pwr>;
+
+};
 
 &xo_board {
 	clock-frequency = <19200000>;
