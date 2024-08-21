@@ -145,6 +145,14 @@
 			led-max-microamp = <25000>;
 		};
 	};
+
+	bottom_amp: aw87359@58 {
+		compatible = "awinic,aw87xxx"";
+		reg = <0x58>;
+		vddd-supply = <&vph_pwr>;
+		
+		status = "okay";
+	};
 };
 
 &pm6125_gpios {
@@ -350,6 +358,11 @@
 
 &sleep_clk {
 	clock-frequency = <32764>;
+};
+
+
+&sound {
+	aux-devs = <&bottom_amp>;
 };
 
 &spi2 {
