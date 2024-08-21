@@ -344,6 +344,15 @@ static const struct ipa_mem_data ipa_mem_data = {
 	.smem_size	= 0x00002000,
 };
 
+static const struct ipa_mem_data ipa_mem_sm6115_data = {
+	.local_count	= ARRAY_SIZE(ipa_mem_local_data),
+	.local		= ipa_mem_local_data,
+	.imem_addr	= 0x0c123000,
+	.imem_size	= 0x00002000,
+	.smem_id	= 497,
+	.smem_size	= 0x00002000,
+};
+
 /* Interconnect rates are in 1000 byte/second units */
 static const struct ipa_interconnect_data ipa_interconnect_data[] = {
 	{
@@ -382,5 +391,19 @@ const struct ipa_data ipa_data_v4_2 = {
 	.endpoint_data		= ipa_gsi_endpoint_data,
 	.resource_data		= &ipa_resource_data,
 	.mem_data		= &ipa_mem_data,
+	.power_data		= &ipa_power_data,
+};
+
+/* Configuration data for an SoC having IPA v4.2 */
+const struct ipa_data ipa_data_v4_2_sm6115 = {
+	.version		= IPA_VERSION_4_2,
+	/* backward_compat value is 0 */
+	.qsb_count		= ARRAY_SIZE(ipa_qsb_data),
+	.qsb_data		= ipa_qsb_data,
+	.modem_route_count	= 8,
+	.endpoint_count		= ARRAY_SIZE(ipa_gsi_endpoint_data),
+	.endpoint_data		= ipa_gsi_endpoint_data,
+	.resource_data		= &ipa_resource_data,
+	.mem_data		= &ipa_mem_sm6115_data,
 	.power_data		= &ipa_power_data,
 };
