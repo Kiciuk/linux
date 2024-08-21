@@ -360,8 +360,98 @@
 	clock-frequency = <32764>;
 };
 
-
+//verify toutings obv
 &sound {
+compatible = "qcom,sm6115-sndcard";
+	//model = "SM8250-MTP-WCD9380-WSA8810-VA-DMIC";
+		model = "xiaomi-lemon";
+	audio-routing =
+		// wcd937x <- RX
+		"IN1_HPHL", "HPHL_OUT",
+		"IN2_HPHR", "HPHR_OUT",
+		//AMIC2 comes from headset_mic_bias
+		//AMIC3 comes from other mic
+		
+		//"AMIC1", "MIC BIAS1",
+		//"AMIC2", "MIC BIAS2",
+		//"AMIC3", "MIC BIAS3",
+		
+		//adc not existing on tx
+		"TX SWR_DMIC0", "ADC1_OUTPUT",
+		"TX SWR_DMIC4", "ADC2_OUTPUT",
+		"TX SWR_DMIC5", "ADC3_OUTPUT",
+		//lpass tx-macro <- wcd937x.c output
+		"TX SWR_MIC8", "DMIC1_OUTPUT",
+		"TX SWR_MIC9", "DMIC2_OUTPUT",
+		"TX SWR_MIC8", "DMIC3_OUTPUT",
+		"TX SWR_MIC9", "DMIC4_OUTPUT",
+		"TX SWR_MIC10", "DMIC5_OUTPUT",
+		"TX SWR_MIC11", "DMIC6_OUTPUT",
+
+
+	mm1-dai-link {
+		link-name = "MultiMedia1";
+		cpu {
+			sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA1>;
+		};
+	};
+
+	mm2-dai-link {
+		link-name = "MultiMedia2";
+		cpu {
+			sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA2>;
+		};
+	};
+
+	mm3-dai-link {
+		link-name = "MultiMedia3";
+		cpu {
+			sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA3>;
+		};
+	};
+
+	wcd-playback-dai-link {
+		link-name = "WCD Playback";
+		cpu {
+			sound-dai = <&q6afedai RX_CODEC_DMA_RX_0>;
+		};
+		codec {
+			sound-dai = <&wcd937x 0>, <&swr1 0>, <&rxmacro 0>;
+		};
+		platform {
+			sound-dai = <&q6routing>;
+		};
+	};
+
+	wcd-capture-dai-link {
+		link-name = "WCD Capture";
+		cpu {
+			sound-dai = <&q6afedai TX_CODEC_DMA_TX_3>;
+		};
+
+		codec {
+			sound-dai = <&wcd937x 1>, <&swr2 0>, <&txmacro 0>;
+		};
+		platform {
+			sound-dai = <&q6routing>;
+		};
+	};
+
+	va-dai-link {
+		link-name = "VA Capture";
+		cpu {
+			sound-dai = <&q6afedai VA_CODEC_DMA_TX_0>;
+		};
+
+		platform {
+			sound-dai = <&q6routing>;
+		};
+
+		codec {
+			sound-dai = <&vamacro 0>;
+		};
+	};
+
 	aux-devs = <&bottom_amp>;
 };
 
@@ -451,7 +541,9 @@
 
 /delete-node/ &usb_qmpphy;
 &wcd937x-codec {
+//pinctrl
 	reset-gpios = <&tlmm 92 GPIO_ACTIVE_LOW>;
+	
 	vdd-buck-supply = <&pm6125_l14>;
 	vdd-rxtx-supply = <&pm6125_l9>;
 	vdd-px-supply = <&pm6125_l9>;
