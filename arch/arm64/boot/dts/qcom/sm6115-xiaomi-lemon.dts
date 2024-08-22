@@ -101,6 +101,18 @@
 		};
 	};
 
+	wcd937x-codec: codec {
+	
+		compatible = "qcom,wcd9370-codec";
+
+		qcom,micbias1-microvolt = <1800000>;
+		qcom,micbias2-microvolt = <1800000>;
+		qcom,micbias3-microvolt = <1800000>;
+		qcom,rx-device = <&wcd937x_rx>;
+		qcom,tx-device = <&wcd937x_tx>;
+		#sound-dai-cells = <1>;
+	};
+
 	vph_pwr: vph-pwr-regulator {
 		compatible = "regulator-fixed";
 		regulator-name = "vph_pwr";
@@ -147,7 +159,7 @@
 	};
 
 	bottom_amp: aw87359@58 {
-		compatible = "awinic,aw87xxx"";
+		compatible = "awinic,aw87xxx";
 		reg = <0x58>;
 		vddd-supply = <&vph_pwr>;
 		
@@ -386,8 +398,9 @@ compatible = "qcom,sm6115-sndcard";
 		"TX SWR_MIC8", "DMIC3_OUTPUT",
 		"TX SWR_MIC9", "DMIC4_OUTPUT",
 		"TX SWR_MIC10", "DMIC5_OUTPUT",
-		"TX SWR_MIC11", "DMIC6_OUTPUT",
-
+		"TX SWR_MIC11", "DMIC6_OUTPUT";
+		
+aux-devs = <&bottom_amp>;
 
 	mm1-dai-link {
 		link-name = "MultiMedia1";
@@ -451,8 +464,6 @@ compatible = "qcom,sm6115-sndcard";
 			sound-dai = <&vamacro 0>;
 		};
 	};
-
-	aux-devs = <&bottom_amp>;
 };
 
 &spi2 {
