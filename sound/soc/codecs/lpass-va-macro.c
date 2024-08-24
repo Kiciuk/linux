@@ -284,7 +284,8 @@ static const struct reg_default va_defaults[] = {
 	{ CDC_VA_TOP_CSR_SWR_MIC_CTL0, 0xEE},
 	{ CDC_VA_TOP_CSR_SWR_MIC_CTL1, 0xEE},
 	{ CDC_VA_TOP_CSR_SWR_MIC_CTL2, 0xEE},
-	{ CDC_VA_TOP_CSR_SWR_CTRL, 0x06},
+	/*Bengal should override channels to 0xA */
+	{ CDC_VA_TOP_CSR_SWR_CTRL, 0x0A},
 
 	/* VA core */
 	{ CDC_VA_INP_MUX_ADC_MUX0_CFG0, 0x00},
