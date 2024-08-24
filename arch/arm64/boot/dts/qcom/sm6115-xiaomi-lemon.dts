@@ -45,7 +45,18 @@
 		compatible = "led-backlight";
 		leds = <&led_backlight>;
 		brightness-levels = <255>;
-		default-brightness-level = <190>;
+	};
+	ibb_vreg: fake-ibb-vreg {
+		compatible = "regulator-fixed";
+		regulator-name = "fakeibb_vreg";
+		regulator-min-microvolt = <4000000>;
+		regulator-max-microvolt = <4000000>;
+	};
+	lab_vreg: fake-lab-vreg {
+		compatible = "regulator-fixed";
+		regulator-name = "fakelab_vreg";
+		regulator-min-microvolt = <4000000>;
+		regulator-max-microvolt = <4000000>;
 	};
 
 	gpio-keys {
@@ -114,8 +125,44 @@
 };
 
 &dispcc {
-	/* Prevent simplefb from dying until we wire panel driver */
-	status = "disabled";
+	status = "okay";
+};
+
+&mdss {
+	status = "okay";
+};
+
+&mdss_dsi0 {
+	vdda-supply = <&pm6125_l18>;
+	status = "okay";
+
+	panel: panel@0 {
+		compatible = "mdss,nt36672a-truly-v2";
+		reg = <0>;
+
+		reset-gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
+		vddio-supply = <&pm6125_l9>;
+		vsp-supply = <&lab_vreg>;
+		vsn-supply = <&ibb_vreg>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&mdss_dsi_active>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&mdss_dsi0_out>;
+			};
+		};
+	};
+};
+
+&mdss_dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&mdss_dsi0_phy {
+	status = "okay";
 };
 
 &gpi_dma0 {
@@ -130,7 +177,7 @@
 	status = "okay";
 	
 	lm36923_bl: led-controller@36 {
-		compatible = "ti,lm36923";
+		compatible = "ti,lm36922";
 		reg = <0x36>;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -155,6 +202,11 @@
 		status = "okay";
 	};
 };
+
+&mdss {
+status = "okay";
+};
+
 
 &pm6125_gpios {
 	vol_up_n: vol-up-n-state {
@@ -366,22 +418,9 @@
 	compatible = "qcom,sm6115-sndcard";
 
 	//	pinctrl-0 = <&lpi_i2s2_active>;
-		pinctrl-names = "default";
+	//	pinctrl-names = "default";
 
-	model = "xiaomi-lemon";
-	audio-routing =
-		"IN1_HPHL", "HPHL_OUT",
-		"IN2_HPHR", "HPHR_OUT",
-		"TX SWR_DMIC0", "ADC1_OUTPUT",
-		"TX SWR_DMIC4", "ADC2_OUTPUT",
-		"TX SWR_DMIC5", "ADC3_OUTPUT",
-		"TX SWR_MIC8", "DMIC1_OUTPUT",
-		"TX SWR_MIC9", "DMIC2_OUTPUT",
-		"TX SWR_MIC8", "DMIC3_OUTPUT",
-		"TX SWR_MIC9", "DMIC4_OUTPUT",
-		"TX SWR_MIC10", "DMIC5_OUTPUT",
-		"TX SWR_MIC11", "DMIC6_OUTPUT";
-		
+	model = "xiaomi-lemon";		
 	aux-devs = <&bottom_amp>;
 };
 
@@ -398,6 +437,23 @@
 &spi2 {
 	clock-frequency = <8000000>;
 	status = "okay";
+
+	nt36xxx: touchscreen@1 {
+		compatible = "novatek,nt36xxx-spi";
+		reg = <1>;
+		touchscreen-size-x = <1080>;
+		touchscreen-size-y = <2340>;
+		spi-max-frequency = <8000000>;
+
+		reset-gpio = <&tlmm 103 GPIO_ACTIVE_HIGH>;
+		irq-gpio = <&tlmm 93 IRQ_TYPE_EDGE_FALLING>;
+
+		//vio-supply = <&vreg_l18a_2p8>;
+
+		firmware-name = "nt33672a_truly_novatek_ts_fw.bin";
+
+		panel = <&panel>;
+	};
 };
 
 &swr1 {
