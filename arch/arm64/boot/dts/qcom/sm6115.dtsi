@@ -21,6 +21,7 @@
 #include <dt-bindings/sound/qcom,q6asm.h>
 #include <dt-bindings/reset/ti-syscon.h>
 
+
 / {
 	interrupt-parent = <&intc>;
 
@@ -39,6 +40,20 @@
 			compatible = "fixed-clock";
 			#clock-cells = <0>;
 		};
+	};
+
+	wcd937x_codec: codec {
+		compatible = "qcom,wcd9370-codec";
+
+		qcom,micbias1-microvolt = <1800000>;
+		qcom,micbias2-microvolt = <1800000>;
+		qcom,micbias3-microvolt = <1800000>;
+		qcom,rx-device = <&wcd937x_rx>;
+		qcom,tx-device = <&wcd937x_tx>;
+		qcom,mbhc-buttons-vthreshold-microvolt = <75000 225000 450000 500000 500000 500000 500000 500000>;
+		#sound-dai-cells = <1>;
+
+		status = "disabled";
 	};
 
 	cpus {
@@ -2691,6 +2706,7 @@
 				};
 			};
 		};
+		//hw macro bloat?
 		
 		rxmacro: rxmacro@a600000 {
 			pinctrl-names = "default";
@@ -2702,10 +2718,15 @@
 
 			clocks = <&q6afecc LPASS_CLK_ID_RX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
 				<&q6afecc LPASS_CLK_ID_RX_CORE_NPL_MCLK  LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
-				 <&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+ <&q6afecc LPASS_CLK_ID_RX_CORE_NPL_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
 				<&vamacro>;
 
-			clock-names = "mclk", "npl", "macro", "fsgen";
+			clock-names = "mclk", "npl", "dcodec" ,"fsgen";
+			
+			assigned-clocks = <&q6afecc LPASS_CLK_ID_RX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+					  <&q6afecc LPASS_CLK_ID_RX_CORE_NPL_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			assigned-clock-rates = <22579200>,
+					       <22579200>;
 
 			#clock-cells = <0>;
 			clock-output-names = "mclk";
@@ -2757,9 +2778,15 @@
 
 			clocks = <&q6afecc LPASS_CLK_ID_TX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
 				 <&q6afecc LPASS_CLK_ID_TX_CORE_NPL_MCLK  LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
-				 <&vamacro>;
+				 <&vamacro>,
+				  <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
 
-			clock-names = "mclk", "npl", "fsgen";
+			clock-names = "mclk", "npl", "fsgen", "dcodec";
+			
+			assigned-clocks = <&q6afecc LPASS_CLK_ID_TX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+					  <&q6afecc LPASS_CLK_ID_TX_CORE_NPL_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			assigned-clock-rates = <19200000>,
+					       <19200000>;
 
 			#clock-cells = <0>;
 			clock-output-names = "mclk";
@@ -2782,13 +2809,15 @@
 		};
 		
 		vamacro: codec@a730000 {
-			compatible = "qcom,sm6115-lpass-va-macro", "sm8250_va_data";
+			compatible = "qcom,sm6115-lpass-va-macro", "qcom,sm8250-lpass-va-macro";
 			reg = <0 0x0a730000 0 0x1000>;
 			clocks = <&q6afecc LPASS_CLK_ID_TX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
-				 <&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
 				 <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
 
-			clock-names = "mclk", "macro", "dcodec";
+			clock-names = "mclk", "dcodec";
+			assigned-clocks = <&q6afecc LPASS_CLK_ID_TX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+					
+			assigned-clock-rates = <19200000>;
 
 			#clock-cells = <0>;
 			clock-output-names = "fsgen";
@@ -2812,8 +2841,8 @@
 		swr2: soundwire@a740000 {
 			reg = <0 0x0a740000 0 0x2000>;
 			compatible = "qcom,soundwire-v1.6.0";
-			interrupts = <GIC_SPI 297 IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-names = "core";
+			interrupts = <GIC_SPI 296 IRQ_TYPE_LEVEL_HIGH>,<GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "core", "swr_wake_irq";
 			status = "disabled";
 
 			clocks = <&txmacro>;
@@ -2848,8 +2877,8 @@
 	
 		lpass_tlmm: pinctrl@a7c0000 {
 			compatible = "qcom,sm6115-lpass-lpi-pinctrl";
-			reg = <0x0a7c0000 0x20000>,
-				  <0x0a950000 0x10000>;
+			reg = <0 0x0a7c0000 0x0 0x20000>,
+			      <0 0x0a950000 0x0 0x10000>;
 			clocks = <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
 			clock-names = "audio";
 
@@ -2860,14 +2889,14 @@
 			dmic01_active: dmic01-active-state {
 				clk-pins {
 					pins = "gpio6";
-					function = "func1";
+					function = "dmic01_clk";
 					drive-strength = <8>;
 					output-high;
 				};
 
 				data-pins {
 					pins = "gpio7";
-					function = "func1";
+					function = "dmic01_data";
 					drive-strength = <8>;
 					input-enable;
 				};
@@ -2876,7 +2905,7 @@
 			dmic01_sleep: dmic01-sleep-state {
 				clk-pins {
 					pins = "gpio6";
-					function = "func1";
+					function = "dmic01_clk";
 					drive-strength = <2>;
 					bias-disable;
 					output-low;
@@ -2884,7 +2913,7 @@
 
 				data-pins {
 					pins = "gpio7";
-					function = "func1";
+					function = "dmic01_data";
 					drive-strength = <2>;
 					pull-down;
 					input-enable;
@@ -2894,14 +2923,14 @@
 			dmic23_active: dmic23-active-state {
 				clk-pins {
 					pins = "gpio8";
-					function = "func1";
+					function = "dmic23_clk";
 					drive-strength = <8>;
 					output-high;
 				};
 
 				data-pins {
 					pins = "gpio9";
-					function = "func1";
+					function = "dmic23_data";
 					drive-strength = <8>;
 					input-enable;
 				};
@@ -2910,7 +2939,7 @@
 			dmic23_sleep: dmic23-sleep-state {
 				clk-pins {
 					pins = "gpio8";
-					function = "func1";
+					function = "dmic23_clk";
 					drive-strength = <2>;
 					bias-disable;
 					output-low;
@@ -2918,7 +2947,7 @@
 
 				data-pins {
 					pins = "gpio9";
-					function = "func1";
+					function = "dmic23_data";
 					drive-strength = <2>;
 					pull-down;
 					input-enable;
@@ -3059,6 +3088,18 @@
 							#size-cells = <0>;
 							#sound-dai-cells = <1>;
 							iommus = <&apps_smmu 0x1c1 0x0>;
+
+							dai@0 {
+								reg = <0>;
+							};
+
+							dai@1 {
+								reg = <1>;
+							};
+
+							dai@2 {
+								reg = <2>;
+							};
 						};
 					};
 
@@ -3388,36 +3429,75 @@
 		};
 	};
 	
-	sound: sound {
-		compatible = "qcom,qrb4210-rb2-sndcard";
-	//	pinctrl-0 = <&lpi_i2s2_active>;
-		pinctrl-names = "default";
-		model = "Qualcomm-RB2-WSA8815-Speakers-DMIC0";
-		audio-routing = "MM_DL1",  "MultiMedia1 Playback",
-				"MM_DL2",  "MultiMedia2 Playback";
-
-		mm1-dai-link {
-			link-name = "MultiMedia1";
-			cpu {
-				sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA1>;
-			};
+sound: sound {
+	
+	mm1-dai-link {
+		link-name = "MultiMedia1";
+		cpu {
+			sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA1>;
 		};
-
-		mm2-dai-link {
-			link-name = "MultiMedia2";
-			cpu {
-				sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA2>;
-			};
-		};
-
-		mm3-dai-link {
-			link-name = "MultiMedia3";
-			cpu {
-				sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA3>;
-			};
-		};
-
 	};
+
+	mm2-dai-link {
+		link-name = "MultiMedia2";
+		cpu {
+			sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA2>;
+		};
+	};
+
+	mm3-dai-link {
+		link-name = "MultiMedia3";
+		cpu {
+			sound-dai = <&q6asmdai  MSM_FRONTEND_DAI_MULTIMEDIA3>;
+		};
+	};
+
+	sound_wcd_playback_dai: wcd-playback-dai-link {
+		link-name = "WCD Playback";
+		status = "disabled";
+		cpu {
+			sound-dai = <&q6afedai RX_CODEC_DMA_RX_0>;
+		};
+		codec {
+			sound-dai = <&wcd937x_codec 0>, <&swr1 0>, <&rxmacro 0>;
+		};
+		platform {
+			sound-dai = <&q6routing>;
+		};
+	};
+
+	sound_wcd_capture_dai: wcd-capture-dai-link {
+		link-name = "WCD Capture";
+		status = "disabled";
+		cpu {
+			sound-dai = <&q6afedai TX_CODEC_DMA_TX_3>;
+		};
+
+		codec {
+			sound-dai = <&wcd937x_codec 1>, <&swr2 0>, <&txmacro 0>;
+		};
+		platform {
+			sound-dai = <&q6routing>;
+		};
+	};
+
+	sound_va_dai: va-dai-link {
+		link-name = "VA Capture";
+		status = "disabled";
+		cpu {
+			sound-dai = <&q6afedai VA_CODEC_DMA_TX_0>;
+		};
+
+		platform {
+			sound-dai = <&q6routing>;
+		};
+
+		codec {
+			sound-dai = <&vamacro 0>;
+		};
+	};
+
+};
 
 	thermal-zones {
 		mapss-thermal {
