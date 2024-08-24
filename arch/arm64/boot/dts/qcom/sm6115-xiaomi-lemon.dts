@@ -440,6 +440,14 @@
 		drive-strength = <2>;
 		bias-pull-down;
 	};
+
+	wcd_default: wcd-reset-n-active-state {
+		pins = "gpio92";
+		function = "gpio";
+		drive-strength = <16>;
+		bias-disable;
+		output-low;
+	};
 };
 
 &ufs_mem_hc {
@@ -482,6 +490,9 @@
 
 &wcd937x_codec {
 status = "okay";
+pinctrl-names = "default";
+		pinctrl-0 = <&wcd_default>;
+
 	reset-gpios = <&tlmm 92 GPIO_ACTIVE_LOW>;
 	vdd-buck-supply = <&pm6125_l14>;
 	vdd-rxtx-supply = <&pm6125_l9>;

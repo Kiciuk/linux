@@ -20,7 +20,7 @@
 #include <dt-bindings/sound/qcom,q6afe.h>
 #include <dt-bindings/sound/qcom,q6asm.h>
 #include <dt-bindings/reset/ti-syscon.h>
-
+#include <dt-bindings/clock/qcom,sm6115-lpasscc.h>
 
 / {
 	interrupt-parent = <&intc>;
@@ -2742,7 +2742,7 @@
 			clock-names = "iface";
 			label = "RX";
 			
-			resets = <&swr_rx_reset 0>;
+			resets = <&lpass_audiocc 0>;
 			reset-names = "swr_audio_cgcr";
 			
 			qcom,din-ports = <0>;
@@ -2794,27 +2794,20 @@
 		};
 
 		
-		syscon@a6a9098 {
-			compatible = "syscon", "simple-mfd";
-			reg = <0 0x0a6a9098 0 0x4>;
-			
-			swr_rx_reset: reset-controller {
-				compatible = "ti,syscon-reset";
-				#reset-cells = <1>;
-
-				ti,reset-bits = <
-					0x0 0 0x0 0 0x0 0 (ASSERT_SET | DEASSERT_CLEAR | STATUS_NONE)
-				>;
-			};
+		lpass_audiocc: clock-controller@a6a9000 {
+			compatible = "qcom,sm6115-lpassaudiocc";
+			reg = <0 0x0a6a9000 0x0 0x1000>;
+			#reset-cells = <1>;
 		};
 		
 		vamacro: codec@a730000 {
-			compatible = "qcom,sm6115-lpass-va-macro", "qcom,sm8250-lpass-va-macro";
+			compatible = "qcom,sm6115-lpass-va-macro", "qcom,sm8450-lpass-va-macro";
 			reg = <0 0x0a730000 0 0x1000>;
 			clocks = <&q6afecc LPASS_CLK_ID_TX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
-				 <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+				 <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&q6afecc LPASS_CLK_ID_TX_CORE_NPL_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
 
-			clock-names = "mclk", "dcodec";
+			clock-names = "mclk", "dcodec", "npl";
 			assigned-clocks = <&q6afecc LPASS_CLK_ID_TX_CORE_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
 					
 			assigned-clock-rates = <19200000>;
@@ -2824,18 +2817,10 @@
 			#sound-dai-cells = <1>;
 		};
 
-		syscon@a7ec100 {
-			compatible = "syscon", "simple-mfd";
-			reg = <0 0x0a7ec100 0 0x4>;
-			
-			swr_tx_reset: reset-controller {
-				compatible = "ti,syscon-reset";
-				#reset-cells = <1>;
-
-				ti,reset-bits = <
-					0x0 0 0x0 0 0x0 0 (ASSERT_SET | DEASSERT_CLEAR | STATUS_NONE)
-				>;
-			};
+		lpasscc: clock-controller@a7ec000 {
+			compatible = "qcom,sm6115-lpasscc";
+			reg = <0 0x0a7ec000 0x0 0x1000>;
+			#reset-cells = <1>;
 		};
 		
 		swr2: soundwire@a740000 {
@@ -2849,7 +2834,7 @@
 			clock-names = "iface";
 			label = "TX";
 
-			resets = <&swr_tx_reset 0>;
+			resets = <&lpasscc 0>;
 			reset-names = "swr_audio_cgcr";
 			
 			qcom,din-ports = <3>;
