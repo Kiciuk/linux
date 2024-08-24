@@ -146,7 +146,7 @@ static int lm3692x_fault_check(struct lm3692x_led *led)
 {
 	int ret;
 	unsigned int read_buf;
-
+printk("lm36 fault check");
 	ret = regmap_read(led->regmap, LM3692X_FAULT_FLAGS, &read_buf);
 	if (ret)
 		return ret;
@@ -167,6 +167,7 @@ static int lm3692x_fault_check(struct lm3692x_led *led)
 
 static int lm3692x_leds_enable(struct lm3692x_led *led)
 {
+printk("someone called enable");
 	int enable_state;
 	int ret, reg_ret;
 
@@ -296,7 +297,7 @@ out:
 static int lm3692x_leds_disable(struct lm3692x_led *led)
 {
 	int ret;
-
+	printk("someone called disable");
 	if (!led->enabled)
 		return 0;
 
@@ -324,6 +325,7 @@ static int lm3692x_leds_disable(struct lm3692x_led *led)
 static int lm3692x_brightness_set(struct led_classdev *led_cdev,
 				enum led_brightness brt_val)
 {
+printk("[LM36] brightness set");
 	struct lm3692x_led *led =
 			container_of(led_cdev, struct lm3692x_led, led_dev);
 	int ret;
@@ -370,7 +372,7 @@ static enum led_brightness lm3692x_max_brightness(struct lm3692x_led *led,
 	max_code = ((max_cur * 1000) - 37806) / 12195;
 	if (max_code > 0x7FF)
 		max_code = 0x7FF;
-
+printk("[LM36] max brightness %d",max_code >> 3);
 	return max_code >> 3;
 }
 
@@ -380,7 +382,7 @@ static int lm3692x_probe_dt(struct lm3692x_led *led)
 	struct led_init_data init_data = {};
 	u32 ovp, max_cur;
 	int ret;
-
+printk("[LM36] probe_dt");
 	led->enable_gpio = devm_gpiod_get_optional(&led->client->dev,
 						   "enable", GPIOD_OUT_LOW);
 	if (IS_ERR(led->enable_gpio)) {
@@ -438,7 +440,7 @@ static int lm3692x_probe_dt(struct lm3692x_led *led)
 		dev_err(&led->client->dev, "reg DT property missing\n");
 		return ret;
 	}
-
+printk("[LM36] after boost");
 	ret = fwnode_property_read_u32(child, "led-max-microamp", &max_cur);
 	led->led_dev.max_brightness = ret ? LED_FULL :
 		lm3692x_max_brightness(led, max_cur);
@@ -479,15 +481,16 @@ static int lm3692x_probe(struct i2c_client *client)
 			ret);
 		return ret;
 	}
-
+printk("[LM36] probe dt pre");
 	ret = lm3692x_probe_dt(led);
 	if (ret)
 		return ret;
-
+printk("[LM36] probe leds en pre");
 	ret = lm3692x_leds_enable(led);
 	if (ret)
 		return ret;
 
+printk("[LM36] probe dt post");
 	return 0;
 }
 
