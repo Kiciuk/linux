@@ -175,14 +175,8 @@ static int aw87xxx_i2c_probe(struct i2c_client *i2c)
 	ret = devm_add_action_or_reset(dev, aw87xxx_regulator_disable, aw87xxx);
 	if (ret)
 		return ret;
-		
-	regcache_cache_bypass(regmap, true);
 	
-	
-	/* Dummy read to generate i2c clocks, required on some devices */
-	regmap_read(regmap, AW87XXX_ID_REG, &val);
-	
-	ret = regmap_read(regmap, AW87XXX_ID_REG, &val);
+	ret = regmap_read(aw87xxx->regmap, AW87XXX_ID_REG, &val);
 	if (ret) {
 		dev_err(dev, "failed to read revision number: %d\n", ret);
 		return ret;
@@ -194,13 +188,12 @@ static int aw87xxx_i2c_probe(struct i2c_client *i2c)
 	}
 	/* Power down amp, each sequence init should also turn it off and after configuring on but we want to be sure */
 	/*OFC reg should be passed via DT because we want to support even ones with shuffled registers or pass it in init data whatever i don't care at this point */
-	ret = regmap_write(regmap, AW87XXX_SYSCTRL_REG, AW87XXX_POWER_DOWN_VALUE);
+	ret = regmap_write(aw87xxx->regmap, AW87XXX_SYSCTRL_REG, AW87XXX_POWER_DOWN_VALUE);
 	if (ret) {
 		dev_err(dev, "failed to power down amp: %d\n", ret);
 		return ret;
 	}
 
-regcache_cache_bypass(regmap, false);
 	return devm_snd_soc_register_component(&i2c->dev,
 				&soc_codec_dev_aw87xxx, NULL, 0);
 }
