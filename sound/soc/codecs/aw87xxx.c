@@ -25,15 +25,28 @@ static const struct regmap_config aw87xxx_remap_config = {
 	.val_format_endian = REGMAP_ENDIAN_BIG,
 };
 
+struct init_data {
+struct reg_sequence *aw87xxx_reg_init;
+int reg_seq_size;
+unsigned int aw87xxx_version;
+};
+
+enum {
+	AWINIC_AW87359,
+	AWINIC_AW87519,
+};
+
 struct aw87xxx_device {
 	struct regulator *vddd_supply;
 	struct i2c_client *i2c;
 	struct device *dev;
 	struct regmap *regmap;
+	struct init_data *data;
+	struct gpio_desc *reset_gpiod;
 };
 
 
-static const struct reg_sequence aw87xxx_reg_init[] = {
+static const struct reg_sequence aw87359_reg_init[] = {
 {0x70, 0x80},
 {0x1, 0x0},
 {0x1, 0x0},
@@ -58,11 +71,117 @@ static const struct reg_sequence aw87xxx_reg_init[] = {
 {0x01, 0xD},
 };
 
-static int aw87xxx_init(struct regmap *regmap)
+
+
+
+static const struct reg_sequence aw87519_reg_init[] = {
+{0x69, 0xB7},
+{0x69, 0xB7},
+{0x2, 0x9},
+{0x3, 0xE8},
+{0x4, 0x11},
+{0x5, 0x0C},
+{0x6, 0x4B},
+{0x7, 0xB6},
+{0x8, 0x0B},
+{0x9, 0x08},
+{0xA, 0x4B},
+{0x60, 0x16},
+{0x61, 0x20},
+{0x62, 0x01},
+{0x63, 0x0B},
+{0x64, 0xC5},
+{0x65, 0xA4},
+{0x66, 0x78},
+{0x67, 0xC4},
+{0x68, 0x90},
+{0x01, 0xF0},
+};
+
+static const struct init_data aw87359_init = {
+.aw87xxx_reg_init = aw87359_reg_init,
+.reg_seq_size = ARRAY_SIZE(aw87359_reg_init),
+.aw87xxx_version = AWINIC_AW87359,
+};
+
+static const struct init_data aw87519_init = {
+.aw87xxx_reg_init = aw87519_reg_init,
+.reg_seq_size = ARRAY_SIZE(aw87519_reg_init),
+.aw87xxx_version = AWINIC_AW87519,
+};
+
+
+static int aw87xxx_init(struct aw87xxx_device *aw_device)
+//static int aw87xxx_init(struct regmap *regmap)
 {
-	return regmap_multi_reg_write(regmap, aw87xxx_reg_init,
-				      ARRAY_SIZE(aw87xxx_reg_init));
+int ret;
+u32 val;
+
+ret = regmap_multi_reg_write(aw_device->regmap, aw_device->data->aw87xxx_reg_init,
+				     aw_device->data->reg_seq_size);
+				      
+regmap_read(aw_device->regmap, 0x70, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x2, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x3, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x4, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x5, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x6, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x7, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x8, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x9, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0xA, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x61, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x62, &val);
+printk("value: 0x%x",val);
+     
+	return ret;
 }
+
+static int aw87519_read_chipid(struct aw87xxx_device *aw_dev)
+{
+	int ret;
+	int val = 0;
+	unsigned int count = 0;
+	while (count< 10) {
+		ret = regmap_write(aw_dev->regmap, 0x64, 0x2C);
+		ret = regmap_read(aw_dev->regmap, AW87XXX_ID_REG, &val);
+			if (val == 0x59)
+			{
+				printk("managed to read chip at %d",count);
+				return 0;
+			}
+		count++;
+		printk("[aw] failed to read keep going");
+		usleep_range(2000,2500);
+	};
+
+	return -EINVAL;
+};
+
+ 
+
+
+static int aw87xxx_hw_reset(struct aw87xxx_device *aw_dev) 
+{
+printk("resseting gpios");
+gpiod_set_value_cansleep(aw_dev->reset_gpiod, 0);
+usleep_range(1000, 2000);
+gpiod_set_value_cansleep(aw_dev->reset_gpiod, 1);
+usleep_range(9000, 11000);
+
+return 0;
+};
 
 static int aw87xxx_power_off(struct aw87xxx_device *aw_dev)
 {
@@ -95,10 +214,13 @@ static int aw87xxx_drv_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 	aw87xxx_power_off(aw87xxx);
-	ret = aw87xxx_init(aw87xxx->regmap);
+	printk("[aw]initing via regmap");
+	ret = aw87xxx_init(aw87xxx);
+	printk("[aw]inited regs");
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		ret = aw87xxx_power_off(aw87xxx);
+		printk("[aw]post_pmd");
 		break;
 	default:
 		dev_err(aw87xxx->dev, "%s: invalid event %d\n", __func__, event);
@@ -109,14 +231,14 @@ static int aw87xxx_drv_event(struct snd_soc_dapm_widget *w,
 }
 
 static const struct snd_soc_dapm_widget aw87xxx_dapm_widgets[] = {
-	SND_SOC_DAPM_INPUT("IN"),
+	SND_SOC_DAPM_INPUT("INN"),
 	SND_SOC_DAPM_OUT_DRV_E("SPK PA", SND_SOC_NOPM, 0, 0, NULL, 0, aw87xxx_drv_event,
 			       SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMD),
 	SND_SOC_DAPM_OUTPUT("OUT"),
 };
 
 static const struct snd_soc_dapm_route aw87xxx_dapm_routes[] = {
-	{ "SPK PA", NULL, "IN" },
+	{ "SPK PA", NULL, "INN" },
 	{ "OUT", NULL, "SPK PA" },
 };
 
@@ -142,18 +264,22 @@ static int aw87xxx_i2c_probe(struct i2c_client *i2c)
 	struct device *dev = &i2c->dev;
 	struct aw87xxx_device *aw87xxx;
 	struct regmap *regmap;
+	struct init_data *pdata;
 	unsigned int val;
 	int ret;
- /*
+
 	ret = i2c_check_functionality(i2c->adapter, I2C_FUNC_I2C);
 	if (!ret)
 		return dev_err_probe(&i2c->dev, -ENXIO, "check_functionality failed\n");
-*/
+
 	aw87xxx = devm_kzalloc(dev, sizeof(*aw87xxx), GFP_KERNEL);
 	if (!aw87xxx)
 		return -ENOMEM;
 
 	i2c_set_clientdata(i2c, aw87xxx);
+	
+	
+	aw87xxx->data = device_get_match_data(dev);
 	
 	aw87xxx->vddd_supply = devm_regulator_get(dev, "vddd");
 	if (IS_ERR(aw87xxx->vddd_supply))
@@ -172,11 +298,24 @@ static int aw87xxx_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 	
+	aw87xxx->reset_gpiod = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
+		if (IS_ERR(aw87xxx->reset_gpiod))
+			return PTR_ERR(aw87xxx->reset_gpiod);
+	
+	
 	ret = devm_add_action_or_reset(dev, aw87xxx_regulator_disable, aw87xxx);
 	if (ret)
 		return ret;
-	
+	printk("awinic version: %d",aw87xxx->data->aw87xxx_version);
+if(aw87xxx->data->aw87xxx_version == AWINIC_AW87519 )
+	{
+	printk("executing aw87519 flow");
+		aw87xxx_hw_reset(aw87xxx);
+		ret = aw87519_read_chipid(aw87xxx);
+	}
+	else
 	ret = regmap_read(aw87xxx->regmap, AW87XXX_ID_REG, &val);
+	
 	if (ret) {
 		dev_err(dev, "failed to read revision number: %d\n", ret);
 		return ret;
@@ -199,7 +338,8 @@ static int aw87xxx_i2c_probe(struct i2c_client *i2c)
 }
 
 static const struct of_device_id aw87xxx_of_match[] = {
-	{ .compatible = "awinic,aw87xxx" },
+	{ .compatible = "awinic,aw87359", .data = &aw87359_init },
+	{ .compatible = "awinic,aw87519", .data = &aw87519_init },
 	{ }
 };
 

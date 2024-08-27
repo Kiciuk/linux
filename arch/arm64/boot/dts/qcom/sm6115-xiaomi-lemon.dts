@@ -40,12 +40,15 @@
 			clocks = <&gcc GCC_DISP_HF_AXI_CLK>;
 		};
 	};
-
+	
+	
 	backlight_dsi: backlight-dsi {
 		compatible = "led-backlight";
 		leds = <&led_backlight>;
-		brightness-levels = <255>;
+		max-brightness = <255>;
+
 	};
+	
 	ibb_vreg: fake-ibb-vreg {
 		compatible = "regulator-fixed";
 		regulator-name = "fakeibb_vreg";
@@ -194,11 +197,21 @@
 		};
 	};
 
-	bottom_amp: aw87359@58 {
-		compatible = "awinic,aw87xxx";
+	top_amp: aw87359@58 {
+		compatible = "awinic,aw87359";
 		reg = <0x58>;
 		vddd-supply = <&vph_pwr>;
-		
+		sound-name-prefix = "Earpiece Amp";
+		status = "okay";
+	};
+	bottom_amp: aw87519@59 {
+		compatible = "awinic,aw87519";
+		reg = <0x59>;
+		vddd-supply = <&vph_pwr>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&aw_enable_tlmm>;
+		reset-gpios = <&tlmm 98 GPIO_ACTIVE_HIGH>;
+		sound-name-prefix = "Speaker Amp";
 		status = "okay";
 	};
 };
@@ -417,11 +430,15 @@ status = "okay";
 &sound {
 	compatible = "qcom,sm6115-sndcard";
 
-	//	pinctrl-0 = <&lpi_i2s2_active>;
-	//	pinctrl-names = "default";
+	audio-routing =
+		"Speaker Amp INN", "AUX",
+		"Earpiece Amp INN", "EAR",
+		"IN1_HPHL", "HPHL_OUT",
+		"IN2_HPHR", "HPHR_OUT",
+		"IN3_AUX", "AUX_OUT";
 
 	model = "xiaomi-lemon";		
-	aux-devs = <&bottom_amp>;
+	aux-devs = <&bottom_amp>, <&top_amp>;
 };
 
 &sound_wcd_playback_dai {
@@ -476,6 +493,15 @@ status = "okay";
 &tlmm {
 	gpio-reserved-ranges = <0 4>,<14 4>;
 
+
+	aw_enable_tlmm: aw-active-state {
+		pins = "gpio98";
+		function = "gpio";
+		drive-strength = <16>;
+		bias-disable;
+		output-high;
+	};
+	
 	lm3692x_bl_active: lm3692x-active-state {
 		pins = "gpio99";
 		function = "gpio";
