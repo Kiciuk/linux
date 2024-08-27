@@ -405,6 +405,10 @@ status = "okay";
 	};
 };
 
+&rxmacro {
+	status = "okay";
+};
+
 &sdhc_2 {
 	cd-gpios = <&tlmm 88 GPIO_ACTIVE_HIGH>;
 	pinctrl-names = "default", "sleep";
@@ -420,6 +424,31 @@ status = "okay";
 
 &sleep_clk {
 	clock-frequency = <32764>;
+};
+
+
+&sound {
+	compatible = "qcom,sm6115-sndcard";
+
+	audio-routing =
+		"Speaker Amp INN", "AUX",
+		"Earpiece Amp INN", "EAR",
+		"IN1_HPHL", "HPHL_OUT",
+		"IN2_HPHR", "HPHR_OUT",
+		"IN3_AUX", "AUX_OUT";
+
+	model = "xiaomi-lemon";		
+	aux-devs = <&bottom_amp>, <&top_amp>;
+};
+
+&sound_wcd_playback_dai {
+	status = "okay";
+};
+&sound_wcd_capture_dai {
+	status = "okay";
+};
+&sound_va_dai {
+	status = "okay";
 };
 
 &spi2 {
@@ -442,6 +471,23 @@ status = "okay";
 
 		panel = <&panel>;
 	};
+};
+
+&swr1 {
+	status = "okay";
+};
+
+&swr2{
+	status = "okay";
+};
+
+&txmacro {
+	status = "okay";
+};
+
+&vamacro {
+	status = "okay";
+	qcom,dmic-sample-rate = <2400000>;
 };
 
 &tlmm {
@@ -524,6 +570,19 @@ status = "okay";
 	status = "okay";
 };
 
+&wcd937x_codec {
+status = "okay";
+pinctrl-names = "default";
+		pinctrl-0 = <&wcd_default>;
+
+	reset-gpios = <&tlmm 92 GPIO_ACTIVE_LOW>;
+	vdd-buck-supply = <&pm6125_l14>;
+	vdd-rxtx-supply = <&pm6125_l9>;
+	vdd-px-supply = <&pm6125_l9>;
+	vdd-mic-bias-supply = <&vph_pwr>;
+
+};
+	
 /delete-node/ &usb_qmpphy;
 
 &xo_board {
