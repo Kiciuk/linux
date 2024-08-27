@@ -12,6 +12,7 @@
 /delete-node/ &pil_ipa_fw_mem;
 /delete-node/ &pil_ipa_gsi_mem;
 /delete-node/ &pil_gpu_mem;
+/delete-node/ &pil_adsp_mem;
 / {
 	model = "Xiaomi Redmi 9T";
 	compatible = "xiaomi,lemon", "qcom,sm6115";
@@ -39,12 +40,26 @@
 			clocks = <&gcc GCC_DISP_HF_AXI_CLK>;
 		};
 	};
-
+	
+	
 	backlight_dsi: backlight-dsi {
 		compatible = "led-backlight";
 		leds = <&led_backlight>;
-		brightness-levels = <255>;
-		default-brightness-level = <190>;
+		max-brightness = <255>;
+
+	};
+	
+	ibb_vreg: fake-ibb-vreg {
+		compatible = "regulator-fixed";
+		regulator-name = "fakeibb_vreg";
+		regulator-min-microvolt = <4000000>;
+		regulator-max-microvolt = <4000000>;
+	};
+	lab_vreg: fake-lab-vreg {
+		compatible = "regulator-fixed";
+		regulator-name = "fakelab_vreg";
+		regulator-min-microvolt = <4000000>;
+		regulator-max-microvolt = <4000000>;
 	};
 
 	gpio-keys {
@@ -70,8 +85,8 @@
 			no-map;
 		};
 		
-		pil_adsp_mem: memory@53800000 {
-			reg = <0x0 0x53800000 0x0 0x2200000>;
+		pil_adsp_mem: memory@53400000 {
+			reg = <0x0 0x53400000 0x0 0x2600000>;
 			no-map;
 		};
 		
@@ -113,8 +128,44 @@
 };
 
 &dispcc {
-	/* Prevent simplefb from dying until we wire panel driver */
-	status = "disabled";
+	status = "okay";
+};
+
+&mdss {
+	status = "okay";
+};
+
+&mdss_dsi0 {
+	vdda-supply = <&pm6125_l18>;
+	status = "okay";
+
+	panel: panel@0 {
+		compatible = "mdss,nt36672a-truly-v2";
+		reg = <0>;
+
+		reset-gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
+		vddio-supply = <&pm6125_l9>;
+		vsp-supply = <&lab_vreg>;
+		vsn-supply = <&ibb_vreg>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&mdss_dsi_active>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&mdss_dsi0_out>;
+			};
+		};
+	};
+};
+
+&mdss_dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&mdss_dsi0_phy {
+	status = "okay";
 };
 
 &gpi_dma0 {
@@ -129,7 +180,7 @@
 	status = "okay";
 	
 	lm36923_bl: led-controller@36 {
-		compatible = "ti,lm36923";
+		compatible = "ti,lm36922";
 		reg = <0x36>;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -145,7 +196,30 @@
 			led-max-microamp = <25000>;
 		};
 	};
+
+	top_amp: aw87359@58 {
+		compatible = "awinic,aw87359";
+		reg = <0x58>;
+		vddd-supply = <&vph_pwr>;
+		sound-name-prefix = "Earpiece Amp";
+		status = "okay";
+	};
+	bottom_amp: aw87519@59 {
+		compatible = "awinic,aw87519";
+		reg = <0x59>;
+		vddd-supply = <&vph_pwr>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&aw_enable_tlmm>;
+		reset-gpios = <&tlmm 98 GPIO_ACTIVE_HIGH>;
+		sound-name-prefix = "Speaker Amp";
+		status = "okay";
+	};
 };
+
+&mdss {
+status = "okay";
+};
+
 
 &pm6125_gpios {
 	vol_up_n: vol-up-n-state {
@@ -351,11 +425,37 @@
 &spi2 {
 	clock-frequency = <8000000>;
 	status = "okay";
+
+	nt36xxx: touchscreen@1 {
+		compatible = "novatek,nt36xxx-spi";
+		reg = <1>;
+		touchscreen-size-x = <1080>;
+		touchscreen-size-y = <2340>;
+		spi-max-frequency = <8000000>;
+
+		reset-gpio = <&tlmm 103 GPIO_ACTIVE_HIGH>;
+		irq-gpio = <&tlmm 93 IRQ_TYPE_EDGE_FALLING>;
+
+		//vio-supply = <&vreg_l18a_2p8>;
+
+		firmware-name = "nt33672a_truly_novatek_ts_fw.bin";
+
+		panel = <&panel>;
+	};
 };
 
 &tlmm {
 	gpio-reserved-ranges = <0 4>,<14 4>;
 
+
+	aw_enable_tlmm: aw-active-state {
+		pins = "gpio98";
+		function = "gpio";
+		drive-strength = <16>;
+		bias-disable;
+		output-high;
+	};
+	
 	lm3692x_bl_active: lm3692x-active-state {
 		pins = "gpio99";
 		function = "gpio";
@@ -375,6 +475,14 @@
 		function = "mdp_vsync";
 		drive-strength = <2>;
 		bias-pull-down;
+	};
+
+	wcd_default: wcd-reset-n-active-state {
+		pins = "gpio92";
+		function = "gpio";
+		drive-strength = <16>;
+		bias-disable;
+		output-low;
 	};
 };
 
