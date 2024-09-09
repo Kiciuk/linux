@@ -156,6 +156,7 @@ struct qcom_swrm_port_config {
 	u8 word_length;
 	u8 blk_group_count;
 	u8 lane_control;
+	u8 ch_mask;
 };
 
 /*
@@ -1048,7 +1049,13 @@ static int qcom_swrm_port_enable(struct sdw_bus *bus,
 {
 	u32 reg = SWRM_DP_PORT_CTRL_BANK(enable_ch->port_num, bank);
 	struct qcom_swrm_ctrl *ctrl = to_qcom_sdw(bus);
+	struct qcom_swrm_port_config *pcfg;
 	u32 val;
+
+	pcfg = &ctrl->pconfig[enable_ch->port_num];
+
+	if (pcfg->ch_mask != SWR_INVALID_PARAM && pcfg->ch_mask != 0)
+		enable_ch->ch_mask = pcfg->ch_mask;
 
 	ctrl->reg_read(ctrl, reg, &val);
 
@@ -1058,6 +1065,16 @@ static int qcom_swrm_port_enable(struct sdw_bus *bus,
 		val &= ~(0xff << SWRM_DP_PORT_CTRL_EN_CHAN_SHFT);
 
 	return ctrl->reg_write(ctrl, reg, val);
+}
+
+static int qcom_swrm_set_channel_map(struct sdw_bus *bus, int *ch_mask, unsigned int port_num)
+{
+	struct qcom_swrm_ctrl *ctrl = to_qcom_sdw(bus);
+
+	if (ch_mask && port_num)
+		ctrl->pconfig[port_num].ch_mask = ch_mask[port_num];
+
+	return 0;
 }
 
 static const struct sdw_master_port_ops qcom_swrm_port_ops = {
@@ -1070,6 +1087,7 @@ static const struct sdw_master_ops qcom_swrm_ops = {
 	.read_prop = qcom_swrm_read_prop,
 	.xfer_msg = qcom_swrm_xfer_msg,
 	.pre_bank_switch = qcom_swrm_pre_bank_switch,
+	.set_master_channel_map = qcom_swrm_set_channel_map,
 };
 
 static int qcom_swrm_compute_params(struct sdw_bus *bus)
