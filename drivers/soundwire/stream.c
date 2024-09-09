@@ -1972,6 +1972,22 @@ int sdw_stream_remove_master(struct sdw_bus *bus,
 }
 EXPORT_SYMBOL(sdw_stream_remove_master);
 
+int sdw_set_channel_map_stream(struct sdw_stream_runtime *stream,
+			       int *ch_mask, unsigned int active_port_num)
+{
+	struct sdw_master_runtime *m_rt;
+	struct sdw_bus *bus;
+
+	list_for_each_entry(m_rt, &stream->master_list, stream_node) {
+		bus = m_rt->bus;
+		if (bus->ops->set_master_channel_map)
+			bus->ops->set_master_channel_map(bus, ch_mask, active_port_num);
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(sdw_set_channel_map_stream);
+
 /**
  * sdw_stream_add_slave() - Allocate and add master/slave runtime to a stream
  *
