@@ -2765,6 +2765,8 @@
 					compatible = "sdw20217010a00";
 					reg = <0 4>;
 					qcom,rx-port-mapping = <1 2 3 4 5>;
+					qcom,rx-channel-mapping =  /bits/ 8 <0x01 0x02 0x01 0x01 0x02
+                                                 0x01 0x01 0x02>;
 				};
 		};
 
@@ -2855,6 +2857,8 @@
 					compatible = "sdw20217010a00";
 					reg = <0 3>;
 					qcom,tx-port-mapping = <1 1 2 3>;
+					qcom,tx-channel-mapping = /bits/ 8 <0x01 0x02 0x04 0x08 0x01 0x02
+                                                0x04 0x08 0x01 0x02 0x04 0x8>;
 				};
 			
 		};
