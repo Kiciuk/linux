@@ -297,14 +297,479 @@ static void wcd937x_io_init(struct regmap *regmap)
 		regmap_update_bits(regmap, WCD937X_HPH_NEW_INT_RDAC_GAIN_CTL, 0xF0, 0x50);
 	}
 }
+void wcd937x_reg_dump(struct snd_soc_component *component)
+{
+struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+u32 val = 0;
 
+regmap_read(wcd937x->regmap, WCD937X_ANA_BIAS, &val);
+printk("[WCD937X_ANA_BIAS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_ANA_RX_SUPPLIES, &val);
+printk("[WCD937X_ANA_RX_SUPPLIES]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_ANA_HPH, &val);
+printk("[WCD937X_ANA_HPH]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_ANA_EAR, &val);
+printk("[WCD937X_ANA_EAR]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_ANA_EAR_COMPANDER_CTL, &val);
+printk("[WCD937X_ANA_EAR_COMPANDER_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_BIAS_CTL, &val);
+printk("[WCD937X_BIAS_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_BIAS_VBG_FINE_ADJ, &val);
+printk("[WCD937X_BIAS_VBG_FINE_ADJ]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDOL_VDDCX_ADJUST, &val);
+printk("[WCD937X_LDOL_VDDCX_ADJUST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDOL_DISABLE_LDOL, &val);
+printk("[WCD937X_LDOL_DISABLE_LDOL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_MOISTURE_DET_FSM_STATUS, &val);
+printk("[WCD937X_MBHC_MOISTURE_DET_FSM_STATUS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_TEST_CTL, &val);
+printk("[WCD937X_MBHC_TEST_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDOH_MODE, &val);
+printk("[WCD937X_LDOH_MODE]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDOH_BIAS, &val);
+printk("[WCD937X_LDOH_BIAS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDOH_STB_LOADS, &val);
+printk("[WCD937X_LDOH_STB_LOADS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDOH_SLOWRAMP, &val);
+printk("[WCD937X_LDOH_SLOWRAMP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_MODE_1, &val);
+printk("[WCD937X_CLASSH_MODE_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_MODE_2, &val);
+printk("[WCD937X_CLASSH_MODE_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_MODE_3, &val);
+printk("[WCD937X_CLASSH_MODE_3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_VCL_1, &val);
+printk("[WCD937X_CLASSH_CTRL_VCL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_VCL_2, &val);
+printk("[WCD937X_CLASSH_CTRL_VCL_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_CCL_1, &val);
+printk("[WCD937X_CLASSH_CTRL_CCL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_CCL_2, &val);
+printk("[WCD937X_CLASSH_CTRL_CCL_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_CCL_3, &val);
+printk("[WCD937X_CLASSH_CTRL_CCL_3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_CCL_4, &val);
+printk("[WCD937X_CLASSH_CTRL_CCL_4]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_CTRL_CCL_5, &val);
+printk("[WCD937X_CLASSH_CTRL_CCL_5]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_BUCK_TMUX_A_D, &val);
+printk("[WCD937X_CLASSH_BUCK_TMUX_A_D]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_BUCK_SW_DRV_CNTL, &val);
+printk("[WCD937X_CLASSH_BUCK_SW_DRV_CNTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_CLASSH_SPARE, &val);
+printk("[WCD937X_CLASSH_SPARE]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_EN, &val);
+printk("[WCD937X_FLYBACK_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_1, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_2, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_3, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_4, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_4]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_5, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_5]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_6, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_6]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_7, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_7]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_8, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_8]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEG_CTRL_9, &val);
+printk("[WCD937X_FLYBACK_VNEG_CTRL_9]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEGDAC_CTRL_1, &val);
+printk("[WCD937X_FLYBACK_VNEGDAC_CTRL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEGDAC_CTRL_2, &val);
+printk("[WCD937X_FLYBACK_VNEGDAC_CTRL_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_VNEGDAC_CTRL_3, &val);
+printk("[WCD937X_FLYBACK_VNEGDAC_CTRL_3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_CTRL_1, &val);
+printk("[WCD937X_FLYBACK_CTRL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_FLYBACK_TEST_CTL, &val);
+printk("[WCD937X_FLYBACK_TEST_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_AUX_SW_CTL, &val);
+printk("[WCD937X_RX_AUX_SW_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_PA_AUX_IN_CONN, &val);
+printk("[WCD937X_RX_PA_AUX_IN_CONN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_TIMER_DIV, &val);
+printk("[WCD937X_RX_TIMER_DIV]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_OCP_CTL, &val);
+printk("[WCD937X_RX_OCP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_OCP_COUNT, &val);
+printk("[WCD937X_RX_OCP_COUNT]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_EAR_DAC, &val);
+printk("[WCD937X_RX_BIAS_EAR_DAC]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_EAR_AMP, &val);
+printk("[WCD937X_RX_BIAS_EAR_AMP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_HPH_LDO, &val);
+printk("[WCD937X_RX_BIAS_HPH_LDO]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_HPH_PA, &val);
+printk("[WCD937X_RX_BIAS_HPH_PA]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_HPH_RDACBUFF_CNP2, &val);
+printk("[WCD937X_RX_BIAS_HPH_RDACBUFF_CNP2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_HPH_RDAC_LDO, &val);
+printk("[WCD937X_RX_BIAS_HPH_RDAC_LDO]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_HPH_CNP1, &val);
+printk("[WCD937X_RX_BIAS_HPH_CNP1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_HPH_LOWPOWER, &val);
+printk("[WCD937X_RX_BIAS_HPH_LOWPOWER]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_AUX_DAC, &val);
+printk("[WCD937X_RX_BIAS_AUX_DAC]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_AUX_AMP, &val);
+printk("[WCD937X_RX_BIAS_AUX_AMP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_VNEGDAC_BLEEDER, &val);
+printk("[WCD937X_RX_BIAS_VNEGDAC_BLEEDER]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_MISC, &val);
+printk("[WCD937X_RX_BIAS_MISC]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_BUCK_RST, &val);
+printk("[WCD937X_RX_BIAS_BUCK_RST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_BUCK_VREF_ERRAMP, &val);
+printk("[WCD937X_RX_BIAS_BUCK_VREF_ERRAMP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_FLYB_ERRAMP, &val);
+printk("[WCD937X_RX_BIAS_FLYB_ERRAMP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_FLYB_BUFF, &val);
+printk("[WCD937X_RX_BIAS_FLYB_BUFF]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_BIAS_FLYB_MID_RST, &val);
+printk("[WCD937X_RX_BIAS_FLYB_MID_RST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_L_STATUS, &val);
+printk("[WCD937X_HPH_L_STATUS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_R_STATUS, &val);
+printk("[WCD937X_HPH_R_STATUS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_CNP_EN, &val);
+printk("[WCD937X_HPH_CNP_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_CNP_WG_CTL, &val);
+printk("[WCD937X_HPH_CNP_WG_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_CNP_WG_TIME, &val);
+printk("[WCD937X_HPH_CNP_WG_TIME]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_OCP_CTL, &val);
+printk("[WCD937X_HPH_OCP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_AUTO_CHOP, &val);
+printk("[WCD937X_HPH_AUTO_CHOP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_CHOP_CTL, &val);
+printk("[WCD937X_HPH_CHOP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_PA_CTL1, &val);
+printk("[WCD937X_HPH_PA_CTL1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_PA_CTL2, &val);
+printk("[WCD937X_HPH_PA_CTL2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_L_EN, &val);
+printk("[WCD937X_HPH_L_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_L_TEST, &val);
+printk("[WCD937X_HPH_L_TEST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_L_ATEST, &val);
+printk("[WCD937X_HPH_L_ATEST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_R_EN, &val);
+printk("[WCD937X_HPH_R_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_GAIN_SRC_SEL_REGISTER, &val);
+printk("[WCD937X_GAIN_SRC_SEL_REGISTER]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_R_TEST, &val);
+printk("[WCD937X_HPH_R_TEST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_R_ATEST, &val);
+printk("[WCD937X_HPH_R_ATEST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_RDAC_CLK_CTL1, &val);
+printk("[WCD937X_HPH_RDAC_CLK_CTL1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_RDAC_CLK_CTL2, &val);
+printk("[WCD937X_HPH_RDAC_CLK_CTL2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_RDAC_LDO_CTL, &val);
+printk("[WCD937X_HPH_RDAC_LDO_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_RDAC_CHOP_CLK_LP_CTL, &val);
+printk("[WCD937X_HPH_RDAC_CHOP_CLK_LP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_REFBUFF_UHQA_CTL, &val);
+printk("[WCD937X_HPH_REFBUFF_UHQA_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_REFBUFF_LP_CTL, &val);
+printk("[WCD937X_HPH_REFBUFF_LP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_L_DAC_CTL, &val);
+printk("[WCD937X_HPH_L_DAC_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_R_DAC_CTL, &val);
+printk("[WCD937X_HPH_R_DAC_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_SURGE_HPHLR_SURGE_COMP_SEL, &val);
+printk("[WCD937X_HPH_SURGE_HPHLR_SURGE_COMP_SEL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_SURGE_HPHLR_SURGE_EN, &val);
+printk("[WCD937X_HPH_SURGE_HPHLR_SURGE_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_SURGE_HPHLR_SURGE_MISC1, &val);
+printk("[WCD937X_HPH_SURGE_HPHLR_SURGE_MISC1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_SURGE_HPHLR_SURGE_STATUS, &val);
+printk("[WCD937X_HPH_SURGE_HPHLR_SURGE_STATUS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_EAR_EN_REG, &val);
+printk("[WCD937X_EAR_EAR_EN_REG]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_EAR_PA_CON, &val);
+printk("[WCD937X_EAR_EAR_PA_CON]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_EAR_SP_CON, &val);
+printk("[WCD937X_EAR_EAR_SP_CON]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_EAR_DAC_CON, &val);
+printk("[WCD937X_EAR_EAR_DAC_CON]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_EAR_CNP_FSM_CON, &val);
+printk("[WCD937X_EAR_EAR_CNP_FSM_CON]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_TEST_CTL, &val);
+printk("[WCD937X_EAR_TEST_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_STATUS_REG_1, &val);
+printk("[WCD937X_EAR_STATUS_REG_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_STATUS_REG_2, &val);
+printk("[WCD937X_EAR_STATUS_REG_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_ANA_NEW_PAGE_REGISTER, &val);
+printk("[WCD937X_ANA_NEW_PAGE_REGISTER]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_ANA_HPH2, &val);
+printk("[WCD937X_HPH_NEW_ANA_HPH2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_ANA_HPH3, &val);
+printk("[WCD937X_HPH_NEW_ANA_HPH3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_SLEEP_CTL, &val);
+printk("[WCD937X_SLEEP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_SLEEP_WATCHDOG_CTL, &val);
+printk("[WCD937X_SLEEP_WATCHDOG_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_ELECT_REM_CLAMP_CTL, &val);
+printk("[WCD937X_MBHC_NEW_ELECT_REM_CLAMP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_CTL_1, &val);
+printk("[WCD937X_MBHC_NEW_CTL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_BTN_DBNC_T_16_MS, &val);
+printk("[WCD937X_MBHC_BTN_DBNC_T_16_MS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_CTL_2, &val);
+printk("[WCD937X_MBHC_NEW_CTL_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_PLUG_DETECT_CTL, &val);
+printk("[WCD937X_MBHC_NEW_PLUG_DETECT_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_ZDET_ANA_CTL, &val);
+printk("[WCD937X_MBHC_NEW_ZDET_ANA_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_HS_VREF_1P5_V, &val);
+printk("[WCD937X_MBHC_HS_VREF_1P5_V]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_DBNC_TIMER_INSREM_DBNC_T_96_MS, &val);
+printk("[WCD937X_MBHC_DBNC_TIMER_INSREM_DBNC_T_96_MS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_ZDET_RAMP_CTL, &val);
+printk("[WCD937X_MBHC_NEW_ZDET_RAMP_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_FSM_STATUS, &val);
+printk("[WCD937X_MBHC_NEW_FSM_STATUS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_ADC_RESULT, &val);
+printk("[WCD937X_MBHC_NEW_ADC_RESULT]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_TX_NEW_TX_CH2_SEL, &val);
+printk("[WCD937X_TX_NEW_TX_CH2_SEL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_AUXPA, &val);
+printk("[WCD937X_AUX_AUXPA]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_MODE, &val);
+printk("[WCD937X_LDORXTX_MODE]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_CONFIG, &val);
+printk("[WCD937X_LDORXTX_CONFIG]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIE_CRACK_DIE_CRK_DET_EN, &val);
+printk("[WCD937X_DIE_CRACK_DIE_CRK_DET_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIE_CRACK_DIE_CRK_DET_OUT, &val);
+printk("[WCD937X_DIE_CRACK_DIE_CRK_DET_OUT]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_RDAC_GAIN_CTL, &val);
+printk("[WCD937X_HPH_NEW_INT_RDAC_GAIN_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_RDAC_HD2_CTL_L, &val);
+printk("[WCD937X_HPH_NEW_INT_RDAC_HD2_CTL_L]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_RDAC_VREF_CTL, &val);
+printk("[WCD937X_HPH_NEW_INT_RDAC_VREF_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_RDAC_OVERRIDE_CTL, &val);
+printk("[WCD937X_HPH_NEW_INT_RDAC_OVERRIDE_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_RDAC_HD2_CTL_R, &val);
+printk("[WCD937X_HPH_NEW_INT_RDAC_HD2_CTL_R]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_PA_MISC1, &val);
+printk("[WCD937X_HPH_NEW_INT_PA_MISC1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_PA_MISC2, &val);
+printk("[WCD937X_HPH_NEW_INT_PA_MISC2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_PA_RDAC_MISC, &val);
+printk("[WCD937X_HPH_NEW_INT_PA_RDAC_MISC]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_HPH_TIMER1, &val);
+printk("[WCD937X_HPH_NEW_INT_HPH_TIMER1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_HPH_TIMER2, &val);
+printk("[WCD937X_HPH_NEW_INT_HPH_TIMER2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_HPH_TIMER3, &val);
+printk("[WCD937X_HPH_NEW_INT_HPH_TIMER3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_HPH_TIMER4, &val);
+printk("[WCD937X_HPH_NEW_INT_HPH_TIMER4]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_PA_RDAC_MISC2, &val);
+printk("[WCD937X_HPH_NEW_INT_PA_RDAC_MISC2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_HPH_NEW_INT_PA_RDAC_MISC3, &val);
+printk("[WCD937X_HPH_NEW_INT_PA_RDAC_MISC3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_NEW_INT_HPH_RDAC_BIAS_LOHIFI, &val);
+printk("[WCD937X_RX_NEW_INT_HPH_RDAC_BIAS_LOHIFI]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_NEW_INT_HPH_RDAC_BIAS_ULP, &val);
+printk("[WCD937X_RX_NEW_INT_HPH_RDAC_BIAS_ULP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_RX_NEW_INT_HPH_RDAC_LDO_LP, &val);
+printk("[WCD937X_RX_NEW_INT_HPH_RDAC_LDO_LP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_INT_MOISTURE_DET_DC_CTRL, &val);
+printk("[WCD937X_MBHC_NEW_INT_MOISTURE_DET_DC_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_INT_MOISTURE_DET_POLLING_CTRL, &val);
+printk("[WCD937X_MBHC_NEW_INT_MOISTURE_DET_POLLING_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_INT_MECH_DET_CURRENT, &val);
+printk("[WCD937X_MBHC_NEW_INT_MECH_DET_CURRENT]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_MBHC_NEW_INT_SPARE_2, &val);
+printk("[WCD937X_MBHC_NEW_INT_SPARE_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_INT_NEW_EAR_CHOPPER_CON, &val);
+printk("[WCD937X_EAR_INT_NEW_EAR_CHOPPER_CON]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_INT_NEW_CNP_VCM_CON1, &val);
+printk("[WCD937X_EAR_INT_NEW_CNP_VCM_CON1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_INT_NEW_CNP_VCM_CON2, &val);
+printk("[WCD937X_EAR_INT_NEW_CNP_VCM_CON2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_EAR_INT_NEW_EAR_DYNAMIC_BIAS, &val);
+printk("[WCD937X_EAR_INT_NEW_EAR_DYNAMIC_BIAS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_EN_REG, &val);
+printk("[WCD937X_AUX_INT_EN_REG]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_PA_CTRL, &val);
+printk("[WCD937X_AUX_INT_PA_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_SP_CTRL, &val);
+printk("[WCD937X_AUX_INT_SP_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_DAC_CTRL, &val);
+printk("[WCD937X_AUX_INT_DAC_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_CLK_CTRL, &val);
+printk("[WCD937X_AUX_INT_CLK_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_TEST_CTRL, &val);
+printk("[WCD937X_AUX_INT_TEST_CTRL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_STATUS_REG, &val);
+printk("[WCD937X_AUX_INT_STATUS_REG]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_AUX_INT_MISC, &val);
+printk("[WCD937X_AUX_INT_MISC]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_INT_BIAS, &val);
+printk("[WCD937X_LDORXTX_INT_BIAS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_INT_STB_LOADS_DTEST, &val);
+printk("[WCD937X_LDORXTX_INT_STB_LOADS_DTEST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_INT_TEST0, &val);
+printk("[WCD937X_LDORXTX_INT_TEST0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_INT_STARTUP_TIMER, &val);
+printk("[WCD937X_LDORXTX_INT_STARTUP_TIMER]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_INT_TEST1, &val);
+printk("[WCD937X_LDORXTX_INT_TEST1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_LDORXTX_INT_STATUS, &val);
+printk("[WCD937X_LDORXTX_INT_STATUS]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_SLEEP_INT_WATCHDOG_CTL_1, &val);
+printk("[WCD937X_SLEEP_INT_WATCHDOG_CTL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_SLEEP_INT_WATCHDOG_CTL_2, &val);
+printk("[WCD937X_SLEEP_INT_WATCHDOG_CTL_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_PAGE_REGISTER, &val);
+printk("[WCD937X_DIGITAL_PAGE_REGISTER]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CHIP_ID0, &val);
+printk("[WCD937X_DIGITAL_CHIP_ID0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CHIP_ID1, &val);
+printk("[WCD937X_DIGITAL_CHIP_ID1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CHIP_ID2, &val);
+printk("[WCD937X_DIGITAL_CHIP_ID2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CHIP_ID3, &val);
+printk("[WCD937X_DIGITAL_CHIP_ID3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RST_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_RST_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_TOP_CLK_CFG, &val);
+printk("[WCD937X_DIGITAL_TOP_CLK_CFG]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_ANA_CLK_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_ANA_CLK_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_DIG_CLK_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_DIG_CLK_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_SWR_RST_EN, &val);
+printk("[WCD937X_DIGITAL_SWR_RST_EN]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_PATH_MODE, &val);
+printk("[WCD937X_DIGITAL_CDC_PATH_MODE]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX_RST, &val);
+printk("[WCD937X_DIGITAL_CDC_RX_RST]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX0_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_RX0_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX1_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_RX1_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX2_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_RX2_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_DEM_BYPASS_DATA0, &val);
+printk("[WCD937X_DIGITAL_DEM_BYPASS_DATA0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_DEM_BYPASS_DATA1, &val);
+printk("[WCD937X_DIGITAL_DEM_BYPASS_DATA1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_DEM_BYPASS_DATA2, &val);
+printk("[WCD937X_DIGITAL_DEM_BYPASS_DATA2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_DEM_BYPASS_DATA3, &val);
+printk("[WCD937X_DIGITAL_DEM_BYPASS_DATA3]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_COMP_CTL_0, &val);
+printk("[WCD937X_DIGITAL_CDC_COMP_CTL_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX_DELAY_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_RX_DELAY_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_HPH_GAIN_RX_0, &val);
+printk("[WCD937X_DIGITAL_CDC_HPH_GAIN_RX_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_HPH_GAIN_RX_1, &val);
+printk("[WCD937X_DIGITAL_CDC_HPH_GAIN_RX_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_HPH_GAIN_DSD_0, &val);
+printk("[WCD937X_DIGITAL_CDC_HPH_GAIN_DSD_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_HPH_GAIN_DSD_1, &val);
+printk("[WCD937X_DIGITAL_CDC_HPH_GAIN_DSD_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_HPH_GAIN_DSD_2, &val);
+printk("[WCD937X_DIGITAL_CDC_HPH_GAIN_DSD_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_AUX_GAIN_DSD_0, &val);
+printk("[WCD937X_DIGITAL_CDC_AUX_GAIN_DSD_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_AUX_GAIN_DSD_1, &val);
+printk("[WCD937X_DIGITAL_CDC_AUX_GAIN_DSD_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_AUX_GAIN_DSD_2, &val);
+printk("[WCD937X_DIGITAL_CDC_AUX_GAIN_DSD_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_HPH_GAIN_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_HPH_GAIN_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_AUX_GAIN_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_AUX_GAIN_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_EAR_PATH_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_EAR_PATH_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_SWR_CLH, &val);
+printk("[WCD937X_DIGITAL_CDC_SWR_CLH]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_SWR_CLH_BYP, &val);
+printk("[WCD937X_DIGITAL_SWR_CLH_BYP]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_REQ_CTL, &val);
+printk("[WCD937X_DIGITAL_CDC_REQ_CTL]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_PDM_WD_CTL0, &val);
+printk("[WCD937X_DIGITAL_PDM_WD_CTL0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_PDM_WD_CTL1, &val);
+printk("[WCD937X_DIGITAL_PDM_WD_CTL1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_PDM_WD_CTL2, &val);
+printk("[WCD937X_DIGITAL_PDM_WD_CTL2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_MODE, &val);
+printk("[WCD937X_DIGITAL_INTR_MODE]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_MASK_0, &val);
+printk("[WCD937X_DIGITAL_INTR_MASK_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_MASK_1, &val);
+printk("[WCD937X_DIGITAL_INTR_MASK_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_MASK_2, &val);
+printk("[WCD937X_DIGITAL_INTR_MASK_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_STATUS_0, &val);
+printk("[WCD937X_DIGITAL_INTR_STATUS_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_STATUS_1, &val);
+printk("[WCD937X_DIGITAL_INTR_STATUS_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_STATUS_2, &val);
+printk("[WCD937X_DIGITAL_INTR_STATUS_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_CLEAR_0, &val);
+printk("[WCD937X_DIGITAL_INTR_CLEAR_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_CLEAR_1, &val);
+printk("[WCD937X_DIGITAL_INTR_CLEAR_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_CLEAR_2, &val);
+printk("[WCD937X_DIGITAL_INTR_CLEAR_2]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_LEVEL_0, &val);
+printk("[WCD937X_DIGITAL_INTR_LEVEL_0]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_LEVEL_1, &val);
+printk("[WCD937X_DIGITAL_INTR_LEVEL_1]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_INTR_LEVEL_2, &val);
+printk("[WCD937X_DIGITAL_INTR_LEVEL_2]:0x%x",val);
+
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_EFUSE_REG_29, &val);
+printk("[WCD937X_DIGITAL_EFUSE_REG_29]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_EFUSE_REG_16, &val);
+printk("[WCD937X_DIGITAL_EFUSE_REG_16]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_EFUSE_REG_17, &val);
+printk("[WCD937X_DIGITAL_EFUSE_REG_17]:0x%x",val);
+regmap_read(wcd937x->regmap, WCD937X_DIGITAL_EFUSE_REG_0, &val);
+printk("[WCD937X_DIGITAL_EFUSE_REG_0]:0x%x",val);
+
+
+};
 static int wcd937x_rx_clk_enable(struct snd_soc_component *component)
 {
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
-
+	u32 val=0;
 	if (atomic_read(&wcd937x->rx_clk_cnt))
 		return 0;
+	printk("enabling RX clocks");
+	
+	regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_ANA_CLK_CTL, &val);
+	printk("[WCD937X_DIGITAL_CDC_ANA_CLK_CTL]:0x%x",val);
+	regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_DIG_CLK_CTL, &val);
+	printk("[WCD937X_DIGITAL_CDC_DIG_CLK_CTL]:0x%x",val);
+	regmap_read(wcd937x->regmap, WCD937X_ANA_RX_SUPPLIES, &val);
+	printk("[WCD937X_ANA_RX_SUPPLIES]:0x%x",val);
+	regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX0_CTL, &val);
+	printk("[WCD937X_DIGITAL_CDC_RX0_CTL]:0x%x",val);
+	regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX1_CTL, &val);
+	printk("[WCD937X_DIGITAL_CDC_RX1_CTL]:0x%x",val);
+	regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_RX2_CTL, &val);
+	printk("[WCD937X_DIGITAL_CDC_RX2_CTL]:0x%x",val);
+	regmap_read(wcd937x->regmap, WCD937X_DIGITAL_CDC_ANA_CLK_CTL, &val);
+	printk("[WCD937X_DIGITAL_CDC_ANA_CLK_CTL]:0x%x",val);
 
+	
 	snd_soc_component_update_bits(component, WCD937X_DIGITAL_CDC_DIG_CLK_CTL, BIT(3), BIT(3));
 	snd_soc_component_update_bits(component, WCD937X_DIGITAL_CDC_ANA_CLK_CTL, BIT(0), BIT(0));
 	snd_soc_component_update_bits(component, WCD937X_ANA_RX_SUPPLIES, BIT(0), BIT(0));
@@ -312,6 +777,10 @@ static int wcd937x_rx_clk_enable(struct snd_soc_component *component)
 	snd_soc_component_update_bits(component, WCD937X_DIGITAL_CDC_RX1_CTL, BIT(6), 0x00);
 	snd_soc_component_update_bits(component, WCD937X_DIGITAL_CDC_RX2_CTL, BIT(6), 0x00);
 	snd_soc_component_update_bits(component, WCD937X_DIGITAL_CDC_ANA_CLK_CTL, BIT(1), BIT(1));
+	snd_soc_component_write_field(component, WCD937X_AUX_AUXPA,
+					      0x80, 0);
+	snd_soc_component_write_field(component, WCD937X_AUX_AUXPA,
+					      WCD937X_AUXPA_CLK_EN_MASK, 1);
 
 	atomic_inc(&wcd937x->rx_clk_cnt);
 
@@ -343,7 +812,7 @@ static int wcd937x_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+	printk("Codec_hphl_dac hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		wcd937x_rx_clk_enable(component);
@@ -400,6 +869,7 @@ static int wcd937x_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_component_update_bits(component,
 					      WCD937X_HPH_NEW_INT_HPH_TIMER1,
 					      BIT(1), 0x00);
+					 // wcd937x_reg_dump(component);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_component_update_bits(component,
@@ -418,6 +888,7 @@ static int wcd937x_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
+	printk("Codec_hphr_dac hph_mode: %d",hph_mode);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -487,7 +958,7 @@ static int wcd937x_codec_ear_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+printk("Codec_ear_dac hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		wcd937x_rx_clk_enable(component);
@@ -542,7 +1013,7 @@ static int wcd937x_codec_aux_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+printk("Codec_aux_dac hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		wcd937x_rx_clk_enable(component);
@@ -578,7 +1049,7 @@ static int wcd937x_codec_enable_hphr_pa(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+printk("Codec_hphr_pa hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		wcd_clsh_ctrl_set_state(wcd937x->clsh_info,
@@ -647,7 +1118,7 @@ static int wcd937x_codec_enable_hphl_pa(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+printk("Codec_hphl_pa hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		wcd_clsh_ctrl_set_state(wcd937x->clsh_info,
@@ -715,12 +1186,12 @@ static int wcd937x_codec_enable_aux_pa(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+printk("Codec_aux_dac hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		snd_soc_component_update_bits(component,
 					      WCD937X_DIGITAL_PDM_WD_CTL2,
-					      BIT(0), BIT(0));
+					      0x5, 0x5);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		usleep_range(1000, 1010);
@@ -729,6 +1200,9 @@ static int wcd937x_codec_enable_aux_pa(struct snd_soc_dapm_widget *w,
 						      WCD937X_ANA_RX_SUPPLIES,
 						      BIT(1), BIT(1));
 		enable_irq(wcd937x->aux_pdm_wd_int);
+		printk("----------AUX- POST_PMU--------------");
+		wcd937x_reg_dump(component);
+		printk("----------AUX- POST_PMU END--------------");
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		disable_irq_nosync(wcd937x->aux_pdm_wd_int);
@@ -741,7 +1215,7 @@ static int wcd937x_codec_enable_aux_pa(struct snd_soc_dapm_widget *w,
 					hph_mode);
 		snd_soc_component_update_bits(component,
 					      WCD937X_DIGITAL_PDM_WD_CTL2,
-					      BIT(0), 0x00);
+					      0x05, 0x00);
 		break;
 	}
 
@@ -755,7 +1229,7 @@ static int wcd937x_codec_enable_ear_pa(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
 	int hph_mode = wcd937x->hph_mode;
-
+printk("Codec_ear_pa hph_mode: %d",hph_mode);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Enable watchdog interrupt for HPHL or AUX depending on mux value */
@@ -765,15 +1239,15 @@ static int wcd937x_codec_enable_ear_pa(struct snd_soc_dapm_widget *w,
 		if (wcd937x->ear_rx_path & EAR_RX_PATH_AUX)
 			snd_soc_component_update_bits(component,
 						      WCD937X_DIGITAL_PDM_WD_CTL2,
-						      BIT(0), BIT(0));
+						      0x05, 0x05);
 		else
 			snd_soc_component_update_bits(component,
 						      WCD937X_DIGITAL_PDM_WD_CTL0,
-						      0x07, 0x03);
+						      0x17, 0x13);
 		if (!wcd937x->comp1_enable)
 			snd_soc_component_update_bits(component,
 						      WCD937X_ANA_EAR_COMPANDER_CTL,
-						      BIT(7), BIT(7));
+						      0x80, 0x80);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		usleep_range(6000, 6010);
@@ -809,11 +1283,12 @@ static int wcd937x_codec_enable_ear_pa(struct snd_soc_dapm_widget *w,
 		if (wcd937x->ear_rx_path & EAR_RX_PATH_AUX)
 			snd_soc_component_update_bits(component,
 						      WCD937X_DIGITAL_PDM_WD_CTL2,
-						      BIT(0), 0x00);
+						      0x05, 0x00);
 		else
 			snd_soc_component_update_bits(component,
 						      WCD937X_DIGITAL_PDM_WD_CTL0,
-						      0x07, 0x00);
+						      0x17, 0x00);
+					      
 		break;
 	}
 
@@ -1347,8 +1822,8 @@ static int wcd937x_set_swr_port(struct snd_kcontrol *kcontrol,
 }
 
 static const char * const rx_hph_mode_mux_text[] = {
-	"CLS_H_NORMAL", "CLS_H_INVALID", "CLS_H_HIFI", "CLS_H_LP", "CLS_AB",
-	"CLS_H_LOHIFI", "CLS_H_ULP", "CLS_AB_LP", "CLS_AB_HIFI",
+	"CLS_H_INVALID", "CLS_H_HIFI", "CLS_H_LP", "CLS_AB", "CLS_H_LOHIFI",
+	"CLS_H_ULP", "CLS_AB_HIFI",
 };
 
 static const struct soc_enum rx_hph_mode_mux_enum =
@@ -2049,7 +2524,19 @@ static const struct snd_kcontrol_new wcd937x_snd_controls[] = {
 		       wcd937x_get_swr_port, wcd937x_set_swr_port),
 	SOC_SINGLE_EXT("HPHR Switch", WCD937X_HPH_R, 0, 1, 0,
 		       wcd937x_get_swr_port, wcd937x_set_swr_port),
-
+	SOC_SINGLE_EXT("CLSH Switch", WCD937X_CLSH, 0, 1, 0,
+		       wcd937x_get_swr_port, wcd937x_set_swr_port),
+	SOC_SINGLE_EXT("LO Switch", WCD937X_LO, 0, 1, 0,
+		       wcd937x_get_swr_port, wcd937x_set_swr_port),
+	SOC_SINGLE_EXT("DSD_L Switch", WCD937X_DSD_L, 0, 1, 0,
+		       wcd937x_get_swr_port, wcd937x_set_swr_port),
+	SOC_SINGLE_EXT("DSD_R Switch", WCD937X_DSD_R, 0, 1, 0,
+		       wcd937x_get_swr_port, wcd937x_set_swr_port),
+		       ////ear rdac should switch too
+		       /*
+	SOC_SINGLE_EXT("LO Switch", WCD937X_LO, 0, 1, 0,
+		       wcd937x_get_swr_port, wcd937x_set_swr_port),
+		       */
 	SOC_SINGLE_EXT("ADC1 Switch", WCD937X_ADC1, 1, 1, 0,
 		       wcd937x_get_swr_port, wcd937x_set_swr_port),
 	SOC_SINGLE_EXT("ADC2 Switch", WCD937X_ADC2, 1, 1, 0,
