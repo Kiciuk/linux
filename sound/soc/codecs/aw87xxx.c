@@ -27,6 +27,7 @@ static const struct regmap_config aw87xxx_remap_config = {
 
 struct init_data {
 struct reg_sequence *aw87xxx_reg_init;
+//struct reg_sequence *aw87xxx_reg_override;
 int reg_seq_size;
 unsigned int aw87xxx_version;
 };
@@ -45,8 +46,32 @@ struct aw87xxx_device {
 	struct gpio_desc *reset_gpiod;
 };
 
-
+//dspk
+//abspk
 static const struct reg_sequence aw87359_reg_init[] = {
+
+{0x70, 0x80},
+	{0x01, 0x00},
+	{0x01, 0x00},
+	{0x02, 0x0C},
+	{0x03, 0x08},
+	{0x04, 0x05},
+	{0x05, 0x10},
+	{0x06, 0x07},
+	{0x07, 0x4E},
+	{0x08, 0x06},
+	{0x09, 0x08},
+	{0x0A, 0x4A},
+	{0x61, 0xBB},
+	{0x62, 0x80},
+	{0x63, 0x29},
+	{0x64, 0x58},
+	{0x65, 0xCD},
+	{0x66, 0x3C},
+	{0x67, 0x2F},
+	{0x68, 0x07},
+	{0x69, 0xDB},
+	{0x01, 0x0D},
 {0x70, 0x80},
 {0x1, 0x0},
 {0x1, 0x0},
@@ -72,10 +97,57 @@ static const struct reg_sequence aw87359_reg_init[] = {
 };
 
 
-
-
-static const struct reg_sequence aw87519_reg_init[] = {
+//kspk custom maybe we need stock?
+/*
+static const struct reg_sequence aw87519_reg_override_init[] = {
 {0x69, 0xB7},
+{0x69, 0xB7},
+{0x2, 0x9},
+{0x3, 0xE8},
+{0x4, 0x11},
+{0x5, 0x0C},
+{0x6, 0x4B},
+{0x7, 0xB6},
+{0x8, 0x0B},
+{0x9, 0x08},
+{0xA, 0x4B},
+{0x60, 0x16},
+{0x61, 0x20},
+{0x62, 0x01},
+{0x63, 0x0B},
+{0x64, 0xC5},
+{0x65, 0xA4},
+{0x66, 0x78},
+{0x67, 0xC4},
+{0x68, 0x90},
+{0x01, 0xF0},
+};
+*/
+//defaults now
+static const struct reg_sequence aw87519_reg_init[] = {
+
+{0x69, 0x80},
+	{0x69, 0xB7},
+	{0x01, 0xF0},
+	{0x02, 0x09},
+	{0x03, 0xE8},
+	{0x04, 0x11},
+	{0x05, 0x10},
+	{0x06, 0x43},
+	{0x07, 0x4E},
+	{0x08, 0x03},
+	{0x09, 0x08},
+	{0x0A, 0x4A},
+	{0x60, 0x16},
+	{0x61, 0x20},
+	{0x62, 0x01},
+	{0x63, 0x0B},
+	{0x64, 0xC5},
+	{0x65, 0xA4},
+	{0x66, 0x78},
+	{0x67, 0xC4},
+	{0x68, 0X90},
+	{0x69, 0xB7},
 {0x69, 0xB7},
 {0x2, 0x9},
 {0x3, 0xE8},
@@ -119,32 +191,7 @@ u32 val;
 
 ret = regmap_multi_reg_write(aw_device->regmap, aw_device->data->aw87xxx_reg_init,
 				     aw_device->data->reg_seq_size);
-				      
-regmap_read(aw_device->regmap, 0x70, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x2, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x3, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x4, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x5, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x6, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x7, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x8, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x9, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0xA, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x61, &val);
-printk("value: 0x%x",val);
-regmap_read(aw_device->regmap, 0x62, &val);
-printk("value: 0x%x",val);
-     
+	printk("aw87xxx_init returned %d",ret);
 	return ret;
 }
 
@@ -169,7 +216,39 @@ static int aw87519_read_chipid(struct aw87xxx_device *aw_dev)
 	return -EINVAL;
 };
 
- 
+void aw87xxx_reg_dump(struct aw87xxx_device *aw_device) 
+{
+u32 val =0;
+
+regmap_read(aw_device->regmap, 0x70, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x1, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x2, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x3, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x4, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x5, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x6, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x7, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x8, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x9, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0xA, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x61, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x62, &val);
+printk("value: 0x%x",val);
+regmap_read(aw_device->regmap, 0x1, &val);
+printk("Enable value: 0x%x",val);
+};
 
 
 static int aw87xxx_hw_reset(struct aw87xxx_device *aw_dev) 
@@ -213,13 +292,13 @@ static int aw87xxx_drv_event(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-	aw87xxx_power_off(aw87xxx);
-	printk("[aw]initing via regmap");
+	//aw87xxx_power_off(aw87xxx);
+	printk("[aw]initing via regmap version:%d",aw87xxx->data->aw87xxx_version);
 	ret = aw87xxx_init(aw87xxx);
 	printk("[aw]inited regs");
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		ret = aw87xxx_power_off(aw87xxx);
+		//ret = aw87xxx_power_off(aw87xxx);
 		printk("[aw]post_pmd");
 		break;
 	default:
@@ -330,6 +409,11 @@ if(aw87xxx->data->aw87xxx_version == AWINIC_AW87519 )
 	ret = regmap_write(aw87xxx->regmap, AW87XXX_SYSCTRL_REG, AW87XXX_POWER_DOWN_VALUE);
 	if (ret) {
 		dev_err(dev, "failed to power down amp: %d\n", ret);
+		return ret;
+	}
+	ret = aw87xxx_init(aw87xxx);
+	if (ret) {
+		dev_err(dev, "failed to init: %d\n", ret);
 		return ret;
 	}
 
