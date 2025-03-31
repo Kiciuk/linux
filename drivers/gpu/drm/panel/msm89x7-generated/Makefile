@@ -29,3 +29,4 @@ obj-$(CONFIG_DRM_PANEL_XIAOMI_SANTONI_ILI9881C_EBBG) += panel-xiaomi-santoni-ili
 obj-$(CONFIG_DRM_PANEL_XIAOMI_UGGLITE_ILI9881C_SC) += panel-xiaomi-ugglite-ili9881c-sc.o
 obj-$(CONFIG_DRM_PANEL_XIAOMI_UGGLITE_OTM1901A_HX) += panel-xiaomi-ugglite-otm1901a-hx.o
 obj-$(CONFIG_DRM_PANEL_XIAOMI_UGGLITE_OTM1901A_TM) += panel-xiaomi-ugglite-otm1901a-tm.o
+obj-$(CONFIG_DRM_PANEL_MSM89X7_GENERATED) += panel-s6d7at0b01-bs060wkmp.o
