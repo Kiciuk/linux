@@ -133,6 +133,13 @@
 	};
 /* usb_id todo */
 
+backlight_dsi: backlight-dsi {
+		compatible = "led-backlight";
+		leds = <&disp_backlight>;
+		max-brightness = <255>;
+
+	};
+
 i2c-backlight@22 {
 
 	compatible = "i2c-gpio";
@@ -177,10 +184,10 @@ i2c-backlight@22 {
 	
 	
 
-	backlight {
+	disp_backlight: backlight {
 		compatible = "ti,lm3632-backlight";
 
-		disp_backlight: lcd_bl {
+		lcd_bl {
 			led-sources = <0 1>;
 			ramp-up-us = <300000>;
 		};
