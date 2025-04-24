@@ -5,7 +5,7 @@
  * Copyright (C) 2010 - 2017 Novatek, Inc.
  * Copyright (C) 2020 AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
  */
-
+#define DEBUG 1
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
@@ -40,6 +40,42 @@
 /* Global pages */
 #define NT36XXX_PAGE_CHIP_INFO		0x0001f64e
 #define NT36XXX_PAGE_CRC		0x0003f135
+
+/* Misc */
+#define NT36XXX_NUM_SUPPLIES	 2
+#define NT36XXX_MAX_RETRIES	 5
+#define NT36XXX_MAX_FW_RST_RETRY 50
+
+struct nt36xxx_res_data {
+        u16 x;
+	u16 y;
+};
+
+
+struct nt36xxx_abs_object {
+	u16 x;
+	u16 y;
+	u16 z;
+	u8 tm;
+};
+
+struct nt36xxx_fw_info {
+	u8 fw_ver;
+	u8 x_num;
+	u8 y_num;
+	u8 max_buttons;
+	u16 abs_x_max;
+	u16 abs_y_max;
+	u16 nvt_pid;
+};
+
+struct nt36xxx_mem_map {
+	u32 evtbuf_addr;
+	u32 pipe0_addr;
+	u32 pipe1_addr;
+	u32 flash_csum_addr;
+	u32 flash_data_addr;
+};
 
 struct nt36xxx_i2c {
 	struct i2c_client *hw_client;
@@ -157,6 +193,11 @@ static const struct nt36xxx_trim_table trim_id_table[] = {
 		.id = { 0xff, 0xff, 0xff, 0x76, 0x66, 0x03 },
 		.mask = { 0, 0, 0, 1, 1, 1 },
 		.mapid = NT36676F_IC,
+	},
+	{
+	 .id = { 0xFF, 0xFF, 0xFF, 0x70, 0x68, 0x03 },
+	 .mask = { 0, 0, 0, 1, 1, 1 },
+	 .mapid = NT36870_IC,
 	},
 };
 
@@ -314,6 +355,10 @@ static int __nt36xxx_get_fw_info(struct nt36xxx_i2c *ts)
 		dev_err(&ts->hw_client->dev,
 			"FW info is broken! fw_ver=0x%02X, ~fw_ver=0x%02X\n",
 			buf[0], buf[1]);
+			
+			dev_err(&ts->hw_client->dev,
+			"FW info dump buf0=0x%02X, buf1=0x%02X, buf2=0x%02X, buf3=0x%02X, buf4=0x%02X, buf6=0x%02X,, buf10=0x%02X\n",
+			buf[0], buf[1], buf[2], buf[3], buf[4], buf[6], buf[10]);
 		fwi->fw_ver = 0;
 		fwi->x_num = 18;
 		fwi->y_num = 32;
@@ -338,7 +383,7 @@ static int nt36xxx_get_fw_info(struct nt36xxx_i2c *ts)
 			break;
 	}
 
-	dev_dbg(&ts->hw_client->dev,
+	dev_err(&ts->hw_client->dev,
 		"FW Info: PID=0x%x, ver=0x%x res=%ux%u max=%ux%u buttons=%u",
 		fwi->nvt_pid, fwi->fw_ver, fwi->x_num, fwi->y_num,
 		fwi->abs_x_max, fwi->abs_y_max, fwi->max_buttons);
@@ -455,7 +500,7 @@ static int nt36xxx_stop_crc_reboot(struct nt36xxx_i2c *ts)
 	/* Change I2C index to prevent getting 0xFF, but not 0xFC */
 	ret = nt36xxx_set_page(ts, NT36XXX_PAGE_CHIP_INFO);
 	if (ret) {
-		dev_dbg(&ts->hw_client->dev,
+		dev_err(&ts->hw_client->dev,
 			"CRC reset failed: Cannot select page.\n");
 		return ret;
 	}
@@ -475,13 +520,13 @@ static int nt36xxx_stop_crc_reboot(struct nt36xxx_i2c *ts)
 		ret = regmap_write(ts->regmap, ts->hw_client->addr,
 				   NT36XXX_CMD_SW_RESET);
 		if (ret)
-			dev_dbg(&ts->hw_client->dev,
+			dev_err(&ts->hw_client->dev,
 				"SW Reset 1 failed: may not recover\n");
 
 		ret = regmap_write(ts->regmap, ts->hw_client->addr,
 				   NT36XXX_CMD_SW_RESET);
 		if (ret)
-			dev_dbg(&ts->hw_client->dev,
+			dev_err(&ts->hw_client->dev,
 				"SW Reset 2 failed: may not recover\n");
 		usleep_range(1000, 1100);
 
@@ -572,6 +617,7 @@ static int nt36xxx_i2c_chip_version_init(struct nt36xxx_i2c *ts)
 			if (i == NT36XXX_ID_LEN_MAX) {
 				mapid = trim_id_table[list].mapid;
 				ts->mmap = &nt36xxx_memory_maps[mapid];
+				dev_err(&ts->hw_client->dev, "found map_id: %d\n",mapid);
 				return 0;
 			}
 
@@ -617,6 +663,7 @@ static int nt36xxx_i2c_probe(struct i2c_client *hw_client)
 {
 	struct nt36xxx_i2c *ts;
 	struct input_dev *input;
+	struct nt36xxx_res_data resolution;
 	int ret;
 
 	if (!i2c_check_functionality(hw_client->adapter, I2C_FUNC_I2C)) {
@@ -716,11 +763,10 @@ static int nt36xxx_i2c_probe(struct i2c_client *hw_client)
 	if (ret < 0)
 		return ret;
 
-	/* Get information from the TS firmware */
+	/* Get informations from the TS firmware */
+        /*maybe we shouldn't hard quit? */
 	ret = nt36xxx_get_fw_info(ts);
-	if (ret < 0)
-		return ret;
-
+	
 	input->phys = devm_kasprintf(&hw_client->dev, GFP_KERNEL,
 				     "%s/input0", dev_name(&hw_client->dev));
 	if (!input->phys)
