@@ -51,32 +51,6 @@ struct nt36xxx_res_data {
 	u16 y;
 };
 
-
-struct nt36xxx_abs_object {
-	u16 x;
-	u16 y;
-	u16 z;
-	u8 tm;
-};
-
-struct nt36xxx_fw_info {
-	u8 fw_ver;
-	u8 x_num;
-	u8 y_num;
-	u8 max_buttons;
-	u16 abs_x_max;
-	u16 abs_y_max;
-	u16 nvt_pid;
-};
-
-struct nt36xxx_mem_map {
-	u32 evtbuf_addr;
-	u32 pipe0_addr;
-	u32 pipe1_addr;
-	u32 flash_csum_addr;
-	u32 flash_data_addr;
-};
-
 struct nt36xxx_i2c {
 	struct i2c_client *hw_client;
 	struct i2c_client *fw_client;
