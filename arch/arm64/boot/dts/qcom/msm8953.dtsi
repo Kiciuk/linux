@@ -3046,6 +3046,17 @@
 					sound-dai = <&lpass_codec 1>, <&wcd_codec 1>;
 				};
 			};
+			
+			sound_dai_quaternary: dai-link-quaternary {
+				link-name = "Quaternary MI2S";
+				status = "disabled"; /* Needs extra codec configuration */
+				cpu {
+					sound-dai = <&q6afedai QUATERNARY_MI2S_RX>;
+				};
+				platform {
+					sound-dai = <&q6routing>;
+				};
+			};
 		};
 
 		lpass_codec: codec@c0f0000 {
@@ -3120,6 +3131,7 @@
 								reg = <TERTIARY_MI2S_TX>;
 								qcom,sd-lines = <0 1>;
 							};
+
 							dai@127 {
 								reg = <QUINARY_MI2S_RX>;
 								qcom,sd-lines = <0>;
