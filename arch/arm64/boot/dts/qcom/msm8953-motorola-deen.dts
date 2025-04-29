@@ -15,6 +15,15 @@
 	qcom,msm-id = <293 0>;
 	qcom,board-id = <0x4d 0xc100>;
 
+	battery: battery {
+		compatible = "simple-battery";
+
+		charge-full-design-microamp-hours = <3000000>;
+		constant-charge-current-max-microamp = <1000000>;
+		voltage-min-design-microvolt = <3400000>;
+		voltage-max-design-microvolt = <4400000>;
+	};
+
 	gpio-keys {
 		compatible = "gpio-keys";
 
@@ -68,18 +77,21 @@
 };
 
 &pmi8950_smbcharger {
-	status = "disabled";
+	monitored-battery = <&battery>;
+	status = "okay";
 };
 
 &pmi8950_fg {
-	status = "disabled";
+	monitored-battery = <&battery>;
+	power-supplies = <&pmi8950_smbcharger>;
+	status = "okay";
 };
 
 &atc_leds {
 	status = "disabled";
 };
 
-&dsi0 {
+&mdss_dsi0 {
 	status = "okay";
 
 	vdda-supply = <&pm8953_s3>;
@@ -97,23 +109,23 @@
 
 		reset-gpios = <&tlmm 61 GPIO_ACTIVE_LOW>;
 
-		vsp-supply = <&lab_vreg>;
-		vsn-supply = <&ibb_vreg>;
+		vsp-supply = <&lab>;
+		vsn-supply = <&ibb>;
 
 		port {
 			panel_in: endpoint {
-				remote-endpoint = <&dsi0_out>;
+				remote-endpoint = <&mdss_dsi0_out>;
 			};
 		};
 	};
 };
 
-&dsi0_out {
+&mdss_dsi0_out {
 	data-lanes = <0 1 2 3>;
 	remote-endpoint = <&panel_in>;
 };
 
-&dsi0_phy {
+&mdss_dsi0_phy {
 	vcca-supply = <&pm8953_l3>;
 
 	status = "okay";
@@ -151,9 +163,11 @@
 	status = "okay";
 	
 touchscreen@62 {
-        compatible = "novatek,nt36525";
+        compatible = "novatek,nt36525-i2c";
         reg = <0x62>;
         interrupt-parent = <&tlmm>;
+        touchscreen-size-x = <720>;
+        touchscreen-size-y = <1520>;
         pinctrl-names = "default";
 	pinctrl-0 = <&ts_reset &ts_int>;
         vio-supply = <&pm8953_l6>;
@@ -170,7 +184,7 @@ touchscreen@62 {
 };
 
 &mpss {
-	status = "disabled";
+	status = "okay";
 
 	mss-supply = <&pm8953_s1>;
 	pll-supply = <&pm8953_l7>;
@@ -362,7 +376,7 @@ status = "okay";
 };
 
 &tlmm {
-	gpio-reserved-ranges = <1 2>, <96 4>, <111 1>, <126 1>;
+	gpio-reserved-ranges = <96 4>, <111 1>, <126 1>;
 
 	ts_reset: ts-reset-state {
 		pins = "gpio64";
@@ -370,7 +384,14 @@ status = "okay";
 		drive-strength = <2>;
 		bias-pull-up;
 	};
-
+	
+	ts_int: ts-int-state {
+		pins = "gpio65";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-pull-up;
+	};
+	
 	pmx_mdss_default: pmx-mdss-default-state {
 		pins = "gpio61";
 		function = "gpio";
@@ -423,11 +444,15 @@ status = "okay";
 };
 
 &usb3 {
+	extcon = <&pmi8950_smbcharger>;
 	status = "okay";
 };
 
 &usb3_dwc3 {
-	dr_mode = "peripheral";
+	usb-psy-name = "qcom-smbchg-usb";
+	extcon = <&pmi8950_smbcharger>;
+	vbus-supply = <&otg_vbus>;
+	dr_mode = "otg";
 };
 
 &wcd_codec {
@@ -450,6 +475,10 @@ status = "okay";
 	vddpx-supply = <&pm8953_l5>;
 };
 
+&wcnss_ctrl {
+	firmware-name = "qcom/msm8953/motorola/deen/WCNSS_qcom_wlan_nv.bin";
+};
+
 &wcnss_iris {
 	compatible = "qcom,wcn3660b";
 
@@ -457,5 +486,47 @@ status = "okay";
 	vddrfa-supply = <&pm8953_l19>;
 	vddpa-supply = <&pm8953_l9>;
 	vdddig-supply = <&pm8953_l5>;
+	
+	status = "okay";
+};
+&i2c_1 {
+	status = "okay";
+
+	fusb302: typec-portc@22 {
+
+		compatible = "fcs,fusb302";
+
+		reg = <0x22>;
+		interrupt-parent = <&tlmm>;
+		//DS says IRQ_TYPE_EDGE_RISING
+		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
+		vbus-supply = <&otg_vbus>;
+		status = "okay";
+		};
+
 };
 
+&ibb {
+	qcom,discharge-resistor-kohms = <32>;
+};
+
+&i2c_5 {
+	status = "okay";
+	
+	npc100: pn533@28 {
+		compatible = "nxp,nxp-nci-i2c";
+
+		reg = <0x28>;
+		clock-frequency = <100000>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <17 IRQ_TYPE_LEVEL_HIGH>;
+
+		enable-gpios = <&tlmm 16 GPIO_ACTIVE_HIGH>;
+		firmware-gpios = <&tlmm 62 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&zap_shader {
+	firmware-name = "qcom/msm8953/motorola/deen/a506_zap.mdt";
+};
