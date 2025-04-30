@@ -67,6 +67,33 @@
 			pmsg-size = <0x800>;
 		};
 	};
+	
+		spi {
+		compatible = "spi-gpio";
+		
+		 #address-cells = <1>;
+        #size-cells = <0>;
+        
+		sck-gpios = <&tlmm 23 0>;
+		miso-gpios = <&tlmm 21 0>;
+		mosi-gpios = <&tlmm 20 0>;
+		cs-gpios = <&tlmm 22 1>;
+		num-chipselects = <1>;
+		
+		imu@1 {
+			compatible = "st,lsm6ds3tr-c";
+			reg = <0x1>;
+			interrupt-parent = <&tlmm>;
+			 interrupts = <42 IRQ_TYPE_EDGE_RISING>,
+			 <45 IRQ_TYPE_EDGE_RISING>;
+			vdd-supply = <&pm8953_l10>;
+			vddio-supply = <&pm8953_l6>;
+			mount-matrix = "-1", "0", "0",
+					"0", "1", "0",
+					"0", "0", "1";
+		};
+	};
+
 
 	vph_pwr: vph-pwr-regulator {
 		compatible = "regulator-fixed";
@@ -490,7 +517,7 @@ status = "okay";
 	status = "okay";
 };
 &i2c_1 {
-	status = "okay";
+	status = "disabled";
 
 	fusb302: typec-portc@22 {
 
@@ -501,7 +528,7 @@ status = "okay";
 		//DS says IRQ_TYPE_EDGE_RISING
 		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
 		vbus-supply = <&otg_vbus>;
-		status = "okay";
+		status = "disabled";
 		};
 
 };
