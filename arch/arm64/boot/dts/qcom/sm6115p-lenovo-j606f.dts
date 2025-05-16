@@ -355,6 +355,7 @@
 };
 
 &usb {
+	qcom,select-utmi-as-pipe-clk;
 	status = "okay";
 };
 
