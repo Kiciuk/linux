@@ -1398,14 +1398,21 @@
 			};
 
 			spi_6_default: spi-6-default-state {
-				pins = "gpio22", "gpio23";
+				pins = "gpio20", "gpio21", "gpio23";
+				function = "blsp_spi6";
+				drive-strength = <12>;
+				bias-disable;
+			};
+			
+			spi_6_cs_default: spi-6-cs-default-state {
+				pins = "gpio22";
 				function = "blsp_spi6";
 				drive-strength = <2>;
 				bias-disable;
 			};
 
 			spi_6_sleep: spi-6-sleep-state {
-				pins = "gpio22", "gpio23";
+				pins = "gpio20", "gpio21", "gpio23";
 				function = "gpio";
 				drive-strength = <2>;
 				bias-disable;

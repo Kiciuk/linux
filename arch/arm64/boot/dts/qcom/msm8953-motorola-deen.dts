@@ -78,14 +78,16 @@
 		miso-gpios = <&tlmm 21 0>;
 		mosi-gpios = <&tlmm 20 0>;
 		cs-gpios = <&tlmm 22 1>;
-		num-chipselects = <1>;
+		num-chipselects = <0>;
 		
-		imu@1 {
+		imu@0 {
 			compatible = "st,lsm6ds3tr-c";
-			reg = <0x1>;
+			reg = <0x0>;
 			interrupt-parent = <&tlmm>;
 			 interrupts = <42 IRQ_TYPE_EDGE_RISING>,
 			 <45 IRQ_TYPE_EDGE_RISING>;
+			pinctrl-0 = <&spi_6_default>, <&spi_6_cs_default>;
+			pinctrl-names =  "default";
 			vdd-supply = <&pm8953_l10>;
 			vddio-supply = <&pm8953_l6>;
 			mount-matrix = "-1", "0", "0",
