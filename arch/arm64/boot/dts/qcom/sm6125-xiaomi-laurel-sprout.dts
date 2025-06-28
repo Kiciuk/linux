@@ -157,6 +157,30 @@
 	};
 };
 
+&dispcc {
+	status = "okay";
+};
+
+&adreno_smmu {
+	status = "okay";
+};
+
+&gmu_wrapper {
+	status = "okay";
+};
+
+&gpu {
+	status = "okay";
+
+	zap-shader {
+		firmware-name = "qcom/sm6125/xiaomi/laurel/a610_zap.mbn";
+	};
+};
+
+&gpucc {
+	status = "okay";
+};
+
 &hsusb_phy1 {
 	vdd-supply = <&vreg_l7a>;
 	vdda-pll-supply = <&vreg_l10a>;
