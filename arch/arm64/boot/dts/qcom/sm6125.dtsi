@@ -1606,6 +1606,8 @@
 			#clock-cells = <1>;
 			#reset-cells = <1>;
 			#power-domain-cells = <1>;
+
+			status = "disabled";
 		};
 
 		apps_smmu: iommu@c600000 {
