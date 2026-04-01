@@ -62,11 +62,6 @@
 		};
 	};
 
-	extcon_usb: usb-id {
-		compatible = "linux,extcon-usb-gpio";
-		id-gpios = <&tlmm 102 GPIO_ACTIVE_HIGH>;
-	};
-
 	gpio-keys {
 		compatible = "gpio-keys";
 
@@ -601,10 +596,6 @@
 
 &usb3 {
 	status = "okay";
-};
-
-&usb3_dwc3 {
-	extcon = <&extcon_usb>;
 };
 
 &usb_dwc3_hs {
