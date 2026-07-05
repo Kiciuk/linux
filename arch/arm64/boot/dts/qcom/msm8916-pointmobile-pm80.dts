@@ -1,0 +1,588 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+#include "msm8916-pm8916.dtsi"
+#include "msm8916-modem-qdsp6.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+#include <dt-bindings/pinctrl/qcom,pmic-mpp.h>
+
+
+/ {
+	model = "PointMobile PM80";
+	compatible = "pointmobile,pm80", "qcom,msm8916";
+	chassis-type = "handset";
+
+	aliases {
+		mmc0 = &sdhc_1; /* eMMC */
+		mmc1 = &sdhc_2; /* SD card */
+		serial0 = &blsp_uart2;
+	};
+	
+	/* Define the 1-Wire Bus Master via GPIO */
+onewire {
+    compatible = "w1-gpio";
+    gpios = <&gpio1 17 GPIO_ACTIVE_HIGH>; /* Example: GPIO pin used for HDQ/1W line */
+    status = "okay";
+
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    /* The BQ27xxx Fuel Gauge Node mapped to the 1-Wire Bus */
+    battery_gauge: fuel-gauge@0 {
+        compatible = "ti,bq27541";        /* Replace with your exact TI chip variant */
+        reg = <0>;                         /* 1-Wire slave address index or ID mapping */
+        monitored-battery = <&bat_profile>;/* Links to battery chemistry specifications */
+        status = "okay";
+    };
+};
+
+/* Optional: Define the physical battery specifications */
+bat_profile: simple-battery {
+    compatible = "simple-battery";
+    voltage-min-design-microvolt = <3200000>;   /* 3.2V */
+    voltage-max-design-microvolt = <4200000>;   /* 4.2V */
+    energy-full-design-microwatt-hours = <5290000>; /* */
+    charge-full-design-microamp-hours = <1430000>;  /* */
+};
+
+	
+	
+	
+ 	bq24086_charger: charger {
+ 	
+ 	
+ 	//////TE pin is and 0x61 set to low enabling battery detection
+ 	////// POwer good is output so we should read it as input-enable
+ 	///CE should be set LOW to charge yet here its set to high wtf?
+ 	
+		compatible = "gpio-charger";
+		charger-type = "usb-sdp";
+		//boost 3 first pca
+		//boost-en = <0x52 0x03 0x00>;
+		//	charge-en = <0x52 0x00 0x00>;
+		//	chg-dect2-gpio = <0x48 0x61 0x2002>;
+			
+		/* Maps to the BQ24086 /PG pin */
+		gpios = <&gpio1 10 GPIO_ACTIVE_LOW>; 
+		
+		/* Maps to the BQ24086 STAT1 pin */
+		charge-status-gpios = <&tlmm 97 0x2002>; 
+		
+		/* Maps to the BQ24086 CE pin */
+		enable-gpios = <&pca9535_1_gpio 0 GPIO_ACTIVE_HIGH>; 
+	    };
+	    
+	    
+	    //ONFIG_BATTERY_BQ27XXX_HDQ
+    
+	chosen {
+		stdout-path = "serial0";
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+
+
+		label = "GPIO Buttons";
+		
+		button-scanner-attachment {
+			label = "Scan gun attachment";
+			gpios = <&tlmm 54 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_FN_F3>;
+		};
+
+		menu-key {
+			label = "Menu Key";
+			gpios = <&tlmm 119 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_MENU>;
+		};
+		
+		home-key {
+			label = "Home Key";
+			gpios = <&tlmm 118 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_HOME>;
+		};
+
+		back-key {
+			label = "Back Key";
+			gpios = <&tlmm 121 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_BACK>;
+		};
+
+		function-key {
+			label = "Function Key";
+			gpios = <&tlmm 108 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_FN>;
+		};
+
+		button-volume-up {
+			label = "Volume Up";
+			gpios = <&tlmm 107 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+		
+		button-scanner-right {
+			label = "Scanner Right";
+			gpios = <&tlmm 69 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_FN_F1>;
+		};
+		
+		button-scanner-left {
+			label = "Scanner Left";
+			gpios = <&tlmm 109 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_FN_F2>;
+		};
+
+		battery-case-open {
+			label = "Battery open";
+			gpios = <&tlmm 98 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_TAB>;
+		};
+	};
+
+	usb_id: usb-id {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpios = <&tlmm 110 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb_id_default>;
+	};
+	
+	speaker_amp: analog-amplifier {
+		compatible = "simple-audio-amplifier";
+		//VCC-supply = <&regulator>;
+		enable-gpios = <&tlmm 31 GPIO_ACTIVE_HIGH>;
+
+		pinctrl-0 = <&spk_ext_pa_default>;
+		pinctrl-names = "default";
+//jack switch 60
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pm8916_pwm 0 100000>;
+
+		brightness-levels = <0 255>;
+		num-interpolated-steps = <255>;
+		default-brightness-level = <255>;
+	};
+
+};
+
+&blsp_i2c1 {
+	//Honeywell n5600 barcode scanner module.
+
+	//ktd2685 connected to pca9395a &tlmm
+	//leds-sn31xx Vknecht driver
+
+	stk3310@48 {
+                compatible = "sensortek,stk3311";
+                reg = <0x48>;
+                proximity-near-level = <30>;
+                interrupt-parent = <&tlmm>;
+                interrupts = <113 IRQ_TYPE_LEVEL_LOW>;
+	//vdd l17,vio l6
+        };
+
+	st@6b {
+		compatible = "st,lsm6ds3";
+		reg = <0x6b>;
+		vdd-supply = &pm8916_l6;
+		vddio-supply = &pm8916_l6;
+		interrupts-extended = <&tlmm 115 0x2002>;
+		};
+};
+
+&blsp_i2c4 {
+	status = "okay";
+	//smb1357-charger
+};
+
+&blsp_i2c5 {
+	status = "okay";
+
+	touchscreen@20 {
+		compatible = "syna,rmi4-i2c";
+		reg = <0x20>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <13 0x2008>;
+
+		reset-gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
+		vdd-supply = <&pm8916_l17>;
+		vio-supply = <&pm8916_l6>;
+		
+		pinctrl-names = "default";
+		pinctrl-0 = <&touch_pins>;
+
+		syna,reset-delay-ms = <100>;
+		syna,startup-delay-ms = <160>;
+		
+		touchscreen-size-x = <720>;
+		touchscreen-size-y = <1280>;
+		rmi4-f01@1 {
+			reg = <0x01>;
+			syna,nosleep-mode = <1>;
+		};
+
+		rmi4_f12: rmi4-f12@12 {
+			reg = <0x12>;
+			syna,rezero-wait-ms = <20>;
+			syna,sensor-type = <1>;
+		};
+	};
+};
+
+
+&blsp_i2c6 {
+	status = "okay";
+
+	pca9535_1_gpio: gpio@20 {
+		compatible = "nxp,pca9535";
+		reg = <0x20>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <112 0x2008>;	/* IRQ_TYPE_LEVEL_LOW ??? 2008*/
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+
+	gpio-line-names =
+			"BQ24086_CHRG_EN", 
+			"UNUSED",
+			"WIZNOVA_RST_N",
+			"BQ24086_BOOST_EN",
+			"RS232_EN",
+			"HI846_CAM_AF_EN",
+			"TDA8029_SDWN_GPIO",
+			"TDA8029_RESET_GPIO",
+			"KTD2685_LED_FLASH",
+			"TDA8029_IRQ_GPIO",
+			"SN31_LED_EN",
+			"N6603_MIPI_OE",
+			"N6603_MIPI_SEL",
+			"TDA8029_EN_GPIO",
+			"SN31_LED_BLUE_EN",
+			"N6603_LASER_EN";
+	};
+
+	pca9535_2_gpio: gpio@22 {
+
+		compatible = "nxp,pca9535";
+		reg = <0x22>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <38 0x2008>;	/* IRQ_TYPE_LEVEL_LOW ??? 2008*/
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		gpio-line-names =
+			"N6603_ENGINE_RESET", 
+			"N6603_GPIO_PWR_EN",
+			"N6603_AIMER_EN",
+			"N6603_ILLUMINATOR_EN",
+			"UNUSED",
+			"N6603_FLASH_OUT",
+			"N6603_SHIFT_3P3_EN",
+			"N6603_SCAN_IO_LEVEL_SHIFT_EN",
+			"SDHCI_2_CD_GPIO",
+			"UNUSED_1",
+			"GPIO_I2C_LEVEL_SHIFT_EN",
+			"UNUSED",
+			"USB_OTG_VBUS_SEL",
+			"USB_OTG_SWITCH_EN",
+			"UNUSED_2",
+			"USB_OTG_EN";
+	};
+};
+
+&blsp_uart2 {
+	status = "okay";
+	pinctrl-0 = <&blsp_uart2_default>;
+	pinctrl-1 = <&blsp_uart2_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&blsp_uart2_default {
+//maybe more pins there
+	tx-pins {
+		pins = "gpio4";
+		function = "blsp_uart2";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	rx-pins {
+		pins = "gpio5";
+		function = "blsp_uart2";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+};
+
+
+&gpu {
+	status = "okay";
+};
+
+&mdss {
+	status = "okay";
+};
+
+
+&mdss_dsi0 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&mdss_active>;
+	pinctrl-1 = <&mdss_suspend>;
+
+	panel@0 {
+		compatible = "pointmobile,pm80-panel";
+		reg = <0>;
+
+		backlight = <&backlight>;
+		power-supply = <&pm8916_l17>;
+		reset-gpios = <&tlmm 25 GPIO_ACTIVE_LOW>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&mdss_dsi0_out>;
+			};
+		};
+	};
+};
+
+&mdss_dsi0_out {
+status = "okay";
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&mdss_dsi0_phy {
+status = "okay";
+
+};
+
+
+
+&mpss_mem {
+	reg = <0x0 0x86800000 0x0 0x5600000>;
+};
+//tofix there is jack switch
+
+&pm8916_codec {
+	qcom,micbias-lvl = <2800>;
+	qcom,mbhc-vthreshold-low = <75 100 120 180 500>;
+	qcom,mbhc-vthreshold-high = <75 100 120 180 500>;
+	qcom,hphl-jack-type-normally-open;
+};
+
+&pm8916_gpios {
+	nfc_clk_pin: nfc-clk-default-state {
+		pins = "gpio2";
+		function = "normal";
+		power-source = <PM8916_GPIO_L2>;
+		bias-disable;
+		input-enable;
+	};
+};
+
+&pm8916_pwm {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm_out>;
+};
+
+&pm8916_resin {
+	status = "okay";
+	linux,code = <KEY_VOLUMEDOWN>;
+};
+
+&pm8916_rpm_regulators {
+	
+
+	pm8916_l10: l10 {
+		regulator-min-microvolt = <2700000>;
+		regulator-max-microvolt = <2800000>;
+	};
+
+	pm8916_l15: l15 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	pm8916_l16: l16 {
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	pm8916_l17: l17 {
+		regulator-min-microvolt = <2850000>;
+		regulator-max-microvolt = <2850000>;
+	};
+
+	pm8916_l18: l18 {
+		regulator-min-microvolt = <2700000>;
+		regulator-max-microvolt = <2700000>;
+	};
+};
+
+&pm8916_vib {
+	status = "okay";
+};
+
+&sdhc_1 {
+	status = "okay";
+};
+
+&sdhc_2 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_default &sdc2_cd_default>;
+	pinctrl-1 = <&sdc2_sleep &sdc2_cd_default>;
+
+	//cd-gpios = <&pca9535_2_gpio 8 GPIO_ACTIVE_LOW>;
+};
+
+&sound {
+	/*
+	 * Provide widgets/pin-switches to allow enabling speaker separately.
+	 * The hardware does not provide a way to disable the output via the
+	 * headphone jack when the speaker is enabled.
+	 */
+	model = "bq-paella";
+	widgets =
+		"Speaker", "Speaker",
+		"Headphone", "Headphones";
+	pin-switches = "Speaker";
+	audio-routing =
+		"Speaker", "Speaker Amp OUT",
+		"Speaker Amp IN", "HPH_R",
+		"Headphones", "HPH_L",
+		"Headphones", "HPH_R",
+		"AMIC1", "MIC BIAS External1",
+		"AMIC2", "MIC BIAS Internal2",
+		"AMIC3", "MIC BIAS External1";
+	aux-devs = <&speaker_amp>;
+};
+
+&usb {
+	status = "okay";
+	extcon = <&usb_id>, <&usb_id>;
+};
+
+&usb_hs_phy {
+	extcon = <&usb_id>;
+};
+
+&venus {
+	status = "okay";
+};
+
+&venus_mem {
+	status = "okay";
+};
+
+&wcnss {
+	status = "okay";
+};
+
+&wcnss_iris {
+	compatible = "qcom,wcn3660b";
+};
+
+&wcnss_mem {
+	status = "okay";
+};
+
+&tlmm {
+
+	spk_ext_pa_default: spk-ext-pa-default-state {
+		pins = "gpio31";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
+	
+	mdss_active: mdss-active-state {
+		pins = "gpio25";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-disable;
+	};
+	
+	touch_pins: touch-state {
+		irq-pins {
+			pins = "gpio13";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+
+		reset-pins {
+			pins = "gpio12";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+
+	mdss_suspend: mdss-suspend-state {
+		pins = "gpio25";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	ts_int_reset_default: ts-int-reset-default-state {
+		pins = "gpio12", "gpio13";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	usb_id_default: usb-id-default-state {
+		pins = "gpio110";
+		function = "gpio";
+
+		drive-strength = <8>;
+		bias-pull-up;
+	};
+	sdc2_cd_default: sdc2-cd-default-state {
+		pins = "gpio38";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
+};
+
+&pm8916_mpps {
+	none_out: mpp2-state {
+		pins = "mpp2";
+		function = "analog";
+		//invert
+		power-source = <PM8916_MPP_VPH>;
+		input-enable;
+		qcom,paired;
+		qcom,amux-route = <PMIC_MPP_AMUX_ROUTE_CH6>;
+	};
+
+	pwm_out: mpp4-state {
+		pins = "mpp4";
+		function = "digital";
+		power-source = <PM8916_MPP_VPH>;
+		output-low;
+		qcom,dtest = <1>;
+	};
+};
