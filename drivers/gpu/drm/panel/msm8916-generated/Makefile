@@ -43,3 +43,4 @@ obj-$(CONFIG_DRM_PANEL_WINGTECH_SHARP_R69431) += panel-wingtech-sharp-r69431.o
 obj-$(CONFIG_DRM_PANEL_WINGTECH_TIANMA_HX8394D) += panel-wingtech-tianma-hx8394d.o
 obj-$(CONFIG_DRM_PANEL_WINGTECH_TM_OTM1901A) += panel-wingtech-tm-otm1901a.o
 obj-$(CONFIG_DRM_PANEL_WINGTECH_YASSY_ILI9881) += panel-wingtech-yassy-ili9881.o
+obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-pointmobile-pm80-ili9881d.o
