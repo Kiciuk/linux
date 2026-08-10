@@ -165,6 +165,7 @@ properties:
               - motorola,osprey
               - motorola,surnia
               - qcom,msm8916-mtp
+              - pointmobile,pm80
               - samsung,a3u-eur
               - samsung,a5u-eur
               - samsung,e5
