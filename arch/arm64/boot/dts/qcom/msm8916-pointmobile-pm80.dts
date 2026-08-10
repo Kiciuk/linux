@@ -22,7 +22,64 @@
 		mmc1 = &sdhc_2; /* SD card */
 		serial0 = &blsp_uart2;
 	};
+	
+	/* Define the 1-Wire Bus Master via GPIO */
+onewire {
+    compatible = "w1-gpio";
+    gpios = <&gpio1 17 GPIO_ACTIVE_HIGH>; /* Example: GPIO pin used for HDQ/1W line */
+    status = "okay";
 
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    /* The BQ27xxx Fuel Gauge Node mapped to the 1-Wire Bus */
+    battery_gauge: fuel-gauge@0 {
+        compatible = "ti,bq27541";        /* Replace with your exact TI chip variant */
+        reg = <0>;                         /* 1-Wire slave address index or ID mapping */
+        monitored-battery = <&bat_profile>;/* Links to battery chemistry specifications */
+        status = "okay";
+    };
+};
+
+/* Optional: Define the physical battery specifications */
+bat_profile: simple-battery {
+    compatible = "simple-battery";
+    voltage-min-design-microvolt = <3200000>;   /* 3.2V */
+    voltage-max-design-microvolt = <4200000>;   /* 4.2V */
+    energy-full-design-microwatt-hours = <5290000>; /* */
+    charge-full-design-microamp-hours = <1430000>;  /* */
+};
+
+	
+	
+	
+ 	bq24086_charger: charger {
+ 	
+ 	
+ 	//////TE pin is and 0x61 set to low enabling battery detection
+ 	////// POwer good is output so we should read it as input-enable
+ 	///CE should be set LOW to charge yet here its set to high wtf?
+ 	
+		compatible = "gpio-charger";
+		charger-type = "usb-sdp";
+		//boost 3 first pca
+		//boost-en = <0x52 0x03 0x00>;
+		//	charge-en = <0x52 0x00 0x00>;
+		//	chg-dect2-gpio = <0x48 0x61 0x2002>;
+			
+		/* Maps to the BQ24086 /PG pin */
+		gpios = <&gpio1 10 GPIO_ACTIVE_LOW>; 
+		
+		/* Maps to the BQ24086 STAT1 pin */
+		charge-status-gpios = <&tlmm 97 0x2002>; 
+		
+		/* Maps to the BQ24086 CE pin */
+		enable-gpios = <&pca9535_1_gpio 0 GPIO_ACTIVE_HIGH>; 
+	    };
+	    
+	    
+	    //ONFIG_BATTERY_BQ27XXX_HDQ
+    
 	chosen {
 		stdout-path = "serial0";
 	};
@@ -156,15 +213,20 @@
 		#size-cells = <0>;
 
 		interrupt-parent = <&tlmm>;
-		interrupts = <13 IRQ_TYPE_EDGE_FALLING>;
+		interrupts = <13 0x2008>;
 
 		reset-gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
 		vdd-supply = <&pm8916_l17>;
 		vio-supply = <&pm8916_l6>;
+		
+		pinctrl-names = "default";
+		pinctrl-0 = <&touch_pins>;
 
 		syna,reset-delay-ms = <100>;
 		syna,startup-delay-ms = <160>;
-
+		
+		touchscreen-size-x = <720>;
+		touchscreen-size-y = <1280>;
 		rmi4-f01@1 {
 			reg = <0x01>;
 			syna,nosleep-mode = <1>;
@@ -174,8 +236,6 @@
 			reg = <0x12>;
 			syna,rezero-wait-ms = <20>;
 			syna,sensor-type = <1>;
-			touchscreen-x-mm = <62>;
-			touchscreen-y-mm = <110>;
 		};
 	};
 };
@@ -285,7 +345,7 @@
 	pinctrl-1 = <&mdss_suspend>;
 
 	panel@0 {
-		compatible = "mdss,ili9881d";
+		compatible = "pointmobile,pm80-panel";
 		reg = <0>;
 
 		backlight = <&backlight>;
@@ -301,12 +361,14 @@
 };
 
 &mdss_dsi0_out {
+status = "okay";
 	data-lanes = <0 1 2 3>;
 	remote-endpoint = <&panel_in>;
 };
 
 &mdss_dsi0_phy {
-	qcom,dsi-phy-regulator-ldo-mode;
+status = "okay";
+
 };
 
 
@@ -388,7 +450,7 @@
 	pinctrl-0 = <&sdc2_default &sdc2_cd_default>;
 	pinctrl-1 = <&sdc2_sleep &sdc2_cd_default>;
 
-	cd-gpios = <&pca9535_2_gpio 8 GPIO_ACTIVE_LOW>;
+	//cd-gpios = <&pca9535_2_gpio 8 GPIO_ACTIVE_LOW>;
 };
 
 &sound {
@@ -456,6 +518,24 @@
 		function = "gpio";
 		drive-strength = <8>;
 		bias-disable;
+	};
+	
+	touch_pins: touch-state {
+		irq-pins {
+			pins = "gpio13";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+
+		reset-pins {
+			pins = "gpio12";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-pull-up;
+		};
 	};
 
 	mdss_suspend: mdss-suspend-state {
