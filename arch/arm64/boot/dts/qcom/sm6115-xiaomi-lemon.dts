@@ -7,6 +7,7 @@
 
 #include "sm6115.dtsi"
 #include "pm6125.dtsi"
+#include "pmi632.dtsi"
 #include <dt-bindings/leds/common.h>
 
 /delete-node/ &pil_gpu_mem;
@@ -18,7 +19,11 @@
 	model = "Xiaomi Redmi 9T";
 	compatible = "xiaomi,lemon", "qcom,sm6115";
 	chassis-type = "handset";
-
+	
+	/* required for bootloader to select correct board */
+	qcom,msm-id = <417 0x10000>, <444 0x10000>;
+	qcom,board-id = <34 0>;
+	
 	aliases {
 		mmc0 = &sdhc_2;
 	};
@@ -194,6 +199,13 @@
 				reg = <0>;
 				pmi632_hs_in: endpoint {
 					remote-endpoint = <&usb_dwc3_hs>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				pmi632_ss_in: endpoint {
+					remote-endpoint = <&usb_qmpphy_out>;
 				};
 			};
 		};
@@ -469,9 +481,13 @@
 };
 
 &usb_qmpphy {
-	vdda-phy-supply = <&pm6125_l4a>;
-	vdda-pll-supply = <&pm6125_l12a>;
+	vdda-phy-supply = <&pm6125_l4>;
+	vdda-pll-supply = <&pm6125_l12>;
 	status = "okay";
+};
+
+&usb_qmpphy_out {
+	remote-endpoint = <&pmi632_ss_in>;
 };
 
 &xo_board {
