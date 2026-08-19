@@ -403,7 +403,7 @@
 };
 
 &tlmm {
-	gpio-reserved-ranges = <0 4>,<14 4>;
+	gpio-reserved-ranges = <14 4>;
 
 	sdc2_cd_on: sdc2-cd-on-state {
 		pins = "gpio88";
